@@ -10,25 +10,31 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
 from sqlalchemy.sql.sqltypes import FLOAT
-from archive_cell import ArchiveCell
-from archive_constants import (LABEL, DEGREE, OUTPUT_LABELS, SLASH,
-                               ARCHIVE_TABLE, CELL_LIST_FILE_NAME, DB_URL)
+from archive_constants import (DEGREE, OUTPUT_LABELS, ARCHIVE_TABLE,
+                               SQLDB_TEST_URL, TEST_TYPE)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 Model = declarative_base()
 
 
-class AbuseMeta(Model):
-    __tablename__ = ARCHIVE_TABLE.ABUSE_META.value
-    index = Column(Integer, primary_key=True)
-    cell_id = Column(TEXT, nullable=False)
-    temperature = Column(Float, nullable=True)
-    thickness = Column(Float, nullable=True)
-    v_init = Column(Float, nullable=True)
-    indentor = Column(Float, nullable=True)
-    nail_speed = Column(Float, nullable=True)
+# class AbuseMeta(Model):
+#     __tablename__ = ARCHIVE_TABLE.ABUSE_META.value
+#     index = Column(Integer, primary_key=True)
+#     cell_id = Column(TEXT, nullable=False)
+#     temperature = Column(Float, nullable=True)
+#     thickness = Column(Float, nullable=True)
+#     v_init = Column(Float, nullable=True)
+#     indentor = Column(Float, nullable=True)
+#     nail_speed = Column(Float, nullable=True)
 
+class CellTimeSeries(Model):
+    __tablename__ = ARCHIVE_TABLE.CELL_TS.value
+    index = Column(Integer, primary_key=True)
+    test_time = Column(Float, nullable=True)
+    cell_name = Column(TEXT, nullable=False)
+    value = Column(TEXT, nullable=False)
+    type = Column(TEXT, nullable=False)
 
 class AbuseTimeSeries(Model):
     __tablename__ = ARCHIVE_TABLE.ABUSE_TS.value
@@ -65,63 +71,63 @@ class AbuseTimeSeries(Model):
         }
 
 
-class CellMeta(Model):
-    __tablename__ = ARCHIVE_TABLE.CELL_META.value
-    index = Column(Integer, primary_key=True)
-    cell_id = Column(TEXT, nullable=False)
-    anode = Column(TEXT, nullable=True)
-    cathode = Column(TEXT, nullable=True)
-    source = Column(TEXT, nullable=True)
-    ah = Column(BigInteger, nullable=True)
-    form_factor = Column(TEXT, nullable=True)
-    test = Column(TEXT, nullable=True)
-    tester = Column(TEXT, nullable=True)
+# class CellMeta(Model):
+#     __tablename__ = ARCHIVE_TABLE.CELL_META.value
+#     index = Column(Integer, primary_key=True)
+#     cell_id = Column(TEXT, nullable=False)
+#     anode = Column(TEXT, nullable=True)
+#     cathode = Column(TEXT, nullable=True)
+#     source = Column(TEXT, nullable=True)
+#     ah = Column(BigInteger, nullable=True)
+#     form_factor = Column(TEXT, nullable=True)
+#     test = Column(TEXT, nullable=True)
+#     tester = Column(TEXT, nullable=True)
 
-    def to_dict(self):
-        return {
-            "index": self.index,
-            "cell_id": self.cell_id,
-            "anode": self.anode,
-            "cathode": self.cathode,
-            "source": self.source,
-            "ah": self.ah,
-            "form_factor": self.form_factor,
-            "test": self.test,
-            "tester": self.tester
-        }
+#     def to_dict(self):
+#         return {
+#             "index": self.index,
+#             "cell_id": self.cell_id,
+#             "anode": self.anode,
+#             "cathode": self.cathode,
+#             "source": self.source,
+#             "ah": self.ah,
+#             "form_factor": self.form_factor,
+#             "test": self.test,
+#             "tester": self.tester
+#         }
 
-    @staticmethod
-    def columns():
-        return [
-            "index", "cell_id", "anode", "cathode", "source", "ah", "form_factor",
-            "test", "tester"
-        ]
+#     @staticmethod
+#     def columns():
+#         return [
+#             "index", "cell_id", "anode", "cathode", "source", "ah",
+#             "form_factor", "test", "tester"
+#         ]
 
 
-class CycleMeta(Model):
-    __tablename__ = ARCHIVE_TABLE.CYCLE_META.value
-    index = Column(Integer, primary_key=True)
-    temperature = Column(Float, nullable=True)
-    soc_max = Column(Float, nullable=True)
-    soc_min = Column(Float, nullable=True)
-    v_max = Column(Float, nullable=True)
-    v_min = Column(Float, nullable=True)
-    crate_c = Column(Float, nullable=True)
-    crate_d = Column(Float, nullable=True)
-    cell_id = Column(TEXT, nullable=False)
+# class CycleMeta(Model):
+#     __tablename__ = ARCHIVE_TABLE.CYCLE_META.value
+#     index = Column(Integer, primary_key=True)
+#     temperature = Column(Float, nullable=True)
+#     soc_max = Column(Float, nullable=True)
+#     soc_min = Column(Float, nullable=True)
+#     v_max = Column(Float, nullable=True)
+#     v_min = Column(Float, nullable=True)
+#     crate_c = Column(Float, nullable=True)
+#     crate_d = Column(Float, nullable=True)
+#     cell_id = Column(TEXT, nullable=False)
 
-    def to_dict(self):
-        return {
-            "index": self.index,
-            "temperature": self.temperature,
-            "soc_max": self.soc_max,
-            "soc_min": self.soc_min,
-            "v_max": self.v_max,
-            "v_min": self.v_min,
-            "crate_c": self.crate_c,
-            "crate_d": self.crate_d,
-            "cell_id": self.cell_id
-        }
+#     def to_dict(self):
+#         return {
+#             "index": self.index,
+#             "temperature": self.temperature,
+#             "soc_max": self.soc_max,
+#             "soc_min": self.soc_min,
+#             "v_max": self.v_max,
+#             "v_min": self.v_min,
+#             "crate_c": self.crate_c,
+#             "crate_d": self.crate_d,
+#             "cell_id": self.cell_id
+#         }
 
 
 class CycleStats(Model):
@@ -190,31 +196,31 @@ Archive Operator
 
 
 class ArchiveOperator:
-    def __init__(self, url=DB_URL, config={}):
+    def __init__(self, url=SQLDB_TEST_URL, config={}):
         engine = create_engine(url, **config)
         Model.metadata.create_all(engine)
         self.session = scoped_session(
             sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
     def add_cell_to_db(self, cell):
-        df_cell_md = cell.cellmeta
-        df_test_meta_md = cell.testmeta
+        #df_cell_md = cell.cellmeta
+        #df_test_meta_md = cell.testmeta
         df_stats, df_timeseries = cell.stat
-        df_cell_md.to_sql(cell.cell_meta_table,
-                          con=self.session.bind,
-                          if_exists="append",
-                          chunksize=1000,
-                          index=False)
+        # df_cell_md.to_sql(cell.cell_meta_table,
+        #                   con=self.session.bind,
+        #                   if_exists="append",
+        #                   chunksize=1000,
+        #                   index=False)
         df_timeseries.to_sql(cell.test_ts_table,
                              con=self.session.bind,
                              if_exists='append',
                              chunksize=1000,
                              index=False)
-        df_test_meta_md.to_sql(cell.test_meta_table,
-                               con=self.session.bind,
-                               if_exists='append',
-                               chunksize=1000,
-                               index=False)
+        # df_test_meta_md.to_sql(cell.test_meta_table,
+        #                        con=self.session.bind,
+        #                        if_exists='append',
+        #                        chunksize=1000,
+        #                        index=False)
         if cell.test_stats_table:
             df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
                             con=self.session.bind,
@@ -232,11 +238,11 @@ class ArchiveOperator:
         self.session.commit()
 
     def remove_cell_from_archive(self, cell_id):
-        self.remove_cell_from_table(CellMeta, cell_id)
-        self.remove_cell_from_table(CycleMeta, cell_id)
+        #self.remove_cell_from_table(CellMeta, cell_id)
+        #self.remove_cell_from_table(CycleMeta, cell_id)
         self.remove_cell_from_table(CycleStats, cell_id)
         self.remove_cell_from_table(CycleTimeSeries, cell_id)
-        self.remove_cell_from_table(AbuseMeta, cell_id)
+        #self.remove_cell_from_table(AbuseMeta, cell_id)
         self.remove_cell_from_table(AbuseTimeSeries, cell_id)
 
     """
@@ -262,42 +268,48 @@ class ArchiveOperator:
 
     # CELL
 
-    def get_df_cell_meta_with_id(self, cell_id):
-        return self.get_df_with_id(CellMeta, cell_id)
+    # def get_df_cell_meta_with_id(self, cell_id):
+    #     return self.get_df_with_id(CellMeta, cell_id)
 
-    def get_all_cell_meta(self):
-        return self.get_all_data_from_table(CellMeta)
+    # def get_all_cell_meta(self):
+    #     return self.get_all_data_from_table(CellMeta)
 
-    def get_all_cell_meta_with_id(self, cell_id):
-        return self.get_all_data_from_table_with_id(CellMeta, cell_id)
+    # def get_all_cell_meta_with_id(self, cell_id):
+    #     return self.get_all_data_from_table_with_id(CellMeta, cell_id)
+
+    def get_all_testmeta_with_id(self, test_type, cell_id):
+        if test_type == TEST_TYPE.ABUSE.value:
+            self.get_all_abuse_meta_with_id(cell_id)
+        if test_type == TEST_TYPE.CYCLE.value:
+            self.get_all_cycle_meta_with_id(cell_id)
 
     # ABUSE
 
-    def get_df_abuse_meta_with_id(self, cell_id):
-        return self.get_df_with_id(AbuseMeta, cell_id)
+    # def get_df_abuse_meta_with_id(self, cell_id):
+    #     return self.get_df_with_id(AbuseMeta, cell_id)
 
-    def get_all_abuse_meta(self):
-        return self.get_all_data_from_table(AbuseMeta)
+    # def get_all_abuse_meta(self):
+    #     return self.get_all_data_from_table(AbuseMeta)
 
-    def get_all_abuse_meta_with_id(self, cell_id):
-        return self.get_all_data_from_table_with_id(AbuseMeta, cell_id)
+    # def get_all_abuse_meta_with_id(self, cell_id):
+    #     return self.get_all_data_from_table_with_id(AbuseMeta, cell_id)
 
     def get_all_abuse_ts(self):
         return self.get_all_data_from_table(AbuseTimeSeries)
 
     def get_all_abuse_ts_with_id(self, cell_id):
         return self.get_all_data_from_table_with_id(AbuseTimeSeries, cell_id)
-        
+
     # CYCLE
 
-    def get_df_cycle_meta_with_id(self, cell_id):
-        return self.get_df_with_id(CycleMeta, cell_id)
+    # def get_df_cycle_meta_with_id(self, cell_id):
+    #     return self.get_df_with_id(CycleMeta, cell_id)
 
-    def get_all_cycle_meta(self):
-        return self.get_all_data_from_table(CycleMeta)
+    # def get_all_cycle_meta(self):
+    #     return self.get_all_data_from_table(CycleMeta)
 
-    def get_all_cycle_meta_with_id(self, cell_id):
-        return self.get_all_data_from_table_with_id(CycleMeta, cell_id)
+    # def get_all_cycle_meta_with_id(self, cell_id):
+    #     return self.get_all_data_from_table_with_id(CycleMeta, cell_id)
 
     def get_all_cycle_ts(self):
         return self.get_all_data_from_table(CycleTimeSeries)

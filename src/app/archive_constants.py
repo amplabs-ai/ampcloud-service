@@ -4,7 +4,8 @@ SLASH = "/"
 
 DEGREE = 3
 CELL_LIST_FILE_NAME = "cell_list.xlsx"
-DB_URL = "sqlite:///tests/test_data/01_raw/tmp/bas-test.db"
+SQLDB_TEST_URL = "sqlite:///tests/test_data/01_raw/tmp/bas-test.db"
+MONGODB_URL = "mongodb://admin:secret@mongo:27017/?authSource=admin"
 
 class TEST_TYPE(Enum):
     ABUSE = "abuse"
@@ -23,6 +24,8 @@ class TESTER(Enum):
 
 
 class ARCHIVE_TABLE(Enum):
+    CELL_TS = "cell_timeseries"
+    
     ABUSE_META = "abuse_metadata"
     ABUSE_TS = "abuse_timeseries"
     CELL_META = "cell_metadata"

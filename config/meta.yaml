@@ -1,0 +1,11 @@
+---
+devices:
+  name: "my_device"
+  anode: "my_anode"
+  cathode: "my_cathode"
+  device_mass: "5g"
+  manufacturer: "my_manufacturer"
+  supplier: "my_supplier"
+tests:
+  name: "my_test"
+  type: "cycle"

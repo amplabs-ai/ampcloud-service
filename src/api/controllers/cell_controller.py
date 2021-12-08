@@ -1,4 +1,5 @@
-from src.app.model import ArchiveOperator, CellMeta
+import pytest
+from src.app.model import ArchiveOperator
 from src.app.aio import ArchiveExporter
 from src.app.archive_cell import ArchiveCell
 import pandas as pd
@@ -53,7 +54,7 @@ def get_test(test_name):
         return result, 200
 
 
-def get_ts(test_name):
+def get_test_ts(test_name):
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_ts()
         result = [cell.to_dict() for cell in archive_cells]
@@ -64,7 +65,7 @@ def get_ts(test_name):
         return result, 200
 
 
-def get_test_ts_with_id(cell_id, test_name):
+def get_test_ts_with_id(test_name, cell_id):
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_ts_with_id(cell_id)
         result = [cell.to_dict() for cell in archive_cells]
@@ -196,7 +197,6 @@ def add_df_to_db(df, cell_list_path):
                            metadata=df.iloc[i])
         cells.append(cell)
     return ArchiveOperator().add_cells_to_db(cells)
-
 
 def update_cycle_cells(cell_list_path):
     df_excel = pd.read_excel(cell_list_path + CELL_LIST_FILE_NAME)

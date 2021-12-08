@@ -31,14 +31,14 @@ class ArchiveCell:
         self.file_id = file_id
         self.metadata = metadata
         self.cellmeta, self.testmeta = self.split_metadata()
-        self.cell_meta_table = ARCHIVE_TABLE.CELL_META.value
+        # self.cell_meta_table = ARCHIVE_TABLE.CELL_META.value
         if self.test_type == TEST_TYPE.ABUSE.value:
             self.test_ts_table = ARCHIVE_TABLE.ABUSE_TS.value
-            self.test_meta_table = ARCHIVE_TABLE.ABUSE_META.value
+            # self.test_meta_table = ARCHIVE_TABLE.ABUSE_META.value
             self.test_stats_table = None
         if self.test_type == TEST_TYPE.CYCLE.value:
             self.test_ts_table = ARCHIVE_TABLE.CYCLE_TS.value
-            self.test_meta_table = ARCHIVE_TABLE.CYCLE_META.value
+            # self.test_meta_table = ARCHIVE_TABLE.CYCLE_META.value
             self.test_stats_table = ARCHIVE_TABLE.CYCLE_STATS.value
         if data: self.data = data
         else: self.load_data()
