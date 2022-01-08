@@ -13,4 +13,5 @@ datasources/postgres/data/
 postgres-data
 */tmp/*
 key
+venv/*
 
