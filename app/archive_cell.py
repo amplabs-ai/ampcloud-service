@@ -51,7 +51,7 @@ class ArchiveCell:
         self.data[LABEL.CELL_ID.value] = self.cell_id
         return self
 
-    def is_supported_test_type(self, test_type:TEST_TYPE)->bool:
+    def is_supported_test_type(self, test_type:str)->bool:
         for T in TEST_TYPE:
             if test_type == T.value: return True
         return False
