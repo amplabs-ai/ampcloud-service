@@ -1,3 +1,4 @@
+from sqlalchemy.sql.sqltypes import Boolean
 from archive_constants import (LABEL, DEGREE, TEST_TYPE, TESTER, OUTPUT_LABELS,
                                SLASH, ARCHIVE_TABLE, CELL_LIST_FILE_NAME)
 from converter import (split_cycle_metadata, split_abuse_metadata,
@@ -50,7 +51,7 @@ class ArchiveCell:
         self.data[LABEL.CELL_ID.value] = self.cell_id
         return self
 
-    def is_supported_test_type(self, test_type):
+    def is_supported_test_type(self, test_type:TEST_TYPE)->bool:
         for T in TEST_TYPE:
             if test_type == T.value: return True
         return False

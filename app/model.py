@@ -1,4 +1,5 @@
 import os
+from typing import Dict, List, NoReturn
 from pandas.core.frame import DataFrame
 from sqlalchemy import (
     Column,
@@ -10,12 +11,15 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
+from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.sqltypes import FLOAT, TIMESTAMP
 from archive_constants import (LABEL, DEGREE, OUTPUT_LABELS, SLASH,
                                ARCHIVE_TABLE, CELL_LIST_FILE_NAME, TEST_DB_URL)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+# Imported for type suggestion
+from archive_cell import ArchiveCell
 Model = declarative_base()
 
 
@@ -46,7 +50,7 @@ class AbuseTimeSeries(Model):
     test_time = Column(Float, nullable=True)
     cell_id = Column(TEXT, nullable=False)
 
-    def to_dict(self):
+    def to_dict(self)->Dict:
         return {
             "index": self.index,
             "axial_d": self.axial_d,
@@ -77,7 +81,7 @@ class CellMeta(Model):
     mapping = Column(TEXT, nullable=True)
     tester = Column(TEXT, nullable=True)
 
-    def to_dict(self):
+    def to_dict(self)->Dict:
         return {
             "index": self.index,
             "cell_id": self.cell_id,
@@ -92,7 +96,7 @@ class CellMeta(Model):
         }
 
     @staticmethod
-    def columns():
+    def columns()->List[str]:
         return [
             "index", "cell_id", "anode", "cathode", "source", "ah", "form_factor",
             "test", "tester"
@@ -111,7 +115,7 @@ class CycleMeta(Model):
     crate_d = Column(Float, nullable=True)
     cell_id = Column(TEXT, nullable=False)
 
-    def to_dict(self):
+    def to_dict(self)->Dict:
         return {
             "index": self.index,
             "temperature": self.temperature,
@@ -162,7 +166,7 @@ class CycleTimeSeries(Model):
     test_time = Column(Float, nullable=True)
     cell_id = Column(TEXT, nullable=False)
 
-    def to_dict(self):
+    def to_dict(self)->Dict:
         return {
             "index": self.index,
             "i": self.i,
@@ -199,7 +203,7 @@ class ArchiveOperator:
         self.session = scoped_session(
             sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
-    def add_cell_to_db(self, cell):
+    def add_cell_to_db(self, cell:ArchiveCell)->NoReturn:
         df_cell_md = cell.cellmeta
         df_test_meta_md = cell.testmeta
         df_stats, df_timeseries = cell.stat
@@ -225,16 +229,16 @@ class ArchiveOperator:
                             chunksize=1000,
                             index=False)
 
-    def add_cells_to_db(self, cell_list):
+    def add_cells_to_db(self, cell_list:List[ArchiveCell])->bool:
         for cell in cell_list:
             self.add_cell_to_db(cell)
         return True
 
-    def remove_cell_from_table(self, table, cell_id):
+    def remove_cell_from_table(self, table:Model, cell_id:str)->NoReturn:
         self.session.query(table).filter(table.cell_id == cell_id).delete()
         self.session.commit()
 
-    def remove_cell_from_archive(self, cell_id):
+    def remove_cell_from_archive(self, cell_id:str)->NoReturn:
         self.remove_cell_from_table(CellMeta, cell_id)
         self.remove_cell_from_table(CycleMeta, cell_id)
         self.remove_cell_from_table(CycleStats, cell_id)
@@ -246,7 +250,7 @@ class ArchiveOperator:
     getters
     """
 
-    def get_df_cycle_ts_with_cell_id(self, cell_id):
+    def get_df_cycle_ts_with_cell_id(self, cell_id:str)->DataFrame:
         sql = self.session.query(
             CycleTimeSeries.date_time.label(OUTPUT_LABELS.DATE_TIME.value),
             CycleTimeSeries.test_time.label(OUTPUT_LABELS.TEST_TIME.value),
@@ -265,68 +269,68 @@ class ArchiveOperator:
 
     # CELL
 
-    def get_df_cell_meta_with_id(self, cell_id):
+    def get_df_cell_meta_with_id(self, cell_id:str)->DataFrame:
         return self.get_df_with_id(CellMeta, cell_id)
 
-    def get_all_cell_meta(self):
+    def get_all_cell_meta(self)->DataFrame:
         return self.get_all_data_from_table(CellMeta)
 
-    def get_all_cell_meta_with_id(self, cell_id):
+    def get_all_cell_meta_with_id(self, cell_id:str)->DataFrame:
         return self.get_all_data_from_table_with_id(CellMeta, cell_id)
 
     # ABUSE
 
-    def get_df_abuse_meta_with_id(self, cell_id):
+    def get_df_abuse_meta_with_id(self, cell_id:str)->DataFrame:
         return self.get_df_with_id(AbuseMeta, cell_id)
 
-    def get_all_abuse_meta(self):
+    def get_all_abuse_meta(self)->List:
         return self.get_all_data_from_table(AbuseMeta)
 
-    def get_all_abuse_meta_with_id(self, cell_id):
+    def get_all_abuse_meta_with_id(self, cell_id:str)->List:
         return self.get_all_data_from_table_with_id(AbuseMeta, cell_id)
 
-    def get_all_abuse_ts(self):
+    def get_all_abuse_ts(self)->List:
         return self.get_all_data_from_table(AbuseTimeSeries)
 
-    def get_all_abuse_ts_with_id(self, cell_id):
+    def get_all_abuse_ts_with_id(self, cell_id:str)->List:
         return self.get_all_data_from_table_with_id(AbuseTimeSeries, cell_id)
 
     # CYCLE
 
-    def get_df_cycle_meta_with_id(self, cell_id):
+    def get_df_cycle_meta_with_id(self, cell_id:str)->DataFrame:
         return self.get_df_with_id(CycleMeta, cell_id)
 
-    def get_all_cycle_meta(self):
+    def get_all_cycle_meta(self)->List:
         return self.get_all_data_from_table(CycleMeta)
 
-    def get_all_cycle_meta_with_id(self, cell_id):
+    def get_all_cycle_meta_with_id(self, cell_id:str)->List:
         return self.get_all_data_from_table_with_id(CycleMeta, cell_id)
 
-    def get_all_cycle_ts(self):
+    def get_all_cycle_ts(self)->List:
         return self.get_all_data_from_table(CycleTimeSeries)
 
-    def get_all_cycle_ts_with_id(self, cell_id):
+    def get_all_cycle_ts_with_id(self, cell_id:str)->List:
         return self.get_all_data_from_table_with_id(CycleTimeSeries, cell_id)
 
     # GENERAL SQL
 
-    def get_df_with_id(self, table: Model, cell_id: str):
+    def get_df_with_id(self, table: Model, cell_id: str)->List:
         return pd.read_sql(
             self.select_table_with_id(table, cell_id).statement,
             self.session.bind).round(DEGREE)
 
     # GENERAL ORM
 
-    def get_all_data_from_table(self, table):
+    def get_all_data_from_table(self, table:Model)->List:
         return self.select_table(table).all()
 
-    def get_all_data_from_table_with_id(self, table, cell_id):
+    def get_all_data_from_table_with_id(self, table:Model, cell_id:str)->List:
         return self.select_table_with_id(table, cell_id).all()
 
     # BASIC
 
-    def select_table(self, table):
+    def select_table(self, table:Model)->Query:
         return self.session.query(table)
 
-    def select_table_with_id(self, table, cell_id):
+    def select_table_with_id(self, table:Model, cell_id:str)->Query:
         return self.session.query(table).filter(table.cell_id == cell_id)

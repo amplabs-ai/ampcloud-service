@@ -1,4 +1,7 @@
+import logging
+from typing import Tuple
 import pandas as pd
+from pandas.core.frame import DataFrame
 from archive_constants import (LABEL)
 import warnings
 from pandas.core.common import SettingWithCopyWarning
@@ -8,7 +11,7 @@ pd.set_option('mode.chained_assignment', None)
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 
-def extract_cell_metdata(df_c_md):
+def extract_cell_metdata(df_c_md:DataFrame)->DataFrame:
     """ Build cell metadata """
     df_cell_md = pd.DataFrame()
     df_cell_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
@@ -24,7 +27,7 @@ def extract_cell_metdata(df_c_md):
     return df_cell_md
 
 
-def split_cycle_metadata(df_c_md):
+def split_cycle_metadata(df_c_md:DataFrame)->Tuple[DataFrame, DataFrame]:
 
     df_cell_md = extract_cell_metdata(df_c_md)
 
@@ -40,7 +43,7 @@ def split_cycle_metadata(df_c_md):
     return df_cell_md, df_test_md
 
 
-def split_abuse_metadata(df_c_md):
+def split_abuse_metadata(df_c_md:DataFrame)->Tuple[DataFrame, DataFrame]:
 
     df_cell_md = extract_cell_metdata(df_c_md)
 
@@ -57,7 +60,7 @@ def split_abuse_metadata(df_c_md):
 
 
 # sort data imported to insure cycle index and test times are correctly calculated
-def sort_timeseries(df_tmerge):
+def sort_timeseries(df_tmerge:DataFrame)->DataFrame:
     # Arrange the data by date time first, then by test time
     # Rebuild Cycle Index and test time to increment from file to file
     # This method does not depend on data from a specific testers
@@ -129,7 +132,7 @@ def sort_timeseries(df_tmerge):
 
 
 # calculate statistics for abuse test
-def calc_abuse_stats(df_t, df_test_md):
+def calc_abuse_stats(df_t:DataFrame, df_test_md:DataFrame)->DataFrame:
 
     for _ in df_t.index:
         df_t[LABEL.NORM_D.value] = df_t.iloc[
@@ -142,7 +145,7 @@ def calc_abuse_stats(df_t, df_test_md):
     return df_t
 
 
-def calc_cycle_stats(df_t):
+def calc_cycle_stats(df_t:DataFrame)->Tuple[DataFrame, DataFrame]:
 
     df_t[LABEL.CYCLE_TIME.value] = 0
 
@@ -257,15 +260,15 @@ def calc_cycle_stats(df_t):
                                                                       df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.E_C.value)]
 
             except Exception as e:
-                pass
-
+                logging.warning(e)
+                
     df_cc = df_c[df_c[LABEL.CYCLE_INDEX.value] > 0]
     df_tt = df_t[df_t[LABEL.CYCLE_INDEX.value] > 0]
     return df_cc, df_tt
 
 
 # unpack the dataframe and calculate quantities used in statistics
-def calc_cycle_quantities(df):
+def calc_cycle_quantities(df:DataFrame)->DataFrame:
 
     tmp_arr = df[[
         LABEL.TEST_TIME.value, LABEL.I.value, LABEL.V.value, LABEL.AH_C.value,

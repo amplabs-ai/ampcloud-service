@@ -1,3 +1,4 @@
+from typing import List, NoReturn, Tuple
 from app.model import ArchiveOperator, CellMeta
 from app.aio import ArchiveExporter
 from app.archive_cell import ArchiveCell
@@ -9,19 +10,19 @@ from app.archive_constants import (LABEL, DEGREE, SLASH,
 # Routes
 
 
-def root():
+def root()->Tuple[str, int]:
     return 'Hello Battery Archive!', 200
 
 
-def liveness():
+def liveness()->Tuple[str, int]:
     return "Alive", 200
 
 
-def readiness():
+def readiness()->Tuple[str, int]:
     return "Ready", 200
 
 
-def get_cells():
+def get_cells()->Tuple[str, int]:
     """get_cell
     Gets all cells
     :rtype: list of Cell
@@ -33,14 +34,14 @@ def get_cells():
     return result, 200
 
 
-def get_cell_with_id(cell_id):
+def get_cell_with_id(cell_id:str)->Tuple[List[dict], int]:
     ao = ArchiveOperator()
     archive_cells = ao.get_all_cell_meta_with_id(cell_id)
     result = [cell.to_dict() for cell in archive_cells]
     return result, 200
 
 
-def get_test(test_name):
+def get_test(test_name:str)->Tuple[List[dict], int]:
     """
     """
     ao = ArchiveOperator()
@@ -54,7 +55,7 @@ def get_test(test_name):
         return result, 200
 
 
-def get_ts(test_name):
+def get_ts(test_name:str)->Tuple[List[dict], int]:
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_ts()
         result = [cell.to_dict() for cell in archive_cells]
@@ -65,7 +66,7 @@ def get_ts(test_name):
         return result, 200
 
 
-def get_test_ts_with_id(cell_id, test_name):
+def get_test_ts_with_id(cell_id:str, test_name:str)->Tuple[List[dict], int]:
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_ts_with_id(cell_id)
         result = [cell.to_dict() for cell in archive_cells]
@@ -76,7 +77,7 @@ def get_test_ts_with_id(cell_id, test_name):
         return result, 200
 
 
-def get_meta_with_id(cell_id, test_name):
+def get_meta_with_id(cell_id:str, test_name:str)->Tuple[List[dict], int]:
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_meta_with_id(cell_id)
         result = [cell.to_dict() for cell in archive_cells]
@@ -87,7 +88,7 @@ def get_meta_with_id(cell_id, test_name):
         return result, 200
 
 
-def add_cell():
+def add_cell()->Tuple[str, int]:
     body = request.json
     path = body.get('path')
     print(path)
@@ -101,7 +102,7 @@ def add_cell():
 
 def export_cycle_cells_to_fmt(cell_list_path,
                               output_path: str,
-                              fmt: str = "csv"):
+                              fmt: str = "csv")->NoReturn:
     #TODO: This implies cell_list must be xlsx, this can be written in CSV
     df_excel = pd.read_excel(cell_list_path + CELL_LIST_FILE_NAME)
     #TODO: Refactor this to a join instead of looping slowly
@@ -130,7 +131,7 @@ generate_cycle_data queries data from the database and exports to csv
 
 def export_cycle_meta_data_with_id_to_fmt(cell_id: str,
                                           out_path: str,
-                                          fmt: str = "csv"):
+                                          fmt: str = "csv")->str:
     if fmt == FORMAT.CSV.value:
         return ArchiveExporter.write_to_csv(
             ArchiveOperator().get_df_cycle_meta_with_id(cell_id), cell_id,
@@ -151,13 +152,13 @@ generate_timeseries_data queries data from the database and exports to csv
 """
 
 
-def export_cycle_ts_data_csv(cell_id: str, path: str):
+def export_cycle_ts_data_csv(cell_id: str, path: str)->str:
     return ArchiveExporter.write_to_csv(
         ArchiveOperator().get_df_cycle_ts_with_cell_id(cell_id), cell_id, path,
         "timeseries_data")
 
 
-def export_cycle_ts_data_feather(cell_id: str, path: str):
+def export_cycle_ts_data_feather(cell_id: str, path: str)->str:
     return ArchiveExporter.write_to_feather(
         ArchiveOperator().get_df_cycle_ts_with_cell_id(cell_id), cell_id, path,
         "timeseries_data")
@@ -182,17 +183,17 @@ def export_cycle_ts_data_feather(cell_id: str, path: str):
 #     return ArchiveOperator().add_cells_to_db(cells)
 
 
-def import_cells_xls_to_db(cell_list_path):
+def import_cells_xls_to_db(cell_list_path:List[str])->bool:
     return add_df_to_db(pd.read_excel(cell_list_path + CELL_LIST_FILE_NAME),
                         cell_list_path)
 
 
-def import_cells_feather_to_db(cell_list_path):
+def import_cells_feather_to_db(cell_list_path:List[str])->bool:
     return add_df_to_db(pd.read_feather(cell_list_path + CELL_LIST_FILE_NAME),
                         cell_list_path)
 
 
-def add_df_to_db(df, cell_list_path):
+def add_df_to_db(df, cell_list_path:List[str])->bool:
     cells = []
     for i in df.index:
         cell = ArchiveCell(cell_id=df[LABEL.CELL_ID.value][i],
@@ -207,7 +208,7 @@ def add_df_to_db(df, cell_list_path):
     return ArchiveOperator().add_cells_to_db(cells)
 
 
-def update_cycle_cells(cell_list_path):
+def update_cycle_cells(cell_list_path:List[str])->bool:
     df_excel = pd.read_excel(cell_list_path + CELL_LIST_FILE_NAME)
     ao = ArchiveOperator()
     for i in df_excel.index:
