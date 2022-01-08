@@ -2,7 +2,7 @@ import logging
 from typing import Tuple
 import pandas as pd
 from pandas.core.frame import DataFrame
-from archive_constants import (LABEL)
+from .archive_constants import (LABEL)
 import warnings
 from pandas.core.common import SettingWithCopyWarning
 

@@ -5,8 +5,8 @@ import pandas as pd
 import os
 
 from pandas.core.frame import DataFrame
-from archive_constants import (TEST_TYPE, TESTER, INP_LABELS, ARCHIVE_COLS, FORMAT)
-from converter import (sort_timeseries)
+from .archive_constants import (TEST_TYPE, TESTER, INP_LABELS, ARCHIVE_COLS, FORMAT)
+from .converter import (sort_timeseries)
 import pyarrow.feather as feather
 import datetime
 
