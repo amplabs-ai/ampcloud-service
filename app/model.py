@@ -11,7 +11,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
 from sqlalchemy.sql.sqltypes import FLOAT, TIMESTAMP
-from archive_constants import (LABEL, DEGREE, OUTPUT_LABELS, SLASH,
+from app.archive_constants import (LABEL, DEGREE, OUTPUT_LABELS, SLASH,
                                ARCHIVE_TABLE, CELL_LIST_FILE_NAME, TEST_DB_URL)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
