@@ -1,0 +1,103 @@
+version: "2"
+x-aws-vpc: "vpc-0f1ee1ca3ccb4b6ef"
+x-redash-service: &redash-service
+  image: redash/redash:8.0.0.b32245
+  depends_on:
+    # - postgres
+    - redis
+  env_file: ./env
+  #restart: always
+  # links:
+  #   - "ds-postgres:ds-postgres"
+services:
+  server:
+    <<: *redash-service
+    command: server
+    ports:
+      - "5000:5000"
+    environment:
+      REDASH_WEB_WORKERS: 4
+  scheduler:
+    <<: *redash-service
+    command: scheduler
+    environment:
+      QUEUES: "celery"
+      WORKERS_COUNT: 1
+  scheduled_worker:
+    <<: *redash-service
+    command: worker
+    environment:
+      QUEUES: "scheduled_queries,schemas"
+      WORKERS_COUNT: 1
+  adhoc_worker:
+    <<: *redash-service
+    command: worker
+    environment:
+      QUEUES: "queries"
+      WORKERS_COUNT: 2
+
+## Supporting containers 
+  redis:
+    image: redis:5.0-alpine
+#  app:
+#    image: 735766274635.dkr.ecr.us-west-2.amazonaws.com/archive:latest
+#    env_file: ./env
+#    ports:
+#      - "4000:4000"
+      # depends_on:
+      #   - ds-postgres
+      # links:
+      #   - "ds-postgres:ds-postgres"
+      #hello:
+      #  image: digitalocean/flask-helloworld
+      #  ports:
+      #    - "5000:5000"
+    #  docs:
+    #    image: swaggerapi/swagger-editor
+    #    env_file: ./env
+    #  volumes:
+    #  - "./api/:/tmp/api/"
+    #restart: always
+    #
+  # postgres:
+  #   image: postgres:9.6-alpine
+  #   env_file: ./env
+  #   volumes:
+  #     - "./postgres-data:/var/lib/postgresql/data"
+  #   restart: always
+  #nginx:
+  #  image: redash/nginx:latest
+  #  ports:
+  #    - "80:80"
+  #  depends_on:
+  #    - server
+        #links:
+        #  - server:redash
+        #restart: always
+
+## Datastorage for battery postgres instance
+## Avoiding an alpine image for a data source
+  # ds-postgres:      
+  #   image: postgres:12
+  #   ports:
+  #     - "5432:5432"
+    # env_file: ./env
+    # volumes:
+    #   - "./datasources/postgres/postgres.conf:/usr/local/etc/postgres/postgres.conf"
+    #   - "./datasources/postgres/data:/var/lib/postgresql/data"
+    #   - "./datasources/postgres/cell_data/init.sql:/docker-entrypoint-initdb.d/init.sql"
+    
+    # restart: always
+      
+# Allow us to peak into databases. 
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   ports:
+  #     - "26543:80"
+  #   env_file: ./env
+  #   depends_on: 
+  #     - postgres
+  #   links:
+  #     - "ds-postgres:ds-postgres"
+  
+  
