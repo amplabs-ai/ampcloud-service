@@ -1,7 +1,7 @@
 version: "2"
 x-aws-vpc: "vpc-0f1ee1ca3ccb4b6ef"
 x-redash-service: &redash-service
-  image: redash/redash:8.0.0.b32245
+  image: docker.io/redash/redash:8.0.0.b32245
   depends_on:
     # - postgres
     - redis
@@ -38,12 +38,13 @@ services:
 
 ## Supporting containers 
   redis:
-    image: redis:5.0-alpine
-#  app:
-#    image: 735766274635.dkr.ecr.us-west-2.amazonaws.com/archive:latest
-#    env_file: ./env
-#    ports:
-#      - "4000:4000"
+    image: docker.io/redis:5.0-alpine
+
+    #  app:
+    #    image: 735766274635.dkr.ecr.us-west-2.amazonaws.com/archive
+    #    env_file: ./env
+    #    ports:
+    #      - "4000:4000"
       # depends_on:
       #   - ds-postgres
       # links:

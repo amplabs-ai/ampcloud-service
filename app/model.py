@@ -74,8 +74,8 @@ class CellMeta(Model):
     ah = Column(BigInteger, nullable=True)
     form_factor = Column(TEXT, nullable=True)
     test = Column(TEXT, nullable=True)
-    mapping = Column(TEXT, nullable=True)
     tester = Column(TEXT, nullable=True)
+    # mapping = Column(TEXT, nullable=True)
 
     def to_dict(self):
         return {
@@ -87,15 +87,15 @@ class CellMeta(Model):
             "ah": self.ah,
             "form_factor": self.form_factor,
             "test": self.test,
-            "mapping": self.mapping,
             "tester": self.tester
+            # "mapping": self.mapping
         }
 
     @staticmethod
     def columns():
         return [
             "index", "cell_id", "anode", "cathode", "source", "ah", "form_factor",
-            "test", "tester"
+            "test", "tester"#, "mapping"
         ]
 
 

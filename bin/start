@@ -1,5 +1,5 @@
 ## Run the comp
-docker-compose up 
+docker-compose up -d
 
 ## Add all of the pre-built queries now
 ## This needs to be done after bringing up the docker-compose stack. Reliant on nginx being ready

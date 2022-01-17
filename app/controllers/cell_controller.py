@@ -29,6 +29,7 @@ def get_cells():
 
     ao = ArchiveOperator()
     archive_cells = ao.get_all_cell_meta()
+    print(archive_cells)
     result = [cell.to_dict() for cell in archive_cells]
     return result, 200
 
