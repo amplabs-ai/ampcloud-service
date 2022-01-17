@@ -32,10 +32,6 @@ Open New BASH Terminal
 ```bash
 ./bin/setup # run once to build relevant images and configs, re-running will regenerate auth for redash database
 ./bin/start # launches all services: redash, bas-db, bas-server
-```
-
-Open New BASH Terminal
-```bash
 ./bin/add_queries scripts/redash_queries  #add queries to redash UI
 ./bin/add_data tests/payloads/localdata.json # add testdata into battery archive database 
 ```
@@ -74,7 +70,6 @@ Single line joint command to build image and run pytests
 ```
 docker build . -t bas-test --target test && docker run bas-test
 ```
-
 
 #
 Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains certain rights in this software.

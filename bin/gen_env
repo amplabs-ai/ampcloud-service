@@ -8,8 +8,10 @@ REDASH_ADMIN_PASSWORD=$(pwgen -1s 32)
 POSTGRES_PASSWORD=$(pwgen -1s 32)
 REDASH_DATABASE_URL="postgresql://postgres:${POSTGRES_PASSWORD}@postgres/postgres"
 DATABASE_CONNECTION="postgresql://postgres:${POSTGRES_PASSWORD}@ds-postgres:5432/postgres"
+#REDASH_DATABASE_URL="postgresql://postgres:PVWXGOQRBAoHuh2IBye0@database-1.cdy87qtuhnlg.us-west-2.rds.amazonaws.com/postgres"
+#DATABASE_CONNECTION="postgresql://postgres:ZK6mRSPEfVUFuxx7oWmy@database-2.cdy87qtuhnlg.us-west-2.rds.amazonaws.com/postgres"
 PGADMIN4_PASSWORD=$(pwgen -1s 32)
-DEFAULT_EMAIL=user@pgadmin4.web
+DEFAULT_EMAIL=pghege@gmail.com
 
 echo "writing configurations to env..."
 echo "PYTHONUNBUFFERED=0" >> env
@@ -25,5 +27,5 @@ echo "DATABASE_CONNECTION=$DATABASE_CONNECTION" >> env
 echo "DEFAULT_EMAIL=$DEFAULT_EMAIL" >> env
 echo "PGADMIN_DEFAULT_EMAIL=$DEFAULT_EMAIL" >> env
 echo "PGADMIN_DEFAULT_PASSWORD=$PGADMIN4_PASSWORD" >> env
-echo "SWAGGER_FILE=/tmp/src/api/api.yaml" >> env
+echo "SWAGGER_FILE=/tmp/api/api.yaml" >> env
 echo "done."

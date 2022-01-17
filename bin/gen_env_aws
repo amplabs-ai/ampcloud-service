@@ -26,5 +26,5 @@ echo "DATABASE_CONNECTION=$DATABASE_CONNECTION" >> env
 echo "DEFAULT_EMAIL=$DEFAULT_EMAIL" >> env
 echo "PGADMIN_DEFAULT_EMAIL=$DEFAULT_EMAIL" >> env
 echo "PGADMIN_DEFAULT_PASSWORD=$PGADMIN4_PASSWORD" >> env
-echo "SWAGGER_FILE=/tmp/src/api/api.yaml" >> env
+echo "SWAGGER_FILE=/tmp/api/api.yaml" >> env
 echo "done."
