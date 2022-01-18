@@ -12,7 +12,9 @@ warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 
 def extract_cell_metdata(df_c_md:DataFrame)->DataFrame:
-    """ Build cell metadata """
+    """ 
+    Build cell metadata 
+    """
     df_cell_md = pd.DataFrame()
     df_cell_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
     df_cell_md[LABEL.ANODE.value] = [df_c_md[LABEL.ANODE.value]]
@@ -28,6 +30,14 @@ def extract_cell_metdata(df_c_md:DataFrame)->DataFrame:
 
 
 def split_cycle_metadata(df_c_md:DataFrame)->Tuple[DataFrame, DataFrame]:
+    """
+    Split cycle metadata
+
+    :param df_c_md: DataFrame containing cycle metadata
+    :type df_c_md: DataFrame
+    :return: Returns a tuple of two DataFrames. [0]Cell Metadata and [1]Test Metadata 
+    :rtype: Tuple[DataFrame, DataFrame]
+    """
 
     df_cell_md = extract_cell_metdata(df_c_md)
 
@@ -44,6 +54,14 @@ def split_cycle_metadata(df_c_md:DataFrame)->Tuple[DataFrame, DataFrame]:
 
 
 def split_abuse_metadata(df_c_md:DataFrame)->Tuple[DataFrame, DataFrame]:
+    """
+    Split abuse metadata
+
+    :param df_c_md: DataFrame containing cycle metadata
+    :type df_c_md: DataFrame
+    :return: Returns a tuple of two DataFrames. [0]Cell Metadata and [1]Test Metadata
+    :rtype: Tuple[DataFrame, DataFrame]
+    """
 
     df_cell_md = extract_cell_metdata(df_c_md)
 
@@ -59,8 +77,16 @@ def split_abuse_metadata(df_c_md:DataFrame)->Tuple[DataFrame, DataFrame]:
     return df_cell_md, df_test_md
 
 
-# sort data imported to insure cycle index and test times are correctly calculated
 def sort_timeseries(df_tmerge:DataFrame)->DataFrame:
+    """
+    Sort timeseries data. This is done to imported data to insure cycle index and 
+    test times are correctly calculated
+
+    :param df_tmerge: Timeseries DataFrame to be sorted
+    :type df_tmerge: DataFrame
+    :return: Return a sorted timeseries DataFrame 
+    :rtype: DataFrame
+    """
     # Arrange the data by date time first, then by test time
     # Rebuild Cycle Index and test time to increment from file to file
     # This method does not depend on data from a specific testers
