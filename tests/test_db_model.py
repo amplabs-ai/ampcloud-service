@@ -1,5 +1,6 @@
 import os, sys
 currentdir = os.getcwd()
+sys.path.append(os.path.join(currentdir))
 sys.path.append(os.path.join(currentdir, 'app'))
 from os.path import exists
 import pytest

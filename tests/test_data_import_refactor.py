@@ -1,7 +1,11 @@
 import pandas as pd
 import os, sys
 currentdir = os.getcwd()
+sys.path.append(os.path.join(currentdir))
 sys.path.append(os.path.join(currentdir, 'app'))
+
+
+
 from app.aio import CellTestReader, listToString, signedCurrent
 from app.converter import (calc_cycle_quantities, calc_cycle_stats,
                            calc_abuse_stats, sort_timeseries, split_abuse_metadata, split_cycle_metadata)
@@ -457,4 +461,6 @@ def test_populate_cycle_metadata():
     output_df_cell_md, output_df_test_md = split_cycle_metadata(input_pd_df)
     assert len(output_df_cell_md) == 1 and len(output_df_cell_md.columns) == 9
     assert len(output_df_test_md) == 1 and len(output_df_test_md.columns) == 6
+
+
 

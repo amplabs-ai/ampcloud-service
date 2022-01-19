@@ -5,7 +5,9 @@ SLASH = "/"
 DEGREE = 3
 CELL_LIST_FILE_NAME = "cell_list.xlsx"
 TEST_DB_URL = "sqlite:///tests/test_data/01_raw/tmp/bas-test.db"
+LIVE_DB_URL = "postgresql://postgres:sandia@localhost/cell_data"
 
+DB_URL = LIVE_DB_URL
 
 class TEST_TYPE(Enum):
     ABUSE = "abuse"

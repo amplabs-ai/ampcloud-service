@@ -12,7 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
 from sqlalchemy.sql.sqltypes import FLOAT, TIMESTAMP
 from archive_constants import (LABEL, DEGREE, OUTPUT_LABELS, SLASH,
-                               ARCHIVE_TABLE, CELL_LIST_FILE_NAME, TEST_DB_URL)
+                               ARCHIVE_TABLE, CELL_LIST_FILE_NAME, DB_URL)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -154,8 +154,8 @@ class CycleTimeSeries(Model):
     ah_d = Column(Float, nullable=True)
     e_c = Column(Float, nullable=True)
     e_d = Column(Float, nullable=True)
-    temp_1 = Column(Float, nullable=True)
-    temp_2 = Column(Float, nullable=True)
+    env_temperature = Column(Float, nullable=True)
+    cell_temperature = Column(Float, nullable=True)
     cycle_time = Column(Float, nullable=True)
     date_time = Column(TIMESTAMP, nullable=True)
     cycle_index = Column(Integer, nullable=True)
@@ -192,7 +192,7 @@ Archive Operator
 
 class ArchiveOperator:
     def __init__(self, config={}):
-        url = os.getenv('DATABASE_CONNECTION', TEST_DB_URL)
+        url = os.getenv('DATABASE_CONNECTION', DB_URL)
 
         engine = create_engine(url, **config)
         Model.metadata.create_all(engine)
@@ -257,8 +257,8 @@ class ArchiveOperator:
             CycleTimeSeries.ah_d.label(OUTPUT_LABELS.DISCHARGE_CAPACITY.value),
             CycleTimeSeries.e_c.label(OUTPUT_LABELS.CHARGE_ENERGY.value),
             CycleTimeSeries.e_d.label(OUTPUT_LABELS.DISCHARGE_ENERGY.value),
-            CycleTimeSeries.temp_1.label(OUTPUT_LABELS.ENV_TEMPERATURE.value),
-            CycleTimeSeries.temp_2.label(
+            CycleTimeSeries.env_temperature.label(OUTPUT_LABELS.ENV_TEMPERATURE.value),
+            CycleTimeSeries.cell_temperature.label(
                 OUTPUT_LABELS.CELL_TEMPERATURE.value)).filter(
                     CycleTimeSeries.cell_id == cell_id).statement
         return pd.read_sql(sql, self.session.bind).round(DEGREE)
