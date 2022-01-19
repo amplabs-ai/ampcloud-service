@@ -20,6 +20,11 @@ def liveness():
 def readiness():
     return "Ready", 200
 
+def ga_publish(dataset_id):
+    return {"tracker": "uuid_abc_123", "dataset_id": dataset_id}, 200
+
+def ga_publish_status(tracker):
+    return {"status": "IN_PROGRESS", "tracker": tracker}, 200
 
 def get_cells():
     """get_cell
