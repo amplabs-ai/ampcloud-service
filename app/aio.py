@@ -2,11 +2,92 @@ import glob
 import logging
 import pandas as pd
 import os
-from app.archive_constants import (TEST_TYPE, TESTER, INP_LABELS, ARCHIVE_COLS, FORMAT)
+from app.archive_cell import ArchiveCell
+from app.archive_constants import (GA_API_HOST,
+                                   TEST_TYPE, TESTER, INP_LABELS, ARCHIVE_COLS, FORMAT)
 from app.converter import (sort_timeseries)
 import pyarrow.feather as feather
 import datetime
+import time
+import batteryclient
+from pprint import pprint
+from batteryclient.api import users_api
+from batteryclient.model.cell import Cell
+from batteryclient.model.dataset import Dataset
+from batteryclient.model.equipment import Equipment
+from batteryclient.model.user import User
+import numpy as np
 
+class GAReader:
+    def __init__(self, token):
+        self.host = GA_API_HOST
+        self.token = token
+        # Login to GA
+        # Fetch Dataset Meta + List of Columns
+        # Iterate List and Fetch Column Timeseries
+        # Aggregate TS into single np array
+        # Write to DB
+        # Update Status to Finished
+
+    def read_data(self, dataset_id):
+        configuration = batteryclient.Configuration(
+            host=self.host,
+            access_token=self.token
+        )
+        # Enter a context with an instance of the API client
+        with batteryclient.ApiClient(configuration) as api_client:
+            try:
+                # Create an instance of the API class
+                api_instance = users_api.UsersApi(api_client)
+
+                # get column data
+                # rename columns
+                response = api_instance.get_dataset(dataset_id)
+                print(response.type)
+                print(response.name)
+                print(response.columns)
+                print(response.cell)
+
+
+                cell_id = "GA_"+response.name+"_"+str(dataset_id)
+                cell_id = cell_id.replace(" ", "")
+                # get the data columns (delete those you don't need)
+                column_ids = {
+                    # 'flags': 29,
+                    # 'Ns': 30,
+                    # 'I Range': 31,
+                    'time/s': 32,
+                    'control/V/mA': 33,
+                    'Ewe/V': 34,
+                    'I/mA': 35,
+                    'dQ/mA.h': 36,
+                    '(Q-Qo)/mA.h': 37,
+                    'Energy/W.h': 38,
+                    'Q charge/discharge/mA.h': 39,
+                    # 'half cycle': 40,
+                }
+                metadata = {}
+                data = {
+                    column_name: np.frombuffer(
+                        api_instance.get_column(dataset_id, column_id).read(),
+                        dtype=np.float32
+                    ) for column_name, column_id in column_ids.items()
+                }
+                print(data)
+
+                cell = ArchiveCell(cell_id,
+                                   test_type=TEST_TYPE.CYCLE,
+                                   file_id=None,
+                                   file_type=None,
+                                   tester=response.type,
+                                   file_path=None,
+                                   metadata=metadata,
+                                   data=data)
+
+                return cell
+                
+            except batteryclient.ApiException as e:
+                print("Exception when calling UsersApi->get_dataset: %s\n" % e)
 
 class CellTestReader:
     def __init__(self, tester, test_type):
@@ -59,7 +140,7 @@ class CellTestReader:
         if df_file.empty:
             return
 
-        #df_file['cell_id'] = cell_id
+        # df_file['cell_id'] = cell_id
 
         df_tmerge = pd.DataFrame()
 
@@ -77,7 +158,7 @@ class CellTestReader:
                     df_time_series_file = pd.read_csv(cellpath, sep=',')
                 elif file_type == 'h5':
                     # need to make a bit more generic. Use raw_data for now
-                    df_time_series_file = pd.read_hdf(cellpath,"raw_data")
+                    df_time_series_file = pd.read_hdf(cellpath, "raw_data")
 
                 # Find the time series sheet in the excel file
                 df_ts = pd.DataFrame()
@@ -88,10 +169,12 @@ class CellTestReader:
 
                     if col == 'date_time':
                         file_col_name = df_time_series_file.columns[file_col]
-                        df_ts['date_time'] = pd.to_datetime(df_time_series_file[file_col_name], format='%Y-%m-%d %H:%M:%S.%f');
+                        df_ts['date_time'] = pd.to_datetime(
+                            df_time_series_file[file_col_name], format='%Y-%m-%d %H:%M:%S.%f')
                     elif col != "skip":
                         file_col_name = df_time_series_file.columns[file_col]
-                        df_ts[col] = df_time_series_file[file_col_name].apply(pd.to_numeric)
+                        df_ts[col] = df_time_series_file[file_col_name].apply(
+                            pd.to_numeric)
 
                     file_col += 1
 
@@ -99,29 +182,31 @@ class CellTestReader:
                 # TODO: how do we fail the import?
 
                 if "date_time" not in df_ts.columns and "test_time" in df_ts.columns:
-                    df_ts['date_time'] = pd.Timestamp(datetime.datetime.now()) + pd.to_timedelta(df_ts['test_time'], unit='s')
+                    df_ts['date_time'] = pd.Timestamp(
+                        datetime.datetime.now()) + pd.to_timedelta(df_ts['test_time'], unit='s')
 
                 if "date_time" in df_ts.columns and "test_time" not in df_ts.columns:
-                    df_ts['test_time'] = df_ts['date_time'] - df_ts['date_time'].iloc[0]
+                    df_ts['test_time'] = df_ts['date_time'] - \
+                        df_ts['date_time'].iloc[0]
                     df_ts['test_time'] = df_ts['test_time'].dt.total_seconds()
 
                 df_ts['ah_c'] = 0
                 df_ts['e_c'] = 0
                 df_ts['ah_d'] = 0
                 df_ts['e_d'] = 0
-                #df_ts['cell_id'] = cell_id
+                # df_ts['cell_id'] = cell_id
                 df_ts['cycle_time'] = 0
 
                 if df_tmerge.empty:
                     df_tmerge = df_ts[df_ts['test_time'] > 0]
                 else:
-                    df_tmerge = df_tmerge.append(df_ts[df_ts['test_time'] > 0], ignore_index=True)
+                    df_tmerge = df_tmerge.append(
+                        df_ts[df_ts['test_time'] > 0], ignore_index=True)
 
         return df_tmerge
 
-    
-    
     # import data from Arbin-generated Excel files
+
     @staticmethod
     def read_arbin(file_path, file_type='xlsx'):
 
@@ -149,7 +234,7 @@ class CellTestReader:
         if df_file.empty:
             return
 
-        #df_file['cell_id'] = cell_id
+        # df_file['cell_id'] = cell_id
 
         df_tmerge = pd.DataFrame()
 
@@ -189,14 +274,14 @@ class CellTestReader:
                         df_ts['date_time'] = df_time_series_file['Date_Time']
                         df_ts['filename'] = filename
 
-                        #if not df_time_series_file['Temperature (C)_1'].empty:
+                        # if not df_time_series_file['Temperature (C)_1'].empty:
                         #    df_time_series['temp_2'] = df_time_series_file['Temperature (C)_1']
 
                         df_ts['ah_c'] = 0
                         df_ts['e_c'] = 0
                         df_ts['ah_d'] = 0
                         df_ts['e_d'] = 0
-                        #df_time_series['cell_id'] = cell_id
+                        # df_time_series['cell_id'] = cell_id
                         df_ts['cycle_index'] = 0
                         df_ts['cycle_time'] = 0
 
@@ -253,7 +338,7 @@ class CellTestReader:
         if df_file.empty:
             return
 
-        #df_file['cell_id'] = cell_id
+        # df_file['cell_id'] = cell_id
 
         df_tmerge = pd.DataFrame()
 
@@ -304,7 +389,7 @@ class CellTestReader:
                 df_time_series['e_c'] = 0
                 df_time_series['ah_d'] = 0
                 df_time_series['e_d'] = 0
-                #df_time_series['cell_id'] = cell_id
+                # df_time_series['cell_id'] = cell_id
                 df_time_series['cycle_index'] = 0
                 df_time_series['cycle_time'] = 0
 
@@ -340,7 +425,7 @@ class CellTestReader:
             df_ts_a[ARCHIVE_COLS.temp_4.value] = 0
             df_ts_a[ARCHIVE_COLS.temp_5.value] = 0
             df_ts_a[ARCHIVE_COLS.temp_6.value] = 0
-            #df_time_series_a['cell_id'] = cell_id
+            # df_time_series_a['cell_id'] = cell_id
 
             df_ts_b = pd.DataFrame()
             df_ts_b['test_time'] = df_ts_file['Running Time 1']
@@ -359,7 +444,7 @@ class CellTestReader:
                 INP_LABELS.TC_05.value]
             df_ts_b[ARCHIVE_COLS.temp_6.value] = df_ts_file[
                 INP_LABELS.TC_06.value]
-            #df_time_series_b['cell_id'] = cell_id
+            # df_time_series_b['cell_id'] = cell_id
 
             if df_tmerge.empty:
                 df_tmerge = df_ts_a
@@ -404,7 +489,7 @@ class CellTestReader:
                 INP_LABELS.TC_05.value]
             df_ts[ARCHIVE_COLS.temp_6.value] = df_ts_file[
                 INP_LABELS.TC_06.value]
-            #df_time_series['cell_id'] = cell_id
+            # df_time_series['cell_id'] = cell_id
 
             if df_tmerge.empty:
                 df_tmerge = df_ts

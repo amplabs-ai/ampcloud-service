@@ -12,3 +12,4 @@ gunicorn
 configparser
 connexion[swagger-ui]
 pyarrow
+batteryclient

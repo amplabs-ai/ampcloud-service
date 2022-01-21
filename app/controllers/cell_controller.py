@@ -1,12 +1,19 @@
-from app.model import ArchiveOperator, CellMeta
-from app.aio import ArchiveExporter
+from app.model import ArchiveOperator
+from app.aio import ArchiveExporter, GAReader
 from app.archive_cell import ArchiveCell
-from flask import request
+from flask import request, jsonify
 import pandas as pd
-from app.archive_constants import (LABEL, DEGREE, SLASH,
-                                       CELL_LIST_FILE_NAME, TEST_TYPE, FORMAT)
-
+from app.archive_constants import (LABEL, SLASH,
+                                   CELL_LIST_FILE_NAME, TEST_TYPE, FORMAT)
+import uuid
 # Routes
+"tracker -> msg"
+status = {}
+"tracker -> id"
+source = {}
+
+# STATUS OPTIONS:
+# STARTED, IN_PROGRESS, FINISHED
 
 
 def root():
@@ -20,11 +27,42 @@ def liveness():
 def readiness():
     return "Ready", 200
 
+
+def finish(tracker):
+    if tracker in status:
+        status[tracker] = "FINISHED"
+        return {"tracker": tracker, "dataset_id": source[tracker]}, 200
+    return {"tracker": "not found", "dataset_id": source[tracker]}, 200
+
+
 def ga_publish(dataset_id):
-    return {"tracker": "uuid_abc_123", "dataset_id": dataset_id}, 200
+    body = request.json
+    token = body.get('token')
+    tracker = str(uuid.uuid4())
+    status[tracker] = "STARTED"
+    source[tracker] = dataset_id
+    reader = GAReader(token)
+    cell = reader.read_data(int(dataset_id))    
+    # ArchiveOperator().add_cell_to_db(cell)
+
+    # LAUNCH TASK
+    response = jsonify(
+        {"tracker": tracker, "dataset_id": dataset_id, "token": token})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 
 def ga_publish_status(tracker):
-    return {"status": "IN_PROGRESS", "tracker": tracker}, 200
+    if tracker in status and tracker in source:
+        response = jsonify(
+            {"status": status[tracker], "dataset_id": source[tracker], "tracker": tracker})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
+    response = jsonify({"status": "Unknown Tracker ID",
+                       "dataset_id": "Unknown", "tracker": "Unknown"})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 
 def get_cells():
     """get_cell
@@ -108,9 +146,9 @@ def add_cell():
 def export_cycle_cells_to_fmt(cell_list_path,
                               output_path: str,
                               fmt: str = "csv"):
-    #TODO: This implies cell_list must be xlsx, this can be written in CSV
+    # TODO: This implies cell_list must be xlsx, this can be written in CSV
     df_excel = pd.read_excel(cell_list_path + CELL_LIST_FILE_NAME)
-    #TODO: Refactor this to a join instead of looping slowly
+    # TODO: Refactor this to a join instead of looping slowly
     for i in df_excel.index:
         cell_id = df_excel[LABEL.CELL_ID.value][i]
         df = ArchiveOperator().get_df_cell_meta_with_id(cell_id)
