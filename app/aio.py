@@ -2,7 +2,6 @@ import glob
 import logging
 import pandas as pd
 import os
-from app.archive_cell import ArchiveCell
 from app.archive_constants import (GA_API_HOST,
                                    TEST_TYPE, TESTER, INP_LABELS, ARCHIVE_COLS, FORMAT)
 from app.converter import (sort_timeseries)
@@ -23,12 +22,6 @@ class GAReader:
     def __init__(self, token):
         self.host = GA_API_HOST
         self.token = token
-        # Login to GA
-        # Fetch Dataset Meta + List of Columns
-        # Iterate List and Fetch Column Timeseries
-        # Aggregate TS into single np array
-        # Write to DB
-        # Update Status to Finished
 
     def read_metadata(self, dataset_id):
         configuration = batteryclient.Configuration(
@@ -42,7 +35,17 @@ class GAReader:
                 api_instance = users_api.UsersApi(api_client)
                 response = api_instance.get_dataset(dataset_id)
                 metadata = response.cell
+                print(metadata)
                 return metadata
+# {'anode_chemistry': 'test-chem',
+#  'cathode_chemistry': 'test-chem',
+#  'form_factor': 'test-ff',
+#  'id': 1,
+#  'link_to_datasheet': 'test-ds',
+#  'manufacturer': 'test-m',
+#  'name': 'test',
+#  'nominal_capacity': 1.0,
+#  'nominal_cell_weight': 1.0}
 
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
@@ -61,16 +64,17 @@ class GAReader:
                     # 'flags': 29,
                     # 'Ns': 30,
                     # 'I Range': 31,
-                    'time/s': 32,
-                    'control/V/mA': 33,
-                    'Ewe/V': 34,
-                    'I/mA': 35,
-                    'dQ/mA.h': 36,
-                    '(Q-Qo)/mA.h': 37,
-                    'Energy/W.h': 38,
-                    'Q charge/discharge/mA.h': 39,
+                    # 'time/s': 32,
+                    # 'control/V/mA': 33,
+                    # 'Ewe/V': 34,
+                    # 'I/mA': 35,
+                    # 'dQ/mA.h': 36,
+                    # '(Q-Qo)/mA.h': 37,
+                    # 'Energy/W.h': 38,
+                    # 'Q charge/discharge/mA.h': 39,
                     # 'half cycle': 40,
                 }
+                #generate cell_Id
                 data = {
                     column_name: np.frombuffer(
                         api_instance.get_column(dataset_id, column_id).read(),
@@ -79,7 +83,7 @@ class GAReader:
                 }
                 print(data)
 
-                return cell_id, data
+                return data
 
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)

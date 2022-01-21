@@ -15,7 +15,6 @@ source = {}
 # STATUS OPTIONS:
 # STARTED, IN_PROGRESS, FINISHED
 
-
 def root():
     return 'Hello Battery Archive!', 200
 
@@ -41,19 +40,21 @@ def ga_publish(dataset_id):
     tracker = str(uuid.uuid4())
     status[tracker] = "STARTED"
     source[tracker] = dataset_id
-    reader = GAReader(token)
-    metadata = reader.read_metadata(int(dataset_id))
+    gareader = GAReader(token)
+    metadata = gareader.read_metadata(int(dataset_id))
     # Launch task into new thread
+    # status[tracker] = "IN_PROGRESS"
+    data = gareader.read_data(int(dataset_id))
+    # cell_id = "OX-"+str(dataset_id)  # Can add something from metadata
+    # cell = ArchiveCell(cell_id,
+    #                    test_type=TEST_TYPE.CYCLE.value,
+    #                    metadata=metadata,
+    #                    data=data)
+    # print(cell)
+    # # ArchiveOperator().add_cell_to_db(cell)
+    # # status[tracker] = "FINISHED"
 
-    data = reader.read_data(int(dataset_id))
-    cell_id = "GA_"+str(dataset_id) # Can add something from metadata
-    cell = ArchiveCell(cell_id,
-                       test_type=TEST_TYPE.CYCLE,
-                       metadata=metadata,
-                       data=data)
-    ArchiveOperator().add_cell_to_db(cell)
-
-    # Add something from metadata into response
+    # # Add something from metadata into response
     response = jsonify(
         {"tracker": tracker, "dataset_id": dataset_id, "token": token})
     response.headers.add('Access-Control-Allow-Origin', '*')
