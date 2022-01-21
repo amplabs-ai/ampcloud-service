@@ -53,12 +53,12 @@ class AbuseTimeSeries(Model):
             "axial_f": self.axial_f,
             "v": self.v,
             "strain": self.strain,
-            "temp_1": self.temp_1,
-            "temp_2": self.temp_2,
-            "temp_3": self.temp_3,
-            "temp_4": self.temp_4,
-            "temp_5": self.temp_5,
-            "temp_6": self.temp_6,
+            "pos_terminal_temperature": self.pos_terminal_temperature,
+            "neg_terminal_temperature": self.neg_terminal_temperature,
+            "left_bottom_temperature": self.left_bottom_temperature,
+            "right_bottom_temperature": self.right_bottom_temperature,
+            "above_punch_temperature": self.above_punch_temperature,
+            "below_punch_temperature": self.below_punch_temperature,
             "test_time": self.test_time,
             "cell_id": self.cell_id
         }
