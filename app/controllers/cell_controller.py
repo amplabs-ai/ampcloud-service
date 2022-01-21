@@ -42,10 +42,18 @@ def ga_publish(dataset_id):
     status[tracker] = "STARTED"
     source[tracker] = dataset_id
     reader = GAReader(token)
-    cell = reader.read_data(int(dataset_id))    
-    # ArchiveOperator().add_cell_to_db(cell)
+    metadata = reader.read_metadata(int(dataset_id))
+    # Launch task into new thread
 
-    # LAUNCH TASK
+    data = reader.read_data(int(dataset_id))
+    cell_id = "GA_"+str(dataset_id) # Can add something from metadata
+    cell = ArchiveCell(cell_id,
+                       test_type=TEST_TYPE.CYCLE,
+                       metadata=metadata,
+                       data=data)
+    ArchiveOperator().add_cell_to_db(cell)
+
+    # Add something from metadata into response
     response = jsonify(
         {"tracker": tracker, "dataset_id": dataset_id, "token": token})
     response.headers.add('Access-Control-Allow-Origin', '*')

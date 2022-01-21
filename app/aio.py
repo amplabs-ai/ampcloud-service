@@ -18,6 +18,7 @@ from batteryclient.model.equipment import Equipment
 from batteryclient.model.user import User
 import numpy as np
 
+
 class GAReader:
     def __init__(self, token):
         self.host = GA_API_HOST
@@ -29,6 +30,23 @@ class GAReader:
         # Write to DB
         # Update Status to Finished
 
+    def read_metadata(self, dataset_id):
+        configuration = batteryclient.Configuration(
+            host=self.host,
+            access_token=self.token
+        )
+        # Enter a context with an instance of the API client
+        with batteryclient.ApiClient(configuration) as api_client:
+            try:
+                # Create an instance of the API class
+                api_instance = users_api.UsersApi(api_client)
+                response = api_instance.get_dataset(dataset_id)
+                metadata = response.cell
+                return metadata
+
+            except batteryclient.ApiException as e:
+                print("Exception when calling UsersApi->get_dataset: %s\n" % e)
+
     def read_data(self, dataset_id):
         configuration = batteryclient.Configuration(
             host=self.host,
@@ -39,19 +57,6 @@ class GAReader:
             try:
                 # Create an instance of the API class
                 api_instance = users_api.UsersApi(api_client)
-
-                # get column data
-                # rename columns
-                response = api_instance.get_dataset(dataset_id)
-                print(response.type)
-                print(response.name)
-                print(response.columns)
-                print(response.cell)
-
-
-                cell_id = "GA_"+response.name+"_"+str(dataset_id)
-                cell_id = cell_id.replace(" ", "")
-                # get the data columns (delete those you don't need)
                 column_ids = {
                     # 'flags': 29,
                     # 'Ns': 30,
@@ -66,7 +71,6 @@ class GAReader:
                     'Q charge/discharge/mA.h': 39,
                     # 'half cycle': 40,
                 }
-                metadata = {}
                 data = {
                     column_name: np.frombuffer(
                         api_instance.get_column(dataset_id, column_id).read(),
@@ -75,19 +79,11 @@ class GAReader:
                 }
                 print(data)
 
-                cell = ArchiveCell(cell_id,
-                                   test_type=TEST_TYPE.CYCLE,
-                                   file_id=None,
-                                   file_type=None,
-                                   tester=response.type,
-                                   file_path=None,
-                                   metadata=metadata,
-                                   data=data)
+                return cell_id, data
 
-                return cell
-                
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
+
 
 class CellTestReader:
     def __init__(self, tester, test_type):
