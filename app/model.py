@@ -169,8 +169,8 @@ class CycleTimeSeries(Model):
             "v": self.v,
             "ah_c": self.ah_c,
             "ah_d": self.ah_d,
-            "temp_1": self.temp_1,
-            "temp_2": self.temp_2,
+            "env_temperature": self.env_temperature,
+            "cell_temperature": self.cell_temperature,
             "e_c": self.e_c,
             "e_d": self.e_d,
             "cycle_time": self.cycle_time,
@@ -199,32 +199,68 @@ class ArchiveOperator:
         self.session = scoped_session(
             sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
-    def add_cell_to_db(self, cell):
+
+    def add_meta_to_db(self, cell):
         df_cell_md = cell.cellmeta
         df_test_meta_md = cell.testmeta
-        df_stats, df_timeseries = cell.stat
+        df_stats, _ = cell.stat
+        print("CELL META", df_cell_md)
         df_cell_md.to_sql(cell.cell_meta_table,
                           con=self.session.bind,
                           if_exists="append",
                           chunksize=1000,
                           index=False)
-        df_timeseries.to_sql(cell.test_ts_table,
-                             con=self.session.bind,
-                             if_exists='append',
-                             chunksize=1000,
-                             index=False)
+        print("DF TS META", df_test_meta_md)
         df_test_meta_md.to_sql(cell.test_meta_table,
                                con=self.session.bind,
                                if_exists='append',
                                chunksize=1000,
                                index=False)
         if cell.test_stats_table:
+            print("DF STATS", df_stats)
             df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
                             con=self.session.bind,
                             if_exists='append',
                             chunksize=1000,
                             index=False)
 
+    def add_ts_to_db(self, cell): 
+        _, df_timeseries = cell.stat
+        df_timeseries.to_sql(cell.test_ts_table,
+                             con=self.session.bind,
+                             if_exists='append',
+                             chunksize=1000,
+                             index=False)
+
+    def add_cell_to_db(self, cell):
+        df_cell_md = cell.cellmeta
+        df_test_meta_md = cell.testmeta
+        df_stats, df_timeseries = cell.stat
+        print("CELL META", df_cell_md)
+        df_cell_md.to_sql(cell.cell_meta_table,
+                          con=self.session.bind,
+                          if_exists="append",
+                          chunksize=1000,
+                          index=False)
+        print("DF TS META", df_test_meta_md)
+        df_test_meta_md.to_sql(cell.test_meta_table,
+                               con=self.session.bind,
+                               if_exists='append',
+                               chunksize=1000,
+                               index=False)
+        if cell.test_stats_table:
+            print("DF STATS", df_stats)
+            df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
+                            con=self.session.bind,
+                            if_exists='append',
+                            chunksize=1000,
+                            index=False)
+        print("DF TS", df_timeseries)
+        df_timeseries.to_sql(cell.test_ts_table,
+                             con=self.session.bind,
+                             if_exists='append',
+                             chunksize=1000,
+                             index=False)
     def add_cells_to_db(self, cell_list):
         for cell in cell_list:
             self.add_cell_to_db(cell)

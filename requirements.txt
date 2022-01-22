@@ -13,3 +13,4 @@ configparser
 connexion[swagger-ui]
 pyarrow
 batteryclient
+celery

@@ -2,7 +2,7 @@ import glob
 import logging
 import pandas as pd
 import os
-from app.archive_constants import (GA_API_HOST,
+from app.archive_constants import (GA_API_HOST, LABEL,
                                    TEST_TYPE, TESTER, INP_LABELS, ARCHIVE_COLS, FORMAT)
 from app.converter import (sort_timeseries)
 import pyarrow.feather as feather
@@ -34,8 +34,25 @@ class GAReader:
                 # Create an instance of the API class
                 api_instance = users_api.UsersApi(api_client)
                 response = api_instance.get_dataset(dataset_id)
-                metadata = response.cell
-                print(metadata)
+                cell = response.cell
+                metadata = {}
+                metadata[LABEL.SOURCE.value] = 'OX'
+                metadata[LABEL.CELL_ID.value] = metadata[LABEL.SOURCE.value] + '-' + cell['name']
+                metadata[LABEL.AH.value] = cell['nominal_capacity']
+                metadata[LABEL.ANODE.value] = cell['anode_chemistry']
+                metadata[LABEL.CATHODE.value] = cell['cathode_chemistry']
+                metadata[LABEL.ANODE.value] = cell['anode_chemistry']
+                metadata[LABEL.FORM_FACTOR.value] = 'test-form-factor'
+                metadata[LABEL.TEST.value] = TEST_TYPE.CYCLE.value
+                metadata[LABEL.TESTER.value] = TESTER.MACCOR.value
+                metadata[LABEL.CRATE_C.value] = None
+                metadata[LABEL.CRATE_D.value] = None
+                metadata[LABEL.SOC_MAX.value] = None
+                metadata[LABEL.SOC_MIN.value] = None
+
+                metadata[LABEL.TEMP.value] = None
+                # print(metadata)
+
                 return metadata
 # {'anode_chemistry': 'test-chem',
 #  'cathode_chemistry': 'test-chem',
@@ -44,8 +61,10 @@ class GAReader:
 #  'link_to_datasheet': 'test-ds',
 #  'manufacturer': 'test-m',
 #  'name': 'test',
-#  'nominal_capacity': 1.0,
-#  'nominal_cell_weight': 1.0}
+#  'nominal_capacity': 1.0, #ah in BA
+# source -> OX
+# test -> cycle
+# tester -> Maccor (not pertinent for this integration)
 
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
@@ -64,24 +83,48 @@ class GAReader:
                     # 'flags': 29,
                     # 'Ns': 30,
                     # 'I Range': 31,
-                    # 'time/s': 32,
+                    'time/s': 32,  # (test_time)
                     # 'control/V/mA': 33,
-                    # 'Ewe/V': 34,
-                    # 'I/mA': 35,
+                    'Ewe/V': 34,  # Voltage
+                    'I/mA': 35,  # Current
                     # 'dQ/mA.h': 36,
                     # '(Q-Qo)/mA.h': 37,
                     # 'Energy/W.h': 38,
                     # 'Q charge/discharge/mA.h': 39,
                     # 'half cycle': 40,
                 }
-                #generate cell_Id
+                # cycle_index = 1
+                # date_time = pick a simple date + test_time (look at generic importer)
+                # generate cell_Id
+                # cell_id = OX-{ga_cell_id}
                 data = {
                     column_name: np.frombuffer(
                         api_instance.get_column(dataset_id, column_id).read(),
                         dtype=np.float32
                     ) for column_name, column_id in column_ids.items()
                 }
-                print(data)
+                data[LABEL.V.value] = data['Ewe/V']
+                data[LABEL.I.value] = data['I/mA']
+                data[LABEL.CYCLE_INDEX.value] = [1] * len(data['I/mA'])
+                data[LABEL.TEST_TIME.value] = data['time/s']
+                data[LABEL.DATE_TIME.value] = [datetime.datetime(
+                    2020, 1, 1) + datetime.timedelta(seconds=d.item()) for d in data['time/s']]
+                data.pop('time/s')
+                data.pop('Ewe/V')
+                data.pop('I/mA')
+                # print(data.keys())
+                # print(data.values())
+                # Columns
+                # -------
+                # Voltage
+                # Current
+                # Cycle_index
+                # Test_Time
+                # Date_Time
+                # Cell_ID
+                ######
+                # Calc Stats
+                # Save to DB
 
                 return data
 

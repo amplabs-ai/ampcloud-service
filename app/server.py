@@ -2,6 +2,7 @@ import connexion
 import os 
 from sqlalchemy import create_engine
 from app.model import Model
+# from celery import Celery
 
 app = connexion.FlaskApp(__name__)
 app.add_api('../api/api.yaml') 
