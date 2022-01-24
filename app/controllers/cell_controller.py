@@ -20,9 +20,7 @@ source = {}
 
 
 def root():
-    response = jsonify('Hello Battery Archive!')
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return jsonify('Hello Battery Archive!')
 
 
 def liveness():
@@ -48,12 +46,14 @@ def ga_finish(tracker, cell, status):
     ArchiveOperator().add_cell_to_db(cell)
     status[tracker] = "FINISHED"
 
+
 def ga_meta_finish(tracker, cell, status):
     print("Working on", tracker)
     print("Cell", cell)
     print("STATUS", status)
     print("STATUS OF TRACKER", status[tracker])
     ArchiveOperator().add_meta_to_db(cell)
+
 
 def ga_data_finish(tracker, cell, status):
     print("Working on", tracker)
@@ -62,6 +62,7 @@ def ga_data_finish(tracker, cell, status):
     print("STATUS OF TRACKER", status[tracker])
     ArchiveOperator().add_ts_to_db(cell)
     # status[tracker] = "FINISHED"
+
 
 def ga_publish(dataset_id):
     body = request.json
@@ -76,31 +77,26 @@ def ga_publish(dataset_id):
     # Launch task into new thread
     status[tracker] = "IN_PROGRESS"
     data = gareader.read_data(int(dataset_id))
-    data[LABEL.CELL_ID.value] = cell_id 
+    data[LABEL.CELL_ID.value] = cell_id
     data = pd.DataFrame(data=data, columns=data.keys())
     cell = ArchiveCell(cell_id,
                        test_type=TEST_TYPE.CYCLE.value,
                        metadata=metadata,
                        data=data)
 
-    threading.Thread(target=ga_finish, name="data_thread", args=(tracker,cell,status)).start()
+    threading.Thread(target=ga_finish, name="data_thread",
+                     args=(tracker, cell, status)).start()
     # # Add something from metadata into response
-    response = jsonify(
+    return jsonify(
         {"tracker": tracker, "dataset_id": dataset_id, "token": token})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
 
 
 def ga_publish_status(tracker):
     if tracker in status and tracker in source:
-        response = jsonify(
+        return jsonify(
             {"status": status[tracker], "dataset_id": source[tracker], "tracker": tracker})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
-    response = jsonify({"status": "Unknown Tracker ID",
+    return jsonify({"status": "Unknown Tracker ID",
                        "dataset_id": "Unknown", "tracker": "Unknown"})
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
 
 
 def get_cells():
@@ -113,18 +109,14 @@ def get_cells():
     archive_cells = ao.get_all_cell_meta()
     print(archive_cells)
     result = [cell.to_dict() for cell in archive_cells]
-    response = jsonify(result)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return jsonify(result)
 
 
 def get_cell_with_id(cell_id):
     ao = ArchiveOperator()
     archive_cells = ao.get_all_cell_meta_with_id(cell_id)
     result = [cell.to_dict() for cell in archive_cells]
-    response = jsonify(result)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    return response
+    return jsonify(result)
 
 
 def get_test(test_name):
@@ -134,60 +126,44 @@ def get_test(test_name):
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ao.get_all_cycle_meta()
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
     if test_name == TEST_TYPE.ABUSE.value:
         archive_cells = ao.get_all_abuse_meta()
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
 
 
 def get_ts(test_name):
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_ts()
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
     if test_name == TEST_TYPE.ABUSE.value:
         archive_cells = ArchiveOperator().get_all_abuse_ts()
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
 
 
 def get_test_ts_with_id(cell_id, test_name):
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_ts_with_id(cell_id)
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
     if test_name == TEST_TYPE.ABUSE.value:
         archive_cells = ArchiveOperator().get_all_abuse_ts_with_id()
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
 
 
 def get_meta_with_id(cell_id, test_name):
     if test_name == TEST_TYPE.CYCLE.value:
         archive_cells = ArchiveOperator().get_all_cycle_meta_with_id(cell_id)
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
     if test_name == TEST_TYPE.ABUSE.value:
         archive_cells = ArchiveOperator().get_all_abuse_meta_with_id()
         result = [cell.to_dict() for cell in archive_cells]
-        response = jsonify(result)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        return response
+        return jsonify(result)
 
 
 def add_cell():
