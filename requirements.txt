@@ -14,3 +14,4 @@ connexion[swagger-ui]
 pyarrow
 batteryclient
 celery
+flask-cors
