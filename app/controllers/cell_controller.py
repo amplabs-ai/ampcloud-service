@@ -71,12 +71,18 @@ def ga_publish(dataset_id):
     status[tracker] = "STARTED"
     source[tracker] = dataset_id
     gareader = GAReader(token)
-    metadata = gareader.read_metadata(int(dataset_id))
+    metadata, columns = gareader.read_metadata(int(dataset_id))
+    if not metadata:
+        return jsonify(
+            {"message": "object is unreadable, missing a field or incorrect token", "dataset_id": dataset_id})
     cell_id = metadata[LABEL.CELL_ID.value]
 
     # Launch task into new thread
     status[tracker] = "IN_PROGRESS"
-    data = gareader.read_data(int(dataset_id))
+    data = gareader.read_data(int(dataset_id), columns)
+    if not data:
+        return jsonify(
+            {"message": "object is unreadable, missing a field or incorrect token", "dataset_id": dataset_id})
     data[LABEL.CELL_ID.value] = cell_id
     data = pd.DataFrame(data=data, columns=data.keys())
     cell = ArchiveCell(cell_id,
@@ -96,7 +102,7 @@ def ga_publish_status(tracker):
         return jsonify(
             {"status": status[tracker], "dataset_id": source[tracker], "tracker": tracker})
     return jsonify({"status": "Unknown Tracker ID",
-                       "dataset_id": "Unknown", "tracker": "Unknown"})
+                    "dataset_id": "Unknown", "tracker": "Unknown"})
 
 
 def get_cells():

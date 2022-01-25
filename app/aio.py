@@ -35,13 +35,14 @@ class GAReader:
                 api_instance = users_api.UsersApi(api_client)
                 response = api_instance.get_dataset(dataset_id)
                 cell = response.cell
+                name = response.name
+                columns = response.columns
                 metadata = {}
                 metadata[LABEL.SOURCE.value] = 'OX'
-                metadata[LABEL.CELL_ID.value] = metadata[LABEL.SOURCE.value] + '-' + cell['name']
+                metadata[LABEL.CELL_ID.value] = metadata[LABEL.SOURCE.value] + '-' + name
                 metadata[LABEL.AH.value] = cell['nominal_capacity']
                 metadata[LABEL.ANODE.value] = cell['anode_chemistry']
                 metadata[LABEL.CATHODE.value] = cell['cathode_chemistry']
-                metadata[LABEL.ANODE.value] = cell['anode_chemistry']
                 metadata[LABEL.FORM_FACTOR.value] = 'test-form-factor'
                 metadata[LABEL.TEST.value] = TEST_TYPE.CYCLE.value
                 metadata[LABEL.TESTER.value] = TESTER.MACCOR.value
@@ -53,7 +54,7 @@ class GAReader:
                 metadata[LABEL.TEMP.value] = None
                 # print(metadata)
 
-                return metadata
+                return metadata, columns
 # {'anode_chemistry': 'test-chem',
 #  'cathode_chemistry': 'test-chem',
 #  'form_factor': 'test-ff',
@@ -68,31 +69,46 @@ class GAReader:
 
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
+            except Exception as e:
+                print(e)
 
-    def read_data(self, dataset_id):
+    def read_data(self, dataset_id, columns):
         configuration = batteryclient.Configuration(
             host=self.host,
             access_token=self.token
         )
+        column_ids = {}
+        for col in columns:
+            if col['name'] == 'time/s':
+                column_ids['time/s'] = col['id']
+            if col['name'] == 'Ewe/V':
+                column_ids['Ewe/V'] = col['id']
+            if col['name'] == 'I/mA':
+                column_ids['I/mA'] = col['id']
+
+        print("READING DATA:", dataset_id)
         # Enter a context with an instance of the API client
         with batteryclient.ApiClient(configuration) as api_client:
             try:
                 # Create an instance of the API class
                 api_instance = users_api.UsersApi(api_client)
-                column_ids = {
-                    # 'flags': 29,
-                    # 'Ns': 30,
-                    # 'I Range': 31,
-                    'time/s': 32,  # (test_time)
-                    # 'control/V/mA': 33,
-                    'Ewe/V': 34,  # Voltage
-                    'I/mA': 35,  # Current
-                    # 'dQ/mA.h': 36,
-                    # '(Q-Qo)/mA.h': 37,
-                    # 'Energy/W.h': 38,
-                    # 'Q charge/discharge/mA.h': 39,
-                    # 'half cycle': 40,
-                }
+                # column_ids = {
+                #     # 'flags': 29,
+                #     # 'Ns': 30,
+                #     # 'I Range': 31,
+                #     'time/s': 32,  # (test_time)
+                #     # 'control/V/mA': 33,
+                #     'Ewe/V': 34,  # Voltage
+                #     'I/mA': 35,  # Current
+                #     # 'dQ/mA.h': 36,
+                #     # '(Q-Qo)/mA.h': 37,
+                #     # 'Energy/W.h': 38,
+                #     # 'Q charge/discharge/mA.h': 39,
+                #     # 'half cycle': 40,
+                # }
+
+
+
                 # cycle_index = 1
                 # date_time = pick a simple date + test_time (look at generic importer)
                 # generate cell_Id
@@ -130,6 +146,8 @@ class GAReader:
 
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
+            except Exception as e:
+                print(e)
 
 
 class CellTestReader:
