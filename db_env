@@ -1,1 +1,1 @@
-DATABASE_CONNECTION=postgresql://postgres:password@172.17.0.2:5432/postgres
+
