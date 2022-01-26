@@ -52,20 +52,8 @@ class GAReader:
                 metadata[LABEL.SOC_MIN.value] = None
 
                 metadata[LABEL.TEMP.value] = None
-                # print(metadata)
 
                 return metadata, columns
-# {'anode_chemistry': 'test-chem',
-#  'cathode_chemistry': 'test-chem',
-#  'form_factor': 'test-ff',
-#  'id': 1,
-#  'link_to_datasheet': 'test-ds',
-#  'manufacturer': 'test-m',
-#  'name': 'test',
-#  'nominal_capacity': 1.0, #ah in BA
-# source -> OX
-# test -> cycle
-# tester -> Maccor (not pertinent for this integration)
 
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
@@ -92,27 +80,7 @@ class GAReader:
             try:
                 # Create an instance of the API class
                 api_instance = users_api.UsersApi(api_client)
-                # column_ids = {
-                #     # 'flags': 29,
-                #     # 'Ns': 30,
-                #     # 'I Range': 31,
-                #     'time/s': 32,  # (test_time)
-                #     # 'control/V/mA': 33,
-                #     'Ewe/V': 34,  # Voltage
-                #     'I/mA': 35,  # Current
-                #     # 'dQ/mA.h': 36,
-                #     # '(Q-Qo)/mA.h': 37,
-                #     # 'Energy/W.h': 38,
-                #     # 'Q charge/discharge/mA.h': 39,
-                #     # 'half cycle': 40,
-                # }
 
-
-
-                # cycle_index = 1
-                # date_time = pick a simple date + test_time (look at generic importer)
-                # generate cell_Id
-                # cell_id = OX-{ga_cell_id}
                 data = {
                     column_name: np.frombuffer(
                         api_instance.get_column(dataset_id, column_id).read(),
@@ -128,19 +96,6 @@ class GAReader:
                 data.pop('time/s')
                 data.pop('Ewe/V')
                 data.pop('I/mA')
-                # print(data.keys())
-                # print(data.values())
-                # Columns
-                # -------
-                # Voltage
-                # Current
-                # Cycle_index
-                # Test_Time
-                # Date_Time
-                # Cell_ID
-                ######
-                # Calc Stats
-                # Save to DB
 
                 return data
 
