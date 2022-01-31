@@ -29,7 +29,7 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.abuse_metadata (
     index numeric,
-    temp numeric,
+    temperature numeric,
     thickness numeric,
     v_init numeric,
     indentor numeric,
