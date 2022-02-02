@@ -39,7 +39,7 @@ function App() {
 
 
   function getCell() {
-    fetch('http://34.102.57.101:3001/')
+    fetch('http://143.198.98.214:4000/cells')
       .then(response => {
         return response.text();
       })

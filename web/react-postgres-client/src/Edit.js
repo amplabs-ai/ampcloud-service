@@ -1,6 +1,9 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Plot from 'react-plotly.js'
 import "./Edit.css"
+import { render } from 'less';
+
 
 
 function Edit() {
@@ -13,6 +16,51 @@ function Edit() {
         form_factor:location.state.form_factor,
         ah:  location.state.ah
     })
+    const [cell_data, setCellData] = useState([])
+    const [readyplot, setReady] = useState(false)
+
+    const [v_data, setVData] = useState([])
+    const [t_data, setTData] = useState([])
+
+
+    useEffect(() => {
+      const fetchData = async () => {
+        // get the data from the api
+        console.log("async")
+        const data = await fetch(`http://143.198.98.214:4000/cells/${location.state.cell_id}/tests/cycle/ts`);
+        // convert the data to json
+        const json = await data.json();
+
+        setCellData(json);
+
+      }
+      fetchData()
+      // fetchData().then(setReady(true)).catch(console.error);;
+
+    }, []);
+
+    useEffect(() => {
+      plot()
+      setVData(v)
+      setTData(time)
+      // fetchData().then(setReady(true)).catch(console.error);;
+
+    }, [cell_data]);
+
+
+    let time = [];
+    let v = [];
+    let a = []
+
+    function plot() {
+      console.log("plot");
+
+      cell_data.forEach((cell_ind)=>v.push(cell_ind["v"]))
+      cell_data.forEach((cell_ind)=>time.push(cell_ind["test_time"]))
+      console.log(time)
+      console.log(v)
+
+    }
 
     const inputsHandler = e => {
         const {name, value} = e.target;
@@ -21,6 +69,7 @@ function Edit() {
           [name]: value
         }));
       };
+
 
     const navigate = useNavigate();
 
@@ -33,8 +82,7 @@ function Edit() {
         let cell_id = location.state.cell_id
 
 
-        console.log(anode)
-        console.log(cathode)
+
         fetch('http://34.102.57.101:3001/cell/'+ cell_id, {
             method: 'PUT',
             headers: {
@@ -58,7 +106,7 @@ function Edit() {
         <div>
 
         <div className='edit'> <h2>Edit Cell Metdata</h2></div>
-
+        <div className="form">
             <input
         className='edit-form'
         type="text"
@@ -119,7 +167,33 @@ function Edit() {
 
         <br/>
 
+
         <button onClick={SubmitButton} className='submit-edit'>Submit Now</button>
+
+        </div>
+
+
+        {t_data.length!==0 &&
+          <div className="plot">
+            <Plot
+              data={[
+                {
+                  x: t_data,
+                  y: v_data,
+                //   type: "scattergl",
+                //   mode: "lines+markers",
+                //   marker: {
+                //     line: {
+                //       width: 1,
+                //       color: "#404040"
+                //     }
+                //   }
+                }
+              ]}
+              layout={ {width: 600, height: 500, title: 'Voltage', xaxis:{title:"Time (s)"}, yaxis:{title:"Voltage (V)"}} }
+            />
+          </div>
+        }
     </div>
     )
 

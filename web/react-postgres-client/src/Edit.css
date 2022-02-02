@@ -4,8 +4,24 @@ div.edit {
     font-family: 'Dongle', sans-serif;
     font-size: 40px ;
     padding-bottom: 20px;
-    width: 100%;
+    width: 40%;
     height: 80px;
+
+
+}
+div.form {
+    display: inline-block;
+
+}
+
+div.plot{
+    display: inline-block;
+    width: auto;
+    length:auto;
+    margin-right: 30%;
+    position:relative;
+    top:-200px;
+    left: -150px;
 
 
 }
@@ -33,10 +49,19 @@ button.submit-edit {
     width: 100px;
     height: 40px;
     border-radius: 4px;
-    background-color: #008CBA ; 
+    background-color: #008CBA ;
     border: none ;
     color: white;
     padding-right: 6px ;
     text-align: center;
 }
 
+
+.plot {
+    float:right;
+    margin-top: 10%;
+    margin-right: 10%;
+
+
+
+}
