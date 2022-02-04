@@ -1,2 +1,2 @@
-./bin/docker_images
+./bin/build_images
 ./bin/docker_gen_env
