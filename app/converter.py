@@ -159,7 +159,16 @@ def sort_timeseries(df_tmerge:DataFrame)->DataFrame:
 
 # calculate statistics for abuse test
 def calc_abuse_stats(df_t:DataFrame, df_test_md:DataFrame)->DataFrame:
+    """
+    [summary]
 
+    :param df_t: [description]
+    :type df_t: DataFrame
+    :param df_test_md: [description]
+    :type df_test_md: DataFrame
+    :return: [description]
+    :rtype: DataFrame
+    """
     for _ in df_t.index:
         df_t[LABEL.NORM_D.value] = df_t.iloc[
             0:, df_t.columns.get_loc(LABEL.AXIAL_D.value)] - df_t[
@@ -172,6 +181,14 @@ def calc_abuse_stats(df_t:DataFrame, df_test_md:DataFrame)->DataFrame:
 
 
 def calc_cycle_stats(df_t:DataFrame)->Tuple[DataFrame, DataFrame]:
+    """
+    [summary]
+
+    :param df_t: [description]
+    :type df_t: DataFrame
+    :return: [description]
+    :rtype: Tuple[DataFrame, DataFrame]
+    """
 
     df_t[LABEL.CYCLE_TIME.value] = 0
 
@@ -295,6 +312,14 @@ def calc_cycle_stats(df_t:DataFrame)->Tuple[DataFrame, DataFrame]:
 
 # unpack the dataframe and calculate quantities used in statistics
 def calc_cycle_quantities(df:DataFrame)->DataFrame:
+    """
+    [summary]
+
+    :param df: [description]
+    :type df: DataFrame
+    :return: [description]
+    :rtype: DataFrame
+    """
 
     tmp_arr = df[[
         LABEL.TEST_TIME.value, LABEL.I.value, LABEL.V.value, LABEL.AH_C.value,

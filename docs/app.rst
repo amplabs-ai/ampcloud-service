@@ -1,34 +1,29 @@
-Battery Archive Package
-=======================
+Battery Archive App Package
+===========================
 
-Submodules
-----------
-
-app.aio module
---------------
+Async Input/Output Module
+-------------------------
 
 .. automodule:: app.aio
    :members:
    :undoc-members:
    :show-inheritance:
 
-app.archive\_cell module
+Archivable Cell Module
 ------------------------
 
 .. automodule:: app.archive_cell
    :members:
    :undoc-members:
-   :show-inheritance:
 
-app.archive\_constants module
+Constants
 -----------------------------
 
 .. automodule:: app.archive_constants
    :members:
    :undoc-members:
-   :show-inheritance:
 
-app.converter module
+Data Converter
 --------------------
 
 .. automodule:: app.converter
@@ -36,7 +31,7 @@ app.converter module
    :undoc-members:
    :show-inheritance:
 
-app.model module
+Data Models
 ----------------
 
 .. automodule:: app.model
@@ -44,7 +39,7 @@ app.model module
    :undoc-members:
    :show-inheritance:
 
-app.server module
+Import Server
 -----------------
 
 .. automodule:: app.server
@@ -52,10 +47,3 @@ app.server module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: app
-   :members:
-   :undoc-members:
-   :show-inheritance:

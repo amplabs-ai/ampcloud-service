@@ -10,7 +10,7 @@ Welcome to Battery Archive's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   modules
+   docs/modules
 
 
 Indices and tables

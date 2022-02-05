@@ -1,4 +1,4 @@
-app
+Battery Archive
 ===
 
 .. toctree::

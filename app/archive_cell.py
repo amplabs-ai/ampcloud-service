@@ -21,6 +21,28 @@ class ArchiveCell:
                  metadata=None,
                  data=None,
                  stat=None):
+        """
+        [summary]
+
+        :param cell_id: [description]
+        :type cell_id: [type]
+        :param test_type: [description], defaults to None
+        :type test_type: [type], optional
+        :param file_id: [description], defaults to None
+        :type file_id: [type], optional
+        :param file_type: [description], defaults to None
+        :type file_type: [type], optional
+        :param tester: [description], defaults to None
+        :type tester: [type], optional
+        :param file_path: [description], defaults to None
+        :type file_path: [type], optional
+        :param metadata: [description], defaults to None
+        :type metadata: [type], optional
+        :param data: [description], defaults to None
+        :type data: [type], optional
+        :param stat: [description], defaults to None
+        :type stat: [type], optional
+        """
         assert self.is_supported_test_type(
             test_type), test_type + ": Unrecognized Test Type"
         self.cell_id = cell_id
@@ -46,17 +68,38 @@ class ArchiveCell:
         else: self.stat = self.calc_stats()
 
     def load_data(self):
+        """
+        [summary]
+
+        :return: [description]
+        :rtype: [type]
+        """
         ctr = CellTestReader(self.tester, self.test_type)
         self.data = ctr.read_data(self.file_path)
         self.data[LABEL.CELL_ID.value] = self.cell_id
         return self
 
     def is_supported_test_type(self, test_type:str)->bool:
+        """
+        [summary]
+
+        :param test_type: [description]
+        :type test_type: str
+        :return: [description]
+        :rtype: bool
+        """
         for T in TEST_TYPE:
             if test_type == T.value: return True
         return False
 
     def split_metadata(self):
+        """
+        [summary]
+
+        :raises TestTypeException: [description]
+        :return: [description]
+        :rtype: [type]
+        """
         if self.test_type == TEST_TYPE.CYCLE.value:
             A, B = split_cycle_metadata(self.metadata)
             return A, B
@@ -68,6 +111,12 @@ class ArchiveCell:
 
     # calculate statistics for testdata
     def calc_stats(self):
+        """
+        [summary]
+
+        :return: [description]
+        :rtype: [type]
+        """
         if self.test_type == TEST_TYPE.CYCLE.value:
             return calc_cycle_stats(self.data)
         if self.test_type == TEST_TYPE.ABUSE.value:

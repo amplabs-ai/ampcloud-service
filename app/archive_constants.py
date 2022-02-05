@@ -8,11 +8,17 @@ TEST_DB_URL = "sqlite:///tests/test_data/01_raw/tmp/bas-test.db"
 
 
 class TEST_TYPE(Enum):
+    """
+    Types to test data
+    """
     ABUSE = "abuse"
     CYCLE = "cycle"
 
 
 class FORMAT(Enum):
+    """
+    Available file formats that can be worked with. 
+    """
     CSV = "csv"
     FEATHER = "feather"
     XLSX = "xlsx"
@@ -20,6 +26,9 @@ class FORMAT(Enum):
 
 
 class TESTER(Enum):
+    """
+    Types of testers that data can be imported from
+    """
     ORNL = "ornl"
     SNL = "snl"
     ARBIN = "arbin"
@@ -28,6 +37,9 @@ class TESTER(Enum):
 
 
 class ARCHIVE_TABLE(Enum):
+    """
+    Table names in archive schema
+    """
     ABUSE_META = "abuse_metadata"
     ABUSE_TS = "abuse_timeseries"
     CELL_META = "cell_metadata"
@@ -37,6 +49,9 @@ class ARCHIVE_TABLE(Enum):
 
 
 class INP_LABELS(Enum):
+    """
+    Lables for imported data
+    """
     TEST_TIME = "Running Time"
     AXIAL_D = "Axial Displacement"
     AXIAL_F = "Axial Force"
@@ -50,6 +65,9 @@ class INP_LABELS(Enum):
 
 
 class ARCHIVE_COLS(Enum):
+    """
+    Column labels for archive data
+    """
     TEST_TIME = "test_time"
     AXIAL_D = "axial_d"
     AXIAL_F = "axial_f"
@@ -66,6 +84,9 @@ class ARCHIVE_COLS(Enum):
 
 
 class OUTPUT_LABELS(Enum):
+    """
+    Labels for test output data
+    """
     CYCLE_INDEX = "Cycle_Index"
     CELL_ID = "Cell_ID"
     DATE_TIME = "Date_Time"
@@ -85,6 +106,9 @@ class OUTPUT_LABELS(Enum):
 
 
 class LABEL(Enum):
+    """
+    Other generic labels
+    """
     CELL_ID = "cell_id"
     MAPPING = "mapping"
     ANODE = "anode"
