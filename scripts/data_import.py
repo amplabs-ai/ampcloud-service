@@ -2,6 +2,7 @@
 # coding: utf-8
 import os
 import glob
+from typing import List
 import pandas as pd
 import matplotlib.pyplot as plt
 import psycopg2
@@ -13,7 +14,8 @@ import logging.config
 
 
 # Function to convert a list to a string
-def listToString(s):
+def listToString(s:List) -> str:
+
     # initialize an empty string
     str1 = ""
 
@@ -25,8 +27,15 @@ def listToString(s):
     return str1
 
 
-# unpack the dataframe and calculate quantities used in statistics
-def calc_cycle_quantities(df):
+def calc_cycle_quantities(df:pd.DataFrame)->pd.DataFrame:
+    """
+    Unpack the dataframe and calculate quantities used in statistics
+
+    :param df: [description]
+    :type df: pd.DataFrame
+    :return: [description]
+    :rtype: pd.DataFrame
+    """
 
     logging.info('calculate quantities used in statistics')
 
@@ -98,7 +107,20 @@ def calc_cycle_quantities(df):
 
 
 # calculate statistics for abuse test
-def calc_abuse_stats(df_t, df_cell_md, df_test_md):
+def calc_abuse_stats(df_t:pd.DataFrame, 
+                     df_cell_md:pd.DataFrame, df_test_md:pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate statistics for abuse test
+
+    :param df_t: [description]
+    :type df_t: pd.DataFrame
+    :param df_cell_md: [description]
+    :type df_cell_md: pd.DataFrame
+    :param df_test_md: [description]
+    :type df_test_md: pd.DataFrame
+    :return: [description]
+    :rtype: pd.DataFrame
+    """
 
     for ind in df_t.index:
         df_t["norm_d"] = df_t.iloc[0:, df_t.columns.get_loc("axial_d")] - df_t['axial_d'][0]
@@ -108,7 +130,7 @@ def calc_abuse_stats(df_t, df_cell_md, df_test_md):
 
 
 # calculate statistics cycle test
-def calc_cycle_stats(df_t, df_cell_md, df_test_md):
+def calc_cycle_stats(df_t:pd.DataFrame, df_cell_md:pd.DataFrame, df_test_md:pd.DataFrame) -> pd.DataFrame:
 
     logging.info('calculate cycle time and cycle statistics')
     df_t['cycle_time'] = 0
@@ -204,19 +226,19 @@ def calc_cycle_stats(df_t, df_cell_md, df_test_md):
 
     return df_cc, df_tt
 
+def prepare_maccor_file(cellpath: str) -> pd.DataFrame:
+    """
+    Remove metadata entries from MACCOR files
 
-# remove metadata entries from MACCOR files
-def prepare_maccor_file(cellpath):
+    :param cellpath: [description]
+    :type cellpath: str
+    :return: [description]
+    :rtype: pd.DataFrame
+    """
 
     a_file = open(cellpath, "r", encoding='utf8', errors='ignore')
     lines = a_file.readlines()
     a_file.close()
-
-    #a_file = open(cellpath, "rb").read().decode('ISO-8859-1')
-    #print(a_file)
-    #lines = a_file.readlines()
-    #lines = a_file
-    #a_file.close()
 
     cellpath_df = cellpath + "_df"
 
@@ -239,9 +261,17 @@ def signedCurrent(x, y):
     else:
         return y
 
-
-# Read the abuse excel file from ORNL
 def read_ornlabuse(cell_id, file_path):
+    """
+    Read the abuse excel file from ORNL
+
+    :param cell_id: [description]
+    :type cell_id: [type]
+    :param file_path: [description]
+    :type file_path: [type]
+    :return: [description]
+    :rtype: [type]
+    """
 
     excels = glob.glob(file_path + '*.xls*')
 
@@ -289,7 +319,17 @@ def read_ornlabuse(cell_id, file_path):
 
 
 # read the abuse excel files from SNL
-def read_snlabuse(cell_id, file_path):
+def read_snlabuse(cell_id:str, file_path:str)->pd.DataFrame:
+    """
+    Read the abuse excel files from SNL
+
+    :param cell_id: [description]
+    :type cell_id: [type]
+    :param file_path: [description]
+    :type file_path: [type]
+    :return: [description]
+    :rtype: [type]
+    """
 
     excels = glob.glob(file_path + '*.xls*')
 

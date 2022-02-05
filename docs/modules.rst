@@ -5,6 +5,14 @@ Battery Archive
 
    app
 
+Misc Scripts
+===============
+.. toctree::
+   :maxdepth: 4
+
+   scripts
+
+
 Swagger API
 ===========
 .. openapi:: ../api/api.yaml
