@@ -156,7 +156,7 @@ def get_test_ts_with_id(cell_id, test_name):
         result = [cell.to_dict() for cell in archive_cells]
         return jsonify(result)
     if test_name == TEST_TYPE.ABUSE.value:
-        archive_cells = ArchiveOperator().get_all_abuse_ts_with_id()
+        archive_cells = ArchiveOperator().get_all_abuse_ts_with_id(cell_id)
         result = [cell.to_dict() for cell in archive_cells]
         return jsonify(result)
 
@@ -167,7 +167,7 @@ def get_meta_with_id(cell_id, test_name):
         result = [cell.to_dict() for cell in archive_cells]
         return jsonify(result)
     if test_name == TEST_TYPE.ABUSE.value:
-        archive_cells = ArchiveOperator().get_all_abuse_meta_with_id()
+        archive_cells = ArchiveOperator().get_all_abuse_meta_with_id(cell_id)
         result = [cell.to_dict() for cell in archive_cells]
         return jsonify(result)
 
