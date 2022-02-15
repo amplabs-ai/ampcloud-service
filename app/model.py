@@ -29,6 +29,18 @@ class AbuseMeta(Model):
     indentor = Column(Float, nullable=True)
     nail_speed = Column(Float, nullable=True)
 
+    def to_dict(self):
+        return {
+            "index": self.index,
+            "temperature": self.temperature,
+            "thickness": self.thickness,
+            "v_init": self.v_init,
+            "indentor": self.indentor,
+            "nail_speed": self.nail_speed,
+            "cell_id": self.cell_id
+        }
+
+
 class AbuseTimeSeries(Model):
     __tablename__ = ARCHIVE_TABLE.ABUSE_TS.value
     index = Column(Integer, primary_key=True)
