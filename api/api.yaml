@@ -113,6 +113,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+    put:
+      summary: Update a cell
+      x-openapi-router-controller: app.controllers.cell_controller
+      operationId: update_cell
+      parameters:
+      - name: cell_id
+        in: path
+      requestBody:
+        required: true
+        description: Update Cell Metadata Settings
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                anode:
+                  type: string
+                cathode:
+                  type: string
+                source:
+                  type: string
+                form_factor:
+                  type: string
+                ah:
+                  type: string
+      responses:
+        '200':
+          description: Cell Updated
+
   /cells/all/tests/{test_name}/meta:
     get:
       summary: Fetches tests of testname
@@ -267,6 +296,19 @@ paths:
                 $ref: "#/components/schemas/Error"
 components:
   schemas:
+    CellMeta:
+      type: object
+      properties:
+        anode:
+          type: string
+        cathode:
+          type: string
+        source:
+          type: string
+        form_factor:
+          type: string
+        ah:
+          type: string
     Path:
       type: object
       properties:
