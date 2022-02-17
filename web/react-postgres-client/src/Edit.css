@@ -13,18 +13,32 @@ div.form {
     display: inline-block;
 
 }
+.plot {
+    float:right;
+    margin-top: 10%;
+    margin-right: 10%;
+}
 
 div.plot{
+    display: inline-block;
+    /* width: auto;
+    length:auto; */
+    margin-right: 30%;
+    left: -1%;
+
+
+}
+
+/* div.plot2{
     display: inline-block;
     width: auto;
     length:auto;
     margin-right: 30%;
-    position:relative;
-    top:-200px;
-    left: -150px;
+    top:-15%;
+    left: -1%;
 
 
-}
+} */
 
 
 input.edit-form {
@@ -57,11 +71,3 @@ button.submit-edit {
 }
 
 
-.plot {
-    float:right;
-    margin-top: 10%;
-    margin-right: 10%;
-
-
-
-}

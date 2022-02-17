@@ -19,6 +19,7 @@ function Edit() {
     const [cell_data, setCellData] = useState([])
     const [readyplot, setReady] = useState(false)
 
+    const [a_data, setAData] = useState([])
     const [v_data, setVData] = useState([])
     const [t_data, setTData] = useState([])
 
@@ -42,6 +43,7 @@ function Edit() {
     useEffect(() => {
       plot()
       setVData(v)
+      setAData(a)
       setTData(time)
       // fetchData().then(setReady(true)).catch(console.error);;
 
@@ -56,6 +58,7 @@ function Edit() {
       console.log("plot");
 
       cell_data.forEach((cell_ind)=>v.push(cell_ind["v"]))
+      cell_data.forEach((cell_ind)=>a.push(cell_ind["ah_c"]))
       cell_data.forEach((cell_ind)=>time.push(cell_ind["test_time"]))
       console.log(time)
       console.log(v)
@@ -190,7 +193,28 @@ function Edit() {
                 //   }
                 }
               ]}
-              layout={ {width: 600, height: 500, title: 'Voltage', xaxis:{title:"Time (s)"}, yaxis:{title:"Voltage (V)"}} }
+              layout={ {width: 500, height: 500, title: 'Voltage', xaxis:{title:"Time (s)"}, yaxis:{title:"Voltage (V)"}} }
+            />
+          </div>
+        }
+        {t_data.length!==0 &&
+          <div className="plot">
+            <Plot
+              data={[
+                {
+                  x: t_data,
+                  y: a_data,
+                //   type: "scattergl",
+                //   mode: "lines+markers",
+                //   marker: {
+                //     line: {
+                //       width: 1,
+                //       color: "#404040"
+                //     }
+                //   }
+                }
+              ]}
+              layout={ {width: 500, height: 500, title: 'Amp', xaxis:{title:"Time (s)"}, yaxis:{title:"Ah_c (Amps)"}} }
             />
           </div>
         }
