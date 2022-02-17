@@ -33,11 +33,35 @@ def get_cells():
     return result, 200
 
 
+
+
 def get_cell_with_id(cell_id):
     ao = ArchiveOperator()
     archive_cells = ao.get_all_cell_meta_with_id(cell_id)
     result = [cell.to_dict() for cell in archive_cells]
     return result, 200
+
+
+def update_cell(cell_id):
+    ao = ArchiveOperator()
+    body = request.json
+    ao.update_cell_md(body,cell_id)
+    #need to define method to only update cell metatdata in
+    # metadata table with with body
+    return 200
+
+def create_cell():
+    ao = ArchiveOperator()
+    body = request.json
+    ao.add_cell_md(body)
+    #need to define method to only update cell metatdata in
+    # metadata table with with body
+    return 200
+
+def delete_cell_with_cell_id(cell_id):
+    ao = ArchiveOperator()
+    ao.remove_cell_from_archive(cell_id)
+    return 200
 
 
 def get_test(test_name):
@@ -144,7 +168,7 @@ def export_cycle_meta_data_with_id_to_fmt(cell_id: str,
 """
 generate_timeseries_data queries data from the database and exports to csv
 
-:param session: Database session that 
+:param session: Database session that
 :param cell_id: Absolute Path to the cell_list directory
 :param path: Path to the cell_list directory
 :return: Boolean True if successful False if method fails

@@ -19,7 +19,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:
@@ -52,7 +52,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:
@@ -104,7 +104,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:
@@ -141,6 +141,53 @@ paths:
       responses:
         '200':
           description: Cell Updated
+    post:
+      summary: Create cell metadata
+      x-openapi-router-controller: app.controllers.cell_controller
+      operationId: create_cell
+      requestBody:
+        required: true
+        description: Cell metadata
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cell_id:
+                  type: string
+                anode:
+                  type: string
+                cathode:
+                  type: string
+                source:
+                  type: string
+                form_factor:
+                  type: string
+                ah:
+                  type: string
+      responses:
+        '200':
+          description: Cell Created
+    delete:
+      summary: Deletes cell with cell_id
+      x-openapi-router-controller: app.controllers.cell_controller
+      operationId: delete_cell_with_cell_id
+      tags:
+        - cells
+      parameters:
+      - name: cell_id
+        in: path
+        description: Cell ID of the resource to get
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Deleted cell
+
+
 
   /cells/all/tests/{test_name}/meta:
     get:
@@ -167,7 +214,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:
@@ -201,7 +248,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:
@@ -243,7 +290,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:
@@ -285,7 +332,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:

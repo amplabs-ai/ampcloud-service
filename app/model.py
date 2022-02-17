@@ -185,7 +185,7 @@ class CycleTimeSeries(Model):
 Archive Operator
 - Manages objects in Archive
 - Supports Create/Read/Update/Delete of ArchiveCells
-- For example, methods accept ArchiveCell(s) as input and provides ArchiveCell(s) as output 
+- For example, methods accept ArchiveCell(s) as input and provides ArchiveCell(s) as output
 - Performs all necessary SQL functions related to Archive db
 """
 
@@ -224,6 +224,23 @@ class ArchiveOperator:
                             if_exists='append',
                             chunksize=1000,
                             index=False)
+
+    def add_cell_md(self, body):
+        df_cell_md = pd.DataFrame.from_dict(body)
+        df_cell_md.to_sql("cell_metadata",
+                          con=self.session.bind,
+                          if_exists="append",
+                          chunksize=1000,
+                          index=False)
+
+    def update_cell_md(self, body, cell_id):
+        sql = """
+            UPDATE cell_metada
+            SET SET anode= %s, cathode= %s, source= %s, form_factor= %s, ah = %s
+            WHERE cell_id = %s;
+        """
+        with self.session.bind as conn:
+            conn.execute(sql, (body["anode"],body["cathode"], body["source"], body["form_factor"],body["ah"],cell_id))
 
     def add_cells_to_db(self, cell_list):
         for cell in cell_list:
