@@ -4,8 +4,6 @@ The Battery Lifecycle (BLC) Framework is an open-source platform that provides t
 
 The code and documentation in this repository can be used to build and operate a site like batteryarchive.org.
 
-The detailed installation steps are included in the [blc_Installation_steps.pdf](blc_Installation_steps.pdf) file in the repository.
-
 To learn more about the design of the software, read our paper available online at https://ecsarxiv.org/h7c24/
 
 For more information, contact us at info@batteryarchive.org.
@@ -24,21 +22,6 @@ For more information, contact us at info@batteryarchive.org.
 
 [BASH for Windows](https://docs.microsoft.com/en-us/learn/paths/shell/)
 
-
-### Deploy Battery Archive Service with Redash (production) 
-
-
-Open New BASH Terminal
-```bash
-./bin/setup # run once to build relevant images and configs, re-running will regenerate auth for redash database
-./bin/start # launches all services: redash, bas-db, bas-server
-```
-
-Open New BASH Terminal
-```bash
-./bin/add_queries scripts/redash_queries  #add queries to redash UI
-./bin/add_data tests/payloads/localdata.json # add testdata into battery archive database 
-```
 
 `Host = 0.0.0.0`
 
