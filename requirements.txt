@@ -15,3 +15,4 @@ pyarrow
 batteryclient
 celery
 flask-cors
+tables
