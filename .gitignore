@@ -15,4 +15,4 @@ postgres-data
 */tmp/*
 package-lock.json
 key
-
+venv/
