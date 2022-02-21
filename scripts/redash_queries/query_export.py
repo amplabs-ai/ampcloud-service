@@ -1,3 +1,4 @@
+from urllib import response
 import click
 import requests
 
@@ -6,9 +7,11 @@ Name: {name}
 Data source: {data_source}
 Created By: {created_by}
 Last Update At: {last_updated_at}
+Visualizations: {visualizations}
 */
 
 {query}"""
+
 
 
 def get_queries(url, api_key):
@@ -25,6 +28,14 @@ def get_queries(url, api_key):
 
     return queries
 
+def get_visualizations(queries, url, api_key):
+    visualizations = []
+    headers = {'Authorization' : 'Key {}'.format(api_key)}
+    for query in queries:
+        path = "{}/api/queries/{}".format(url, query['id'])
+        response = requests.get(path, headers=headers, params={}).json()
+        query['visualizations'] = response.replace('\n', '')
+
 
 def save_queries(queries):
     for query in queries:
@@ -34,6 +45,7 @@ def save_queries(queries):
                        data_source=query['data_source_id'],
                        created_by=query['user']['name'],
                        last_updated_at=query['updated_at'],
+                       visualizations=query['visualizations'],
                        query=query['query'])
             print(content)
             f.write(content)
