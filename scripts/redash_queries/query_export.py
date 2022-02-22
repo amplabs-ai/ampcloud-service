@@ -33,7 +33,7 @@ def get_visualizations(queries, url, api_key):
     for query in queries:
         path = "{}/api/queries/{}".format(url, query['id'])
         response = requests.get(path, headers=headers, params={}).json()
-        query['visualizations'] = response.replace('\n', '')
+        query['visualizations'] = response['visualizations']
 
 
 def save_queries(queries):
@@ -56,7 +56,7 @@ def save_queries(queries):
 @click.option('--api-key', help="API Key")
 def main(redash_url, api_key):
     queries = get_queries(redash_url, api_key)      
-    get_visualizations(queries) # Pull the visualization for each  query. Append it to that query's item
+    get_visualizations(queries, redash_url, api_key) # Pull the visualization for each  query. Append it to that query's item
     save_queries(queries) # Save the queries to a file. File name is `query_{query_id}.sql`
 
 
