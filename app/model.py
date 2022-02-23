@@ -216,20 +216,17 @@ class ArchiveOperator:
         df_cell_md = cell.cellmeta
         df_test_meta_md = cell.testmeta
         df_stats, _ = cell.stat
-        print("CELL META", df_cell_md)
         df_cell_md.to_sql(cell.cell_meta_table,
                           con=self.session.bind,
                           if_exists="append",
                           chunksize=1000,
                           index=False)
-        print("DF TS META", df_test_meta_md)
         df_test_meta_md.to_sql(cell.test_meta_table,
                                con=self.session.bind,
                                if_exists='append',
                                chunksize=1000,
                                index=False)
         if cell.test_stats_table:
-            print("DF STATS", df_stats)
             df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
                             con=self.session.bind,
                             if_exists='append',
@@ -248,26 +245,22 @@ class ArchiveOperator:
         df_cell_md = cell.cellmeta
         df_test_meta_md = cell.testmeta
         df_stats, df_timeseries = cell.stat
-        print("CELL META", df_cell_md)
         df_cell_md.to_sql(cell.cell_meta_table,
                           con=self.session.bind,
                           if_exists="append",
                           chunksize=1000,
                           index=False)
-        print("DF TS META", df_test_meta_md)
         df_test_meta_md.to_sql(cell.test_meta_table,
                                con=self.session.bind,
                                if_exists='append',
                                chunksize=1000,
                                index=False)
         if cell.test_stats_table:
-            print("DF STATS", df_stats)
             df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
                             con=self.session.bind,
                             if_exists='append',
                             chunksize=1000,
                             index=False)
-        print("DF TS", df_timeseries)
         df_timeseries.to_sql(cell.test_ts_table,
                              con=self.session.bind,
                              if_exists='append',
