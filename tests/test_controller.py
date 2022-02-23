@@ -34,9 +34,3 @@ def db_session(db_session_factory):
 
     session_.rollback()
     session_.close()
-
-
-# def test_end_to_end():
-#     cell_list_path =  "path/on/pc"
-#     cc.import_cells_xls_to_db(cell_list_path)
-#     assert()

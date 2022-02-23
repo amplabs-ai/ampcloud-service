@@ -297,7 +297,6 @@ class CellTestReader:
                         df_ts['e_c'] = 0
                         df_ts['ah_d'] = 0
                         df_ts['e_d'] = 0
-                        # df_time_series['cell_id'] = cell_id
                         df_ts['cycle_index'] = 0
                         df_ts['cycle_time'] = 0
 
@@ -354,8 +353,6 @@ class CellTestReader:
         if df_file.empty:
             return
 
-        # df_file['cell_id'] = cell_id
-
         df_tmerge = pd.DataFrame()
 
         # Loop through all the Excel test files
@@ -405,7 +402,6 @@ class CellTestReader:
                 df_time_series['e_c'] = 0
                 df_time_series['ah_d'] = 0
                 df_time_series['e_d'] = 0
-                # df_time_series['cell_id'] = cell_id
                 df_time_series['cycle_index'] = 0
                 df_time_series['cycle_time'] = 0
 
@@ -441,7 +437,6 @@ class CellTestReader:
             df_ts_a[ARCHIVE_COLS.temp_4.value] = 0
             df_ts_a[ARCHIVE_COLS.temp_5.value] = 0
             df_ts_a[ARCHIVE_COLS.temp_6.value] = 0
-            # df_time_series_a['cell_id'] = cell_id
 
             df_ts_b = pd.DataFrame()
             df_ts_b['test_time'] = df_ts_file['Running Time 1']
@@ -460,7 +455,6 @@ class CellTestReader:
                 INP_LABELS.TC_05.value]
             df_ts_b[ARCHIVE_COLS.temp_6.value] = df_ts_file[
                 INP_LABELS.TC_06.value]
-            # df_time_series_b['cell_id'] = cell_id
 
             if df_tmerge.empty:
                 df_tmerge = df_ts_a
@@ -505,7 +499,6 @@ class CellTestReader:
                 INP_LABELS.TC_05.value]
             df_ts[ARCHIVE_COLS.temp_6.value] = df_ts_file[
                 INP_LABELS.TC_06.value]
-            # df_time_series['cell_id'] = cell_id
 
             if df_tmerge.empty:
                 df_tmerge = df_ts

@@ -15,7 +15,7 @@ status = {}
 global source
 source = {}
 
-# STATUS OPTIONS:
+# GA PUBLISH STATUS OPTIONS:
 # STARTED, IN_PROGRESS, FINISHED
 
 
@@ -61,7 +61,6 @@ def ga_data_finish(tracker, cell, status):
     print("STATUS", status)
     print("STATUS OF TRACKER", status[tracker])
     ArchiveOperator().add_ts_to_db(cell)
-    # status[tracker] = "FINISHED"
 
 
 def ga_publish(dataset_id):
@@ -113,7 +112,6 @@ def get_cells():
 
     ao = ArchiveOperator()
     archive_cells = ao.get_all_cell_meta()
-    print(archive_cells)
     result = [cell.to_dict() for cell in archive_cells]
     return jsonify(result)
 
