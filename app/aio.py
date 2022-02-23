@@ -11,10 +11,6 @@ import time
 import batteryclient
 from pprint import pprint
 from batteryclient.api import users_api
-from batteryclient.model.cell import Cell
-from batteryclient.model.dataset import Dataset
-from batteryclient.model.equipment import Equipment
-from batteryclient.model.user import User
 import numpy as np
 
 
