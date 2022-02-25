@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import re
+import ast
 
 def save_queries(url, api_key):
     headers = {'Authorization': 'Key {}'.format(api_key), 'Content-Type': 'application/json'}
@@ -24,6 +25,20 @@ def save_queries(url, api_key):
             response = requests.post(path, headers=headers, data=json.dumps(payload))
             print(response.content)
 
+def get_visualization_str(filename):
+    visualizations = []
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        vis_obj = {}
+        for line in lines:
+            if line[:15] == "Visualizations: ":
+                vis_str = line[15:]
+                vis_obj = ast.literal_eval(vis_str)
+                
+                for vis in vis_obj:
+                    # Go through each visualization saved. Create a viz object from each item
+                    visualizations.append(vis)
+    return visualizations
 
 def get_query_str(filename):
     query = ''

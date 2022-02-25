@@ -16,3 +16,4 @@ postgres-data
 package-lock.json
 key
 venv/
+_build/
