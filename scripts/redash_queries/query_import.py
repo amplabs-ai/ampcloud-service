@@ -5,6 +5,17 @@ import os
 import re
 import ast
 
+# This is the basic requirement that we have for a visualization. Without all of these fields it will not work. 
+"""
+{
+    "query_id" : 5,
+    "type" : "TABLE",
+    "name" : "Testing API",
+    "options" : {},
+    "description" : ""
+}
+"""
+
 def save_queries(url, api_key):
     headers = {'Authorization': 'Key {}'.format(api_key), 'Content-Type': 'application/json'}
 
@@ -24,6 +35,23 @@ def save_queries(url, api_key):
             print(payload)
             response = requests.post(path, headers=headers, data=json.dumps(payload))
             print(response.content)
+            if(response.status_code == 200):
+                visualizations = get_visualization_str(f)
+                for viz in visualizations:
+                    try:
+                        payload = {
+                            "query_id" : query_id,
+                            "type" : viz.type,
+                            "name" : viz.name,
+                            "options" : viz.options,
+                            "description" : viz.description
+                        }
+                        viz_response = requests.post(path, headers=headers, data=json.dumps(payload))
+                        print(f"Visualization added to query #{query_id} -- {payload}")
+                    except KeyError as e:
+                        print(e)
+
+
 
 def get_visualization_str(filename):
     visualizations = []
