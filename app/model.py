@@ -156,6 +156,26 @@ class CycleStats(Model):
     test_time = Column(Float, nullable=True)
     cell_id = Column(TEXT, nullable=False)
 
+    def to_dict(self):
+        return {
+            "index": self.index,
+            "v_max": self.v_max,
+            "v_min": self.v_min,
+            "ah_c": self.ah_c,
+            "ah_d": self.ah_d,
+            "e_c": self.e_c,
+            "e_d": self.e_d,
+            "i_max": self.i_max,
+            "i_min": self.i_min,
+            "v_c_mean": self.v_c_mean,
+            "v_d_mean": self.v_d_mean,
+            "e_eff": self.e_eff,
+            "ah_eff": self.ah_eff,
+            "cycle_index": self.cycle_index,
+            "test_time": self.test_time,
+            "cell_id": self.cell_id
+        }
+
 
 class CycleTimeSeries(Model):
     __tablename__ = ARCHIVE_TABLE.CYCLE_TS.value
@@ -211,6 +231,8 @@ class ArchiveOperator:
         self.session = scoped_session(
             sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
+    def commit(self):
+        self.session.commit()
 
     def add_meta_to_db(self, cell):
         df_cell_md = cell.cellmeta
@@ -273,7 +295,6 @@ class ArchiveOperator:
 
     def remove_cell_from_table(self, table, cell_id):
         self.session.query(table).filter(table.cell_id == cell_id).delete()
-        self.session.commit()
 
     def remove_cell_from_archive(self, cell_id):
         self.remove_cell_from_table(CellMeta, cell_id)
@@ -357,6 +378,18 @@ class ArchiveOperator:
             self.session.bind).round(DEGREE)
 
     # GENERAL ORM
+    def add_all(self, df, model):
+        records = df.to_dict('records')
+        data_list = []
+        for data in records:
+            model_object = model(**data)
+            data_list.append(model_object)
+        self.session.add_all(data_list)
+    
+    def add(self, df, model):
+        record = df.to_dict('records')
+        model_object = model(**record[0])
+        self.session.add(model_object)
 
     def get_all_data_from_table(self, table):
         return self.select_table(table).all()
@@ -371,3 +404,9 @@ class ArchiveOperator:
 
     def select_table_with_id(self, table, cell_id):
         return self.session.query(table).filter(table.cell_id == cell_id)
+    
+    # UPDATE
+    def update_table_with_cell_id(self, table, cell_id, data):
+        self.session.query(table).filter(table.cell_id == cell_id).update(data)
+        
+
