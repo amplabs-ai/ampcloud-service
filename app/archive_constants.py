@@ -132,3 +132,29 @@ class LABEL(Enum):
     CYCLE_INDEX_FILE = "cycle_index_file"
     FILENAME = "filename"
     FILE_TYPE = "file_type"
+
+RESPONSE_MESSAGE = {
+    "CELL_ID_EXISTS": "Cell id {} already exists",
+    "CELL_ID_NOT_EXISTS": "Cell id {} does not exists",
+    "CELL_ID_NOT_BLANK": "Cell id must not be blank",
+    "CELL_METADATA_ADDED": "Metadata for cell id {} added successfully",
+    "CELL_METADATA_UPDATED": "Metadata for cell id {} updated successfully",
+    "INTERNAL_SERVER_ERROR": "Internal server error",
+    "RECORDS_RETRIEVED": "Records Retrieved",
+    "CELL_METADATA_DELETED": "Cell id {} deleted successfully",
+    "ONE_REQUIRED_FIELD": "At least one field is required",
+    "CELL_TEST_NOT_EXISTS": "Test does not exists for {} cell id",
+    "TEST_EXISTS": "Test for cell id {} already exists",
+    "TEST_NOT_EXISTS": "Test for cell id {} does not exists",
+    "TEST_METADATA_ADDED": "Test metadata for cell id {} added successfully",
+    "TEST_METADATA_UPDATED": "Test metadata for cell id {} updated successfully",
+    "TEST_METADATA_DELETED": "Test metadata for cell id {} deleted successfully",
+    "TEST_META_NOT_EXISTS": "Test metadata for cell id {} does not exixts",
+    "TS_EXISTS": "Test timeseries data for cell id {} already exists",
+    "TS_DELETED": "Test timeseries data for cell id {} deleted successfully",
+    "TS_NOT_EXISTS": "Test timeseries data for cell id {} does not exists",
+    "TS_ADDED": "Test timeseries data for cell id {} added successfully",
+    "TS_UPDATED": "Test timeseries data for cell id {} updated successfully",
+    "REQUIRED": "timeseries_data and stats fields are required",
+    "LIST_NOT_EMPTY": "timeseries_data list cannot be empty"
+}

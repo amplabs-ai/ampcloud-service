@@ -11,7 +11,7 @@ paths:
       tags:
         - general
       responses:
-        '200':
+        "200":
           description: A paged array of cells
           headers:
             x-next:
@@ -19,7 +19,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Cells"
         default:
@@ -34,16 +34,16 @@ paths:
       x-openapi-router-controller: app.controllers.cell_controller
       operationId: finish
       parameters:
-      - name: tracker
-        in: path
-        description: Dataset ID of the resource to get from Galvanalyser
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: tracker
+          in: path
+          description: Dataset ID of the resource to get from Galvanalyser
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           description: Finish
           headers:
             x-next:
@@ -66,14 +66,14 @@ paths:
       tags:
         - publish
       parameters:
-      - name: dataset_id
-        in: path
-        description: Dataset ID of the resource to get from Galvanalyser
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: dataset_id
+          in: path
+          description: Dataset ID of the resource to get from Galvanalyser
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -85,9 +85,9 @@ paths:
                   type: string
               required:
                 - token
-        
+
       responses:
-        '200':
+        "200":
           description: Publish
           headers:
             x-next:
@@ -110,16 +110,16 @@ paths:
       tags:
         - general
       parameters:
-      - name: tracker
-        in: path
-        description: status tracker
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: tracker
+          in: path
+          description: status tracker
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           description: A paged array of cells
           headers:
             x-next:
@@ -127,53 +127,20 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 type: object
                 properties:
                   tracker:
                     type: string
-                    example: "uuid_abc_123"        
+                    example: "uuid_abc_123"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-
   /cells:
-    get:
-      summary: Fetches all Cells
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: get_cells
-      tags:
-        - cells
-      parameters:
-        - name: limit
-          in: query
-          description: How many items to return at one time (max 100)
-          required: false
-          schema:
-            type: integer
-            format: int32
-      responses:
-        '200':
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:    
-              schema:
-                $ref: "#/components/schemas/Cells"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
     post:
       summary: Add a new cell
       x-openapi-router-controller: app.controllers.cell_controller
@@ -189,195 +156,407 @@ paths:
                 path:
                   type: string
       responses:
-        '200':
+        "200":
           description: Added new cell
-
+  /cells/meta:
+    post:
+      summary: Add metadata for a  new cell
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: add_cellmeta
+      tags:
+        - Cell Meta
+      requestBody:
+        description: cell meta object
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Successfull
+  /cells/all/meta:
+    get:
+      summary: Fetches metadata for all cells
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: get_cells
+      tags:
+        - Cell Meta
+      responses:
+        "200":
+          description: Successfull
   /cells/{cell_id}/meta:
     get:
-      summary: Fetches cell with cell_id
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: get_cell_with_id
+      summary: Fetches cell metadata with cell_id
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: get_cell_by_cell_id
       tags:
-        - cells
+        - Cell Meta
       parameters:
-      - name: cell_id
-        in: path
-        description: Cell ID of the resource to get
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
-        '200':
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:    
-              schema:
-                $ref: "#/components/schemas/Cells"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /cells/all/tests/{test_name}/meta:
-    get:
-      summary: Fetches tests of testname
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: get_test
+        200:
+          description: Successfull
+    patch:
+      summary: Update metadata for an existing cell
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: update_cellmeta
       tags:
-        - tests
+        - Cell Meta
       parameters:
-      - name: test_name
-        in: path
-        description: Cell ID of the resource to get
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: cell_id
+          in: path
+          description: cell id
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        description: cell meta object
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
-        '200':
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:    
-              schema:
-                $ref: "#/components/schemas/Cells"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /cells/all/tests/{test_name}/ts:
-    get:
-      summary: Fetches tests of testname
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: get_ts
+        "200":
+          description: Added new cell
+  /cells/{cell_id}:
+    delete:
+      summary: Delete a cell from archive
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: delete_cellmeta
       tags:
-        - tests
+        - Cell Meta
       parameters:
-      - name: test_name
-        in: path
-        description: Cell ID of the resource to get
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to delete
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
-        '200':
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:    
-              schema:
-                $ref: "#/components/schemas/Cells"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /cells/{cell_id}/tests/{test_name}/ts:
-    get:
-      summary: Fetches tests of testname
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: get_test_ts_with_id
-      tags:
-        - tests
-      parameters:
-      - name: cell_id
-        in: path
-        description: Cell ID of the resource to get
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: test_name
-        in: path
-        description: Test Name of the resource to get
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      responses:
-        '200':
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:    
-              schema:
-                $ref: "#/components/schemas/Cells"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+        "200":
+          description: Successfull
   /cells/{cell_id}/tests/{test_name}/meta:
     get:
-      summary: Fetches tests of testname
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: get_meta_with_id
+      summary: Fetches tests metadata of testname for a cell id
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: get_testmeta_by_cell_id
       tags:
-        - tests
+        - Test Meta
       parameters:
-      - name: cell_id
-        in: path
-        description: Cell ID of the resource to get
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-      - name: test_name
-        in: path
-        description: Test Name of the resource to get
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
       responses:
-        '200':
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:    
-              schema:
-                $ref: "#/components/schemas/Cells"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+        "200":
+          description: Successfull
+    post:
+      summary: Add metadata for test for a cell
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: add_testmeta
+      tags:
+        - Test Meta
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      requestBody:
+        description: Add test meta object
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Added test meta
+    patch:
+      summary: Update metadata for test
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: update_testmeta
+      tags:
+        - Test Meta
+      parameters:
+        - name: cell_id
+          in: path
+          description: cell id
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      requestBody:
+        description: cell meta object
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Added new cell
+    delete:
+      summary: Delete metadata for test
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: delete_testmeta
+      tags:
+        - Test Meta
+      parameters:
+        - name: cell_id
+          in: path
+          description: cell id
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Deleted Cell
+  /cells/all/tests/{test_name}/meta:
+    get:
+      summary: Fetches test metadata of testname
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: get_testmeta
+      tags:
+        - Test Meta
+      parameters:
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+  /cells/all/tests/{test_name}/ts:
+    get:
+      summary: Fetches timeseries data of testname
+      x-openapi-router-controller: app.controllers.timeseries_controller
+      operationId: get_ts
+      tags:
+        - Test Ts
+      parameters:
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+  /cells/{cell_id}/tests/{test_name}/ts:
+    get:
+      summary: Fetches timeseries data for given cell id
+      x-openapi-router-controller: app.controllers.timeseries_controller
+      operationId: get_ts_by_cell_id
+      tags:
+        - Test Ts
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Test Name
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+    post:
+      summary: Add timeseries data for test
+      x-openapi-router-controller: app.controllers.timeseries_controller
+      operationId: add_ts
+      tags:
+        - Test Ts
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      requestBody:
+        description: Add ts object
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Added test meta
+    patch:
+      summary: Updates timeseries data for test
+      x-openapi-router-controller: app.controllers.timeseries_controller
+      operationId: update_ts
+      tags:
+        - Test Ts
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      requestBody:
+        description: Add ts object
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Added test meta
+    delete:
+      summary: Delete timeseries data for test
+      x-openapi-router-controller: app.controllers.timeseries_controller
+      operationId: delete_ts
+      tags:
+        - Test Ts
+      parameters:
+        - name: cell_id
+          in: path
+          description: cell id
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: test_name
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Deleted Cell
+  /cells/cyclestats:
+    get:
+      summary: Fetches cycle stats
+      x-openapi-router-controller: app.controllers.stats_controller
+      operationId: get_cycle_stats
+      tags:
+        - Stats
+      responses:
+        "200":
+          description: Successfull response
+  /cells/{cell_id}/cyclestats:
+    get:
+      summary: Fetches cycle stats for cell id
+      x-openapi-router-controller: app.controllers.stats_controller
+      operationId: get_cycle_stats_by_cell_id
+      tags:
+        - Stats
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfull
 components:
   schemas:
     Path:

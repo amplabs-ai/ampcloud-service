@@ -16,3 +16,4 @@ batteryclient
 celery
 flask-cors
 tables
+marshmallow
