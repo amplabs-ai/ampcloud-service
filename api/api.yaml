@@ -192,3 +192,34 @@ paths:
       responses:
         "200":
           description: Successfull response
+  /echarts/getAllRecords:
+    get:
+      summary: Fetches all query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_all_records
+      tags:
+        - Stats
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+        - name: step
+          in: query
+          description: steps
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            items:
+              type: integer
+      responses:
+        "200":
+          description: Successfull response
