@@ -10,7 +10,7 @@ from flask_cors import CORS
 
 app = connexion.FlaskApp(__name__)
 app.add_api('../api/api.yaml') 
-app.app.config['DATABASE_URI'] = os.getenv('DATABASE_CONNECTION')
+app.app.config['DATABASE_URI'] = "sqlite:////Users/appperfect/Desktop/battery_archive_service/test_db"
 # READ CONFIG from env file
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)

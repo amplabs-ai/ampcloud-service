@@ -85,6 +85,8 @@ class OUTPUT_LABELS(Enum):
     DISCHARGE_ENERGY = "Discharge_Energy (Wh)"
     ENV_TEMPERATURE = "Environment_Temperature (C)"
     CELL_TEMPERATURE = "Cell_Temperature (C)"
+    START_TIME = "Start_Time"
+    END_TIME = "End_Time"
 
 
 class LABEL(Enum):
@@ -156,5 +158,6 @@ RESPONSE_MESSAGE = {
     "TS_ADDED": "Test timeseries data for cell id {} added successfully",
     "TS_UPDATED": "Test timeseries data for cell id {} updated successfully",
     "REQUIRED": "timeseries_data and stats fields are required",
-    "LIST_NOT_EMPTY": "timeseries_data list cannot be empty"
+    "LIST_NOT_EMPTY": "timeseries_data list cannot be empty",
+    "PROCESS_COMPLETE": "Process Complete"
 }
