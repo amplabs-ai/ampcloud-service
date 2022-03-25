@@ -3,6 +3,7 @@ from connexion import ProblemException
 import os 
 from flask import jsonify 
 from sqlalchemy import create_engine
+from app.archive_constants import AMPLABS_DB_URL
 from app.exception_handler import *
 from app.model import Model
 from flask_cors import CORS
@@ -10,7 +11,7 @@ from flask_cors import CORS
 
 app = connexion.FlaskApp(__name__)
 app.add_api('../api/api.yaml') 
-app.app.config['DATABASE_URI'] = os.getenv('DATABASE_CONNECTION')
+app.app.config['DATABASE_URI'] = AMPLABS_DB_URL
 # READ CONFIG from env file
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)
