@@ -141,7 +141,7 @@ Archive Operator
 
 class ArchiveOperator:
     def __init__(self, config={}):
-        url = "sqlite:////Users/appperfect/Desktop/battery_archive_service/test_db"
+        url = "postgresql://mrs_test:App4ever#@ds-postgres.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_test"
 
         engine = create_engine(url, **config)
         Model.metadata.create_all(engine)
@@ -229,6 +229,14 @@ class ArchiveOperator:
         else:
             return self.session.execute(
                 EFFICIENCY_QUERY.format(("('" + cell_id[0] + "')"), email))
+    
+    def get_all_data_from_CCVC_query(self, cell_id, email):
+        if len(cell_id)>1:
+            return self.session.execute(
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(tuple(cell_id), email))
+        else:
+            return self.session.execute(
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(("('" + cell_id[0] + "')"), email))
 
 
 
