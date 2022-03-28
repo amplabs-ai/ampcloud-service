@@ -192,13 +192,13 @@ paths:
       responses:
         "200":
           description: Successfull response
-  /echarts/getAllRecords:
+  /echarts/compareByCycleTime:
     get:
-      summary: Fetches all query results
+      summary: Fetches comapre cycle voltage and current query results
       x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_all_records
+      operationId: get_compare_by_cycle_time
       tags:
-        - Stats
+        - Echart
       parameters:
         - name: cell_id
           in: query
@@ -210,16 +210,6 @@ paths:
             type: array
             items:
               type: string
-        - name: step
-          in: query
-          description: steps
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: integer
-            items:
-              type: integer
       responses:
         "200":
           description: Successfull response

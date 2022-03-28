@@ -17,8 +17,7 @@ app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(ProblemException, problem_exception)
-CORS(app.app)
-
+CORS(app.app, origins=["http://localhost:3000"], supports_credentials=True)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 
 if __name__ == "__main__":

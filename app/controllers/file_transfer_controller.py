@@ -9,7 +9,7 @@ def upload_file(tester):
     status[email] = {}
     files=request.files.getlist("file")
     for file in files:
-        status[email][file.filename] = 2
+        status[email][file.filename] = {"percentage": 2, "detail": "IN PROGRESS"}
     file_data_upload_service(tester, files, email)
     return Response(200, RESPONSE_MESSAGE['PROCESS_COMPLETE'], status.get(email)).to_dict(), 200
 

@@ -48,3 +48,25 @@ where
     email = '{}'
 order by cycle_index, series) as foo where series is not null
 """
+COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY = """
+SELECT KEY || ': ' || r.cell_id AS series_1,
+KEY || ' ' || cycle_index || ': ' || r.cell_id AS series_2,
+              r.cycle_index,
+              r.test_time,
+              r.cycle_time,
+              value
+FROM
+  (SELECT cycle_timeseries.cell_id,
+          cycle_index,
+          test_time,
+          cycle_time,
+          json_build_object('V', v, 'C', i) AS line
+   FROM cycle_timeseries
+   WHERE cell_id IN {} and email = '{}'
+     ) AS r
+JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[V,C]')
+ORDER BY r.cell_id,
+         r.test_time,
+         r.cycle_time,
+         KEY 
+"""

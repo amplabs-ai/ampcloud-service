@@ -229,6 +229,14 @@ class ArchiveOperator:
         else:
             return self.session.execute(
                 EFFICIENCY_QUERY.format(("('" + cell_id[0] + "')"), email))
+    
+    def get_all_data_from_CCVC_query(self, cell_id, email):
+        if len(cell_id)>1:
+            return self.session.execute(
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(tuple(cell_id), email))
+        else:
+            return self.session.execute(
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(("('" + cell_id[0] + "')"), email))
 
 
 

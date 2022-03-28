@@ -12,7 +12,7 @@ def file_data_upload_service(tester, files, email):
         filename = file.filename
         cell_id = file.filename.split(".")[0]
         try:
-            status[email][filename] = 5
+            status[email][filename]['percentage'] = 5
 
             if tester == 'arbin':
                 df_merge = read_arbin(file=file)
@@ -21,10 +21,10 @@ def file_data_upload_service(tester, files, email):
             if tester == 'generic':
                 df_merge = read_generic(file)
 
-            status[email][filename] = 20
+            status[email][filename]['percentage'] = 20
             df_calc = sort_timeseries(df_merge)
 
-            status[email][filename] = 25
+            status[email][filename]['percentage'] = 25
             stat_df, final_df = calc_cycle_stats(df_calc, filename, email)
             cell_meta = pd.DataFrame(data = {'cell_id': cell_id, 'email':[email]})
 
@@ -32,19 +32,20 @@ def file_data_upload_service(tester, files, email):
             stat_df['email'] = email
             final_df['cell_id'] = cell_id
             final_df['email'] = email
-            status[email][filename] = 66
+            status[email][filename]['percentage'] = 66
             ao = ArchiveOperator()
             ao.remove_cell_from_archive(cell_id, email)
             ao.add_all(cell_meta, CellMeta)
             ao.add_all(stat_df, CycleStats)
             ao.add_all(final_df,CycleTimeSeries)
-            status[email][filename] = 78
+            status[email][filename]['percentage'] = 78
             ao.commit()
-            status[email][filename] = 100
+            status[email][filename]['percentage'] = 100
+            status[email][filename]['detail'] = "COMPLETED"
 
         except Exception as err:
-            status[email][filename] = -1
-            print(err)
+            status[email][filename]['percentage'] = -1
+            status[email][filename]['detail'] = "FAILED, file not supported"
 
 
 def download_cycle_timeseries_service(cell_id, email):

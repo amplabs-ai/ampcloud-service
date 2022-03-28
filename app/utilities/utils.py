@@ -114,7 +114,7 @@ def calc_cycle_stats(df_t, filename, email):
     step = 37/len(df_c.index)
 
     for c_ind in df_c.index:
-        status[email][filename] += step
+        status[email][filename]['percentage'] += step
         x = c_ind + 1
 
         df_f = df_t[df_t[LABEL.CYCLE_INDEX.value] == x]
