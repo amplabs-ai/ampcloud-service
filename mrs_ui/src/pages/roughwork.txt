@@ -1,0 +1,254 @@
+/*
+  @get api/dashboardData
+  parameter = [
+    cellIDs..., STEP = 1
+  ]
+*/
+
+response = [
+	{
+		__chartName__: "Cycle Quantities by step",
+		dataset: [
+			{
+				id: "__cellId__",
+				source: [
+					{
+						ah: 9.143681069215351e-5,
+						cycle_index: 2,
+						cycle_time: 0.16150000000000375,
+						series: "HC_VC c: 2",
+						v: 3.3822669982910156,
+					},
+					{},
+					// ....
+				],
+			},
+			{
+				id: "__cellId__",
+				source: [
+					//...
+				],
+			},
+			{},
+			// ....
+		],
+	},
+	{
+		__chartName__: "Cycle Index Data - Energy and Capacity Decay",
+		dataset: [
+			// ...
+		],
+	},
+	{
+		// ...
+	},
+];
+
+dataset: [
+	{
+		id: "a_a",
+		source: [
+			{
+				ah: 9.143681069215351e-5,
+				cycle_index: 2,
+				cycle_time: 0.16150000000000375,
+				series: "HC_VC c: 2",
+				v: 3.3822669982910156,
+			},
+			{
+				ah: 0.019504774826248485,
+				cycle_index: 2,
+				cycle_time: 10.162300000000002,
+				series: "HC_VC c: 2",
+				v: 10.4021644592285156,
+			},
+			{
+				ah: 0.04700604596465163,
+				cycle_index: 2,
+				cycle_time: 20.1627,
+				series: "HC_VC c: 2",
+				v: 3.4051513671875,
+			},
+			{
+				ah: 0.07450751740491392,
+				cycle_index: 2,
+				cycle_time: 30.163300000000007,
+				series: "HC_VC c: 2",
+				v: 3.407909393310547,
+			},
+			{
+				ah: 0.1020071459788084,
+				cycle_index: 2,
+				cycle_time: 40.1632,
+				series: "HC_VC c: 2",
+				v: 3.4104537963867188,
+			},
+			{
+				ah: 0.12951003268579644,
+				cycle_index: 2,
+				cycle_time: 50.16420000000001,
+				series: "HC_VC c: 2",
+				v: 3.412334442138672,
+			},
+			{
+				ah: 0.1570122342753808,
+				cycle_index: 2,
+				cycle_time: 60.165000000000006,
+				series: "HC_VC c: 2",
+				v: 3.4142112731933594,
+			},
+			{
+				ah: 0.18451375392321745,
+				cycle_index: 2,
+				cycle_time: 70.1655,
+				series: "HC_VC c: 2",
+				v: 3.4154281616210938,
+			},
+			{
+				ah: 0.21201410784235264,
+				cycle_index: 2,
+				cycle_time: 80.1655,
+				series: "HC_VC c: 2",
+				v: 3.41741943359375,
+			},
+			{
+				ah: 0.23951455662474366,
+				cycle_index: 2,
+				cycle_time: 90.1656,
+				series: "HC_VC c: 2",
+				v: 3.4187469482421875,
+			},
+			{
+				ah: 0.26701556019381684,
+				cycle_index: 2,
+				cycle_time: 100.16600000000001,
+				series: "HC_VC c: 2",
+				v: 3.420734405517578,
+			},
+			{
+				ah: 0.2945174284992086,
+				cycle_index: 2,
+				cycle_time: 110.1667,
+				series: "HC_VC c: 2",
+				v: 3.4219512939453125,
+			},
+			{
+				ah: 0.3220185163229174,
+				cycle_index: 2,
+				cycle_time: 120.1672,
+				series: "HC_VC c: 2",
+				v: 3.42327880859375,
+			},
+			{
+				ah: 0.3495185544914272,
+				cycle_index: 2,
+				cycle_time: 130.1673,
+				series: "HC_VC c: 2",
+				v: 3.4248275756835938,
+			},
+		],
+	},
+	{
+		id: "a_b",
+		source: [
+			{
+				ah: 9.143681069215351e-5,
+				cycle_index: 2,
+				cycle_time: 0.16150000000000375,
+				series: "HC_VC c: 2",
+				v: 3.3822669982910156,
+			},
+			{
+				ah: 0.019504774826248485,
+				cycle_index: 2,
+				cycle_time: 10.162300000000002,
+				series: "HC_VC c: 2",
+				v: 3.4021644592285156,
+			},
+			{
+				ah: 0.04700604596465163,
+				cycle_index: 2,
+				cycle_time: 20.1627,
+				series: "HC_VC c: 2",
+				v: 3.4051513671875,
+			},
+			{
+				ah: 0.07450751740491392,
+				cycle_index: 2,
+				cycle_time: 30.163300000000007,
+				series: "HC_VC c: 2",
+				v: 3.407909393310547,
+			},
+			{
+				ah: 0.1020071459788084,
+				cycle_index: 2,
+				cycle_time: 40.1632,
+				series: "HC_VC c: 2",
+				v: 3.4104537963867188,
+			},
+			{
+				ah: 0.12951003268579644,
+				cycle_index: 2,
+				cycle_time: 50.16420000000001,
+				series: "HC_VC c: 2",
+				v: 3.412334442138672,
+			},
+			{
+				ah: 0.1570122342753808,
+				cycle_index: 2,
+				cycle_time: 60.165000000000006,
+				series: "HC_VC c: 2",
+				v: 3.4142112731933594,
+			},
+			{
+				ah: 0.18451375392321745,
+				cycle_index: 2,
+				cycle_time: 70.1655,
+				series: "HC_VC c: 2",
+				v: 3.4154281616210938,
+			},
+			{
+				ah: 0.21201410784235264,
+				cycle_index: 2,
+				cycle_time: 80.1655,
+				series: "HC_VC c: 2",
+				v: 3.41741943359375,
+			},
+			{
+				ah: 0.23951455662474366,
+				cycle_index: 2,
+				cycle_time: 90.1656,
+				series: "HC_VC c: 2",
+				v: 3.4187469482421875,
+			},
+			{
+				ah: 0.26701556019381684,
+				cycle_index: 2,
+				cycle_time: 100.16600000000001,
+				series: "HC_VC c: 2",
+				v: 3.420734405517578,
+			},
+			{
+				ah: 0.2945174284992086,
+				cycle_index: 2,
+				cycle_time: 110.1667,
+				series: "HC_VC c: 2",
+				v: 3.4219512939453125,
+			},
+			{
+				ah: 0.3220185163229174,
+				cycle_index: 2,
+				cycle_time: 120.1672,
+				series: "HC_VC c: 2",
+				v: 3.42327880859375,
+			},
+			{
+				ah: 0.3495185544914272,
+				cycle_index: 2,
+				cycle_time: 130.1673,
+				series: "HC_VC c: 2",
+				v: 3.4248275756835938,
+			},
+		],
+	}
+],
