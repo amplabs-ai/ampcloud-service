@@ -1,0 +1,55 @@
+@import '~antd/dist/antd.css';
+
+:root {
+  /* --border-color: #080808; */
+  --input-bg: #f6f8f9;
+  --txt-second-color: #ccc;
+  --box-bg: #fff;
+  --box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  padding-top: 75px;
+}
+
+@media only screen and (max-width: 600px) {
+  .para {
+    font-size: 1rem!important;
+  }
+  .ant-table-small .ant-table-selection-column {
+    min-width: 111px!important;
+  }
+  .filter-bar-delete-column {
+    min-width: 45px;
+  }
+}
+
+input:focus,
+.btn:focus {
+  outline: 0px !important;
+  -webkit-appearance: none;
+  box-shadow: none !important;
+}
+
+.para {
+  font-size: 1.25rem;
+}
+
+.card-body {
+  padding: 0.4rem 0.4rem!important;
+}
+
+h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant-typography h5 {
+  font-size: 14.5px!important;
+  margin-bottom: 0px!important;
+}
+
+.row {
+  --bs-gutter-x: 0.5rem!important;
+}
+
+.filterBar .btn-sm {
+  padding: 0.16rem 0.5rem!important;
+  font-size: .775rem!important;
+}

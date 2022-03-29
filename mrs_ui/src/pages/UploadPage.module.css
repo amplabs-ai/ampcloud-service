@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 100px;
+}
+
+@media only screen and (max-width: 600px) {
+  .wrapper {
+    margin-top: 0px;
+    padding: 0px 0px;
+  }
+  .uploadSection {
+    height: 300px;
+    padding: 0px 0px;
+  }
+}
+
+.uploadSection {
+  height: 400px;
+  padding: 0px 200px;
+  margin-bottom: 400px;
+}
+
+.errorMsg {
+  color: red;
+}
