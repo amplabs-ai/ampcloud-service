@@ -24,6 +24,25 @@ const ViewCodeModal = ({
     return code;
   };
 
+  function copyToClipboard(textToCopy) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(textToCopy);
+    } else {
+      let textArea = document.createElement("textarea");
+      textArea.value = textToCopy;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      return new Promise((res, rej) => {
+        document.execCommand("copy") ? res() : rej();
+        textArea.remove();
+      });
+    }
+  }
+
   return (
     <>
       <Modal
@@ -41,7 +60,9 @@ const ViewCodeModal = ({
             console.log("copied!");
             message.success("Copied to clipboard!");
             message.success("Copied to clipboard!");
-            navigator.clipboard.writeText(codeString);
+            copyToClipboard(
+              formatCode(codeString, searchParams, Cookies.get("userId"))
+            );
           }}
           showLineNumbers={true}
           wrapLines={true}
@@ -55,9 +76,12 @@ const ViewCodeModal = ({
           <Text
             type="secondary"
             onClick={() => {
-              navigator.clipboard.writeText(
+              copyToClipboard(
                 formatCode(codeString, searchParams, Cookies.get("userId"))
               );
+              // navigator.clipboard.writeText(
+              //   formatCode(codeString, searchParams, Cookies.get("userId"))
+              // );
               message.success("Copied to clipboard!");
               message.success("Copied to clipboard!");
               console.log("copied!");

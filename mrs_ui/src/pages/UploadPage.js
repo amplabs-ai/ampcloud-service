@@ -2,145 +2,191 @@ import React, { useState, useEffect } from "react";
 import DropFileInput from "../components/DropFileInput";
 import styles from "./UploadPage.module.css";
 import axios from "axios";
-import { Radio, Typography } from "antd";
+import { Radio, Typography, Alert } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 
 const UploadPage = () => {
-	const [files, setFiles] = useState([]);
-	const [uploadProgress, setUploadProgress] = useState({});
-	const [fileUploadType, setFileUploadType] = useState("arbin");
+  const navigate = useNavigate();
 
-	const [reUpload, setReUpload] = useState(false);
+  const [files, setFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [fileUploadType, setFileUploadType] = useState("arbin");
 
-	const [intervalId, setIntervalId] = useState(null);
+  const [reUpload, setReUpload] = useState(false);
 
-	const [shallRedirectToDashBoard, setShallRedirectToDashBoard] =
-		useState(false);
+  const [intervalId, setIntervalId] = useState(null);
 
-	useEffect(() => {
-		return () => {
-			if (intervalId) {
-				clearInterval(intervalId);
-			}
-		};
-	}, [intervalId]);
+  const [shallRedirectToDashBoard, setShallRedirectToDashBoard] =
+    useState(false);
 
-	const onFileChange = (files) => {
-		console.log(files);
-		setUploadProgress({});
-		setFiles(files);
-	};
+  const [errorMessage, setErrorMessage] = useState("");
 
-	const fileUploadHandler = (e) => {
-		let formData = new FormData();
-		files.forEach((file) => {
-			formData.append("file", file);
-		});
-		let endpoint = "";
-		switch (fileUploadType) {
-			case "maccor":
-				endpoint = "http://localhost:4000/upload/cells/maccor";
-				break;
-			case "generic":
-				endpoint = "http://localhost:4000/upload/cells/generic";
-				break;
-			default:
-				endpoint = "http://localhost:4000/upload/cells/arbin";
-				break;
-		}
-		let x = getStatus();
-		setReUpload(false);
-		axios
-			.post(endpoint, formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			})
-			.then((response) => {
-				console.log("file upload finish", response.data.records);
-				console.log("uploadProgress", uploadProgress);
-				let redirect = true;
-				for (const key in response.data.records) {
-					const file = response.data.records[key];
-					if (file.percentage === -1) {
-						redirect = false;
-						setReUpload(true);
-						setUploadProgress((o) => {
-							return {};
-						});
-						setTimeout(() => {
-							clearInterval(x);
-						}, 2000);
-						break;
-					}
-				}
-				console.log("redirect", redirect);
-				if (redirect) {
-					setShallRedirectToDashBoard(true);
-				}
-			})
-			.catch((error) => {
-				console.log("file upload err", error);
-			});
-	};
+  useEffect(() => {
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [intervalId]);
 
-	const getStatus = () => {
-		let intervalId = setInterval(() => {
-			axios
-				.get("http://localhost:4000/upload/cells/status")
-				.then((res) => {
-					console.log("status", res.data.records);
-					setUploadProgress({ ...uploadProgress, ...res.data.records });
-				})
-				.catch((err) => {
-					console.log(err);
-				});
-		}, 500);
-		console.log("intervalID", intervalId);
-		setIntervalId(intervalId);
-		return intervalId;
-	};
+  const onFileChange = (files) => {
+    console.log(files);
+    setUploadProgress({});
+    setFiles(files);
+  };
 
-	return (
-		<div className={styles.wrapper + " container"}>
-			<div className="row">
-				<div className="col-md-12 p-2">
-					<div className="px-3">
-						<p className="para fw-light">
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
-							cursus vel diam nec commodo. Suspendisse tincidunt mi at dui
-							tincidunt gravida. Duis id mattis magna.<br></br> Nulla facilisi.
-							Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
-							cursus vel diam nec commodo. Suspendisse tincidunt mi at dui
-							tincidunt gravida. Duis id mattis magna. Nulla facilisi.
-						</p>
-					</div>
-				</div>
-				<div className={`col-md-12 ${styles.uploadSection}`}>
-					<div className="mb-2">
-						<Title level={5}>File-Type:</Title>
-						<Radio.Group
-							defaultValue={fileUploadType}
-							onChange={(e) => setFileUploadType(e.target.value)}
-							buttonStyle="solid"
-						>
-							<Radio.Button value="arbin">arbin</Radio.Button>
-							<Radio.Button value="maccor">maccor</Radio.Button>
-							<Radio.Button value="generic">generic</Radio.Button>
-						</Radio.Group>
-					</div>
-					<DropFileInput
-						onFileChange={(files) => onFileChange(files)}
-						fileUploadHandler={fileUploadHandler}
-						uploadProgress={uploadProgress}
-						shallRedirectToDashBoard={shallRedirectToDashBoard}
-						reUpload={reUpload}
-					/>
-				</div>
-			</div>
-		</div>
-	);
+  const fileUploadHandler = (e) => {
+    let formData = new FormData();
+    files.forEach((file) => {
+      formData.append("file", file);
+    });
+    let endpoint = "";
+    switch (fileUploadType) {
+      case "maccor":
+        endpoint =
+          "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/upload/cells/maccor";
+        break;
+      case "generic":
+        endpoint =
+          "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/upload/cells/generic";
+        break;
+      default:
+        endpoint =
+          "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/upload/cells/arbin";
+        break;
+    }
+    let x = getStatus();
+    setReUpload(false);
+    axios
+      .post(endpoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        console.log("file upload finish", response.data.records);
+        console.log("uploadProgress", uploadProgress);
+        let redirect = true;
+        for (const key in response.data.records) {
+          const file = response.data.records[key];
+          if (file.percentage === -1) {
+            redirect = false;
+            setReUpload(true);
+            setUploadProgress({});
+            setTimeout(() => {
+              clearInterval(x);
+            }, 2000);
+            break;
+          }
+        }
+        console.log("redirect", redirect);
+        if (redirect) {
+          // setShallRedirectToDashBoard(true);
+          setTimeout(() => navigate("/dashboard"), 2000);
+        }
+      })
+      .catch((error) => {
+        console.log("file upload err", error);
+        clearInterval(x);
+        setReUpload(true);
+
+        let redirect = true;
+        for (const key in uploadProgress) {
+          const file = uploadProgress[key];
+          if (file.percentage === -1) {
+            redirect = false;
+            setReUpload(true);
+            setUploadProgress({});
+            setTimeout(() => {
+              clearInterval(x);
+            }, 2000);
+            break;
+          }
+        }
+        console.log("redirect", redirect);
+        if (redirect) {
+          // setShallRedirectToDashBoard(true);
+          setTimeout(() => navigate("/dashboard"), 2000);
+        }
+      });
+  };
+
+  const getStatus = () => {
+    let errorCount = 0;
+    let intervalId = setInterval(() => {
+      axios
+        .get(
+          "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/upload/cells/status"
+        )
+        .then((res) => {
+          console.log("status", res.data.records);
+          if (!res.data.records) {
+            // initialize upload progress when response is undefined.
+            let y = {};
+            files.forEach((f) => {
+              y[f.name].detail = "IN PROGRESS";
+              y[f.name].percentage = 2;
+            });
+            setUploadProgress(y);
+          } else {
+            console.log(files);
+            setUploadProgress({ ...uploadProgress, ...res.data.records });
+          }
+        })
+        .catch((err) => {
+          if (errorCount > 5) {
+            clearInterval(intervalId);
+          }
+          console.log(err);
+          errorCount++;
+        });
+    }, 2000);
+    console.log("intervalID", intervalId);
+    setIntervalId(intervalId);
+    return intervalId;
+  };
+
+  return (
+    <div className={styles.wrapper + " container"}>
+      <div className="row">
+        <div className="col-md-12 p-2">
+          <div className="px-3">
+            <p className="para fw-light">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
+              cursus vel diam nec commodo. Suspendisse tincidunt mi at dui
+              tincidunt gravida. Duis id mattis magna.<br></br> Nulla facilisi.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
+              cursus vel diam nec commodo. Suspendisse tincidunt mi at dui
+              tincidunt gravida. Duis id mattis magna. Nulla facilisi.
+            </p>
+          </div>
+        </div>
+        <div className={`col-md-12 ${styles.uploadSection}`}>
+          <div className="mb-2">
+            <Title level={5}>File-Type:</Title>
+            <Radio.Group
+              defaultValue={fileUploadType}
+              onChange={(e) => setFileUploadType(e.target.value)}
+              buttonStyle="solid"
+            >
+              <Radio.Button value="arbin">arbin</Radio.Button>
+              <Radio.Button value="maccor">maccor</Radio.Button>
+              <Radio.Button value="generic">generic</Radio.Button>
+            </Radio.Group>
+          </div>
+          <DropFileInput
+            onFileChange={(files) => onFileChange(files)}
+            fileUploadHandler={fileUploadHandler}
+            uploadProgress={uploadProgress}
+            shallRedirectToDashBoard={shallRedirectToDashBoard}
+            reUpload={reUpload}
+          />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default UploadPage;

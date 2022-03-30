@@ -1,8 +1,12 @@
+import time
 import pandas as pd
 from app.archive_constants import LABEL
 
 status = {}
 
+def clear_status(email):
+    time.sleep(2)
+    status.pop(email, None)
 
 def sort_timeseries(df_tmerge):
     # print(df_tmerge)
