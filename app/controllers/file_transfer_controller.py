@@ -1,6 +1,7 @@
+import threading
 from app.archive_constants import RESPONSE_MESSAGE
 from app.services.file_transfer_service import *
-from app.utilities.utils import status
+from app.utilities.utils import clear_status, status
 from flask import make_response, request
 from app.response import Response
 
@@ -11,6 +12,7 @@ def upload_file(tester):
     for file in files:
         status[email][file.filename] = {"percentage": 2, "detail": "IN PROGRESS"}
     file_data_upload_service(tester, files, email)
+    threading.Thread(target=clear_status, args=(email,)).start()
     return Response(200, RESPONSE_MESSAGE['PROCESS_COMPLETE'], status.get(email)).to_dict(), 200
 
 def download_cycle_timeseries(cell_id):

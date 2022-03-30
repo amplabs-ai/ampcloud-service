@@ -4,7 +4,11 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "./auth";
 
+import { useLocation } from "react-router-dom";
+
 const Navbar = () => {
+	const location = useLocation();
+
 	const auth = useAuth();
 
 	const handleLogout = () => {
@@ -76,7 +80,7 @@ const Navbar = () => {
 				<a className="navbar-brand" href="/">
 					<img style={{ maxWidth: "125px" }} src={logo} alt="AMPLABS" />
 				</a>
-				{auth.user && (
+				{auth.user && location.pathname !== "/" && (
 					<>
 						<button
 							className="navbar-toggler"
@@ -90,7 +94,7 @@ const Navbar = () => {
 							<span className="navbar-toggler-icon"></span>
 						</button>
 						<div
-							className="collapse navbar-collapse"
+							className="collapse navbar-collapse justify-content-end"
 							// container
 							id="navbarNav"
 						>

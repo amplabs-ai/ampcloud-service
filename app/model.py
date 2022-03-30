@@ -268,4 +268,7 @@ class ArchiveOperator:
     def select_table_with_id(self, table, cell_id, email):
         return self.session.query(table).filter(table.cell_id == cell_id, table.email == email)
         
+    def select_data_from_table(self, table, email):
+        return self.session.query(table).filter(table.email == email).first()
+        
 

@@ -71,12 +71,12 @@ const DropFileInput = (props) => {
 		}
 	};
 
-	const shallRedirectToDashBoard = () => {
-		if (props.shallRedirectToDashBoard) {
-			setTimeout(() => navigate("/dashboard"), 1500);
-		}
-	};
-	shallRedirectToDashBoard();
+	// const shallRedirectToDashBoard = () => {
+	// 	if (props.shallRedirectToDashBoard) {
+	// 		setTimeout(() => navigate("/dashboard"), 1000);
+	// 	}
+	// };
+	// shallRedirectToDashBoard();
 
 	return (
 		<>

@@ -12,7 +12,7 @@ import initialChartOptions from "../chartConfig/initialConfigs";
 
 import sourceCode from "../chartConfig/chartSourceCode";
 
-import { Result, Button } from "antd";
+import { Result, Button, Alert } from "antd";
 
 const DashboardPage = () => {
   // const sortData = (data) => {
@@ -27,11 +27,23 @@ const DashboardPage = () => {
   const cycleQtyByStepChart = useRef();
   const compareByCycleTimeChart = useRef();
 
+  const [searchParams, setSearchParams] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [codeContent, setCodeContent] = useState("");
-
-  const [searchParams, setSearchParams] = useState("");
   const [noDataFound, setNoDataFound] = useState(false);
+  const [chartLoadingError, setChartLoadingError] = useState({
+    cycleIndexChart: false,
+    timeSeriesChart: false,
+    efficiencyChart: false,
+    cycleQtyByStepChart: false,
+    compareByCycleTimeChart: false,
+  });
+
+  const [internalServerError, setInternalServerError] = useState("");
+
+  const internalServerErrorFound = (errStatus) => {
+    setInternalServerError(errStatus);
+  };
 
   const handleFilterChange = (cellIds, step) => {
     console.log("yrrr", cellIds);
@@ -66,7 +78,7 @@ const DashboardPage = () => {
     switch (chartType) {
       case "cycleIndex":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://localhost:4000/echarts/energyAndCapacityDecay`,
+          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay`,
           cycleIndexChart,
           {
             mapToId: "cycle_index",
@@ -83,7 +95,7 @@ const DashboardPage = () => {
         break;
       case "timeSeries":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://localhost:4000/echarts/energyAndCapacityDecay`,
+          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay`,
           timeSeriesChart,
           {
             mapToId: "test_time",
@@ -100,7 +112,7 @@ const DashboardPage = () => {
         break;
       case "efficiency":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://localhost:4000/echarts/efficiency`,
+          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/efficiency`,
           efficiencyChart,
           {
             mapToId: "cycle_index",
@@ -117,7 +129,7 @@ const DashboardPage = () => {
         break;
       case "cycleQtyByStep":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://localhost:4000/echarts/cycleQuantitiesByStep`,
+          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/cycleQuantitiesByStep`,
           cycleQtyByStepChart,
           {
             mapToId: "cycle_time",
@@ -134,7 +146,7 @@ const DashboardPage = () => {
         break;
       case "compareByCycleTime":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://localhost:4000/echarts/compareByCycleTime`,
+          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/compareByCycleTime`,
           compareByCycleTimeChart,
           {
             mapToId: "cycle_time",
@@ -152,14 +164,17 @@ const DashboardPage = () => {
       default:
         break;
     }
+    showChartLoadingError(ref.current.ele, false);
     ref.current.getEchartsInstance().showLoading();
     axios
       .get(endpoint, request)
       .then((result) => {
-        if (!result.data.records[0].length) {
-          showChartLoadingError(ref.current.ele);
-          return;
+        if (result.status !== 200) {
+          console.log("result status", result.status);
         }
+        ref.current.getEchartsInstance().dispatchAction({
+          type: "restore",
+        });
         ref.current.getEchartsInstance().setOption({
           title: {
             show: true,
@@ -187,7 +202,7 @@ const DashboardPage = () => {
             type: "value",
             name: yAxis.title,
             nameLocation: "middle",
-            nameGap: 20,
+            nameGap: 30,
           },
           legend: _createChartLegend(result.data.records[0], chartId),
           toolbox: {
@@ -209,8 +224,9 @@ const DashboardPage = () => {
         ref.current.getEchartsInstance().hideLoading();
       })
       .catch((err) => {
-        console.log(err);
-        showChartLoadingError(ref.current.ele);
+        console.log("err", err);
+        ref.current.getEchartsInstance().showLoading();
+        showChartLoadingError(ref.current.ele, true);
       });
   };
 
@@ -219,11 +235,10 @@ const DashboardPage = () => {
     setModalVisible(true);
   };
 
-  const showChartLoadingError = (chartRef) => {
-    let div = document.createElement("div");
-    div.innerHTML = "<h6 style='color: red;'>Error Loading Chart!</h6>";
-    div.style = `height: 300px;`;
-    chartRef.parentNode.replaceChild(div, chartRef);
+  const showChartLoadingError = (chartRef, show) => {
+    setChartLoadingError((prevState) => {
+      return { ...prevState, [chartRef]: show };
+    });
   };
 
   const _createChartDataSeries = (data, xAxis, yAxis, chartId) => {
@@ -276,9 +291,23 @@ const DashboardPage = () => {
         </Button>
       }
     />
+  ) : internalServerError ? (
+    <Result
+      status="500"
+      title="500"
+      subTitle="Sorry, something went wrong."
+      extra={
+        <Button type="primary" href="/dashboard">
+          Reload
+        </Button>
+      }
+    />
   ) : (
     <div style={{ margin: "0.6rem" }}>
-      <DashboardFilterBar onFilterChange={handleFilterChange} />
+      <DashboardFilterBar
+        onFilterChange={handleFilterChange}
+        internalServerErrorFound={internalServerErrorFound}
+      />
       <ViewCodeModal
         code={codeContent}
         modalVisible={modalVisible}
@@ -289,6 +318,9 @@ const DashboardPage = () => {
         <div className="col-md-6 mt-2">
           <div className="card shadow-sm">
             <div className="card-body">
+              {chartLoadingError.cycleIndexChart && (
+                <Alert message="Error" type="error" showIcon />
+              )}
               <ReactEcharts
                 showLoading
                 ref={cycleIndexChart}
@@ -300,6 +332,9 @@ const DashboardPage = () => {
         <div className="col-md-6 mt-2">
           <div className="card shadow-sm">
             <div className="card-body">
+              {chartLoadingError.timeSeriesChart && (
+                <Alert message="Error" type="error" showIcon />
+              )}
               <ReactEcharts
                 showLoading
                 ref={timeSeriesChart}
@@ -311,6 +346,9 @@ const DashboardPage = () => {
         <div className="col-md-6 mt-2">
           <div className="card shadow-sm">
             <div className="card-body">
+              {chartLoadingError.efficiencyChart && (
+                <Alert message="Error" type="error" showIcon />
+              )}
               <ReactEcharts
                 showLoading
                 ref={efficiencyChart}
@@ -322,6 +360,9 @@ const DashboardPage = () => {
         <div className="col-md-6 mt-2">
           <div className="card shadow-sm">
             <div className="card-body">
+              {chartLoadingError.cycleQtyByStepChart && (
+                <Alert message="Error" type="error" showIcon />
+              )}
               <ReactEcharts
                 showLoading
                 ref={cycleQtyByStepChart}
@@ -333,6 +374,9 @@ const DashboardPage = () => {
         <div className="col-md-12 mt-2">
           <div className="card shadow-sm">
             <div className="card-body">
+              {chartLoadingError.compareByCycleTimeChart && (
+                <Alert message="Error" type="error" showIcon />
+              )}
               <ReactEcharts
                 showLoading
                 ref={compareByCycleTimeChart}

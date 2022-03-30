@@ -53,3 +53,11 @@ h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant
   padding: 0.16rem 0.5rem!important;
   font-size: .775rem!important;
 }
+
+.navbar-dark .navbar-nav .nav-link {
+  color: white!important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: rgb(255, 255, 255, 70%)!important;
+}
