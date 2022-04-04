@@ -16,3 +16,6 @@ def logout():
     resp = make_response(Response(200,"Logout").to_dict())
     resp.delete_cookie('userId')
     return resp
+
+def health_check():
+    return "success", 200

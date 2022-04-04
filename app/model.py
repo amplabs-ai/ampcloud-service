@@ -15,6 +15,7 @@ from app.archive_constants import (AMPLABS_DB_URL, DEGREE, OUTPUT_LABELS,
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from app.queries import *
+from sqlalchemy.pool import NullPool
 
 Model = declarative_base()
 
@@ -140,13 +141,22 @@ Archive Operator
 
 
 class ArchiveOperator:
-    def __init__(self, config={}):
-        url = AMPLABS_DB_URL
+    url = AMPLABS_DB_URL
+    engine = create_engine(url, poolclass=NullPool)
+    Model.metadata.create_all(engine)
 
-        engine = create_engine(url, **config)
-        Model.metadata.create_all(engine)
+    def __init__(self, config={}):
+        pass
+        # self.session = scoped_session(
+        #     sessionmaker(autocommit=False, autoflush=False, bind=engine))
+
+    def set_session(self):
         self.session = scoped_session(
-            sessionmaker(autocommit=False, autoflush=False, bind=engine))
+            sessionmaker(autocommit=False, autoflush=False, bind=ArchiveOperator.engine))
+
+    def release_session(self):
+        self.session.remove()
+        self.session = None
 
     def commit(self):
         self.session.commit()

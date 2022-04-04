@@ -1,9 +1,14 @@
+from decimal import Decimal
 import time
 import pandas as pd
 from app.archive_constants import LABEL
 
 status = {}
 
+def default(obj):
+    if isinstance(obj, Decimal):
+        return str(obj)
+    raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
 def clear_status(email):
     time.sleep(2)
     status.pop(email, None)

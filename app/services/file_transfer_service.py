@@ -12,6 +12,8 @@ def file_data_upload_service(tester, files, email):
         filename = file.filename
         cell_id = file.filename.split(".")[0]
         try:
+            ao = ArchiveOperator()
+            ao.set_session()
             status[email][filename]['percentage'] = 5
 
             if tester == 'arbin':
@@ -33,7 +35,6 @@ def file_data_upload_service(tester, files, email):
             final_df['cell_id'] = cell_id
             final_df['email'] = email
             status[email][filename]['percentage'] = 66
-            ao = ArchiveOperator()
             ao.remove_cell_from_archive(cell_id, email)
             ao.add_all(cell_meta, CellMeta)
             ao.add_all(stat_df, CycleStats)
@@ -46,16 +47,25 @@ def file_data_upload_service(tester, files, email):
         except Exception as err:
             status[email][filename]['percentage'] = -1
             status[email][filename]['detail'] = "FAILED, file not supported"
+        finally:
+            ao.release_session()
 
 
 def download_cycle_timeseries_service(cell_id, email):
-    return ArchiveOperator().get_df_cycle_ts_with_cell_id(cell_id, email)
+    ao = ArchiveOperator()
+    ao.set_session()
+    data = ao.get_df_cycle_ts_with_cell_id(cell_id, email)
+    ao.release_session()
+    return data
 
 
 def download_cycle_data_service(cell_id, email):
-    df = ArchiveOperator().get_df_cycle_data_with_cell_id(cell_id, email)
+    ao = ArchiveOperator()
+    ao.set_session()
+    df = ao.get_df_cycle_data_with_cell_id(cell_id, email)
     df.insert(1, OUTPUT_LABELS.START_TIME.value, None)
     df.insert(2, OUTPUT_LABELS.END_TIME.value, None)
+    ao.release_session()
     return df
 
 
