@@ -1,4 +1,3 @@
-from flask import jsonify
 
 class Response():
     def __init__(self, status, detail, records = None):
@@ -8,4 +7,4 @@ class Response():
             self.records = records
     
     def to_dict(self):
-        return jsonify(self.__dict__)
+        return self.__dict__

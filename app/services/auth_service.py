@@ -5,6 +5,7 @@ from app.model import ArchiveOperator, CellMeta
 def login_service(email):
     try:
         ao = ArchiveOperator()
+        ao.set_session()
         archive_cells = ao.select_data_from_table(CellMeta, email)
         if archive_cells:
             redirect_url = "/dashboard"
@@ -14,3 +15,5 @@ def login_service(email):
     except Exception as err:
         print(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()
