@@ -92,24 +92,24 @@ const UploadPage = () => {
         clearInterval(x);
         setReUpload(true);
 
-        let redirect = true;
-        for (const key in uploadProgress) {
-          const file = uploadProgress[key];
-          if (file.percentage === -1) {
-            redirect = false;
-            setReUpload(true);
-            setUploadProgress({});
-            setTimeout(() => {
-              clearInterval(x);
-            }, 2000);
-            break;
-          }
-        }
-        console.log("redirect", redirect);
-        if (redirect) {
-          // setShallRedirectToDashBoard(true);
-          setTimeout(() => navigate("/dashboard"), 2000);
-        }
+        // let redirect = true;
+        // for (const key in uploadProgress) {
+        //   const file = uploadProgress[key];
+        //   if (file.percentage === -1) {
+        //     redirect = false;
+        //     setReUpload(true);
+        //     setUploadProgress({});
+        //     setTimeout(() => {
+        //       clearInterval(x);
+        //     }, 2000);
+        //     break;
+        //   }
+        // }
+        // console.log("redirect", redirect);
+        // if (redirect) {
+        //   // setShallRedirectToDashBoard(true);
+        //   setTimeout(() => navigate("/dashboard"), 2000);
+        // }
       });
   };
 
@@ -121,19 +121,8 @@ const UploadPage = () => {
           "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/upload/cells/status"
         )
         .then((res) => {
-          console.log("status", res.data.records);
-          if (!res.data.records) {
-            // initialize upload progress when response is undefined.
-            let y = {};
-            files.forEach((f) => {
-              y[f.name].detail = "IN PROGRESS";
-              y[f.name].percentage = 2;
-            });
-            setUploadProgress(y);
-          } else {
-            console.log(files);
+            console.log("status", res.data.records);
             setUploadProgress({ ...uploadProgress, ...res.data.records });
-          }
         })
         .catch((err) => {
           if (errorCount > 5) {
@@ -154,12 +143,13 @@ const UploadPage = () => {
         <div className="col-md-12 p-2">
           <div className="px-3">
             <p className="para fw-light">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
-              cursus vel diam nec commodo. Suspendisse tincidunt mi at dui
-              tincidunt gravida. Duis id mattis magna.<br></br> Nulla facilisi.
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce
-              cursus vel diam nec commodo. Suspendisse tincidunt mi at dui
-              tincidunt gravida. Duis id mattis magna. Nulla facilisi.
+            We provide support for Arbin, Maccor cell test files.<br></br>
+            Arbin: xlsx format<br></br>
+            Maccor: txt format<br></br><br></br>
+            We also provide support for generic csv files:<br></br>
+            CSV with columns (cycle, test_time, current, voltage)<br></br>
+            units for columns = cycle (#), test_time (seconds), current (Amps), voltage (Volts)<br></br> 
+            Note: For current (A) charging is Positive
             </p>
           </div>
         </div>
