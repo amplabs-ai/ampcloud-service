@@ -25,7 +25,7 @@ const LandingPage = () => {
   useEffect(() => {
     axios
       .post(
-        "http://localhost:4000/login",
+        "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/login",
         {
           email: Cookies.get("userId"),
         },
