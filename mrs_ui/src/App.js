@@ -1,14 +1,13 @@
 import "./App.css";
-import Navbar from "./components/Navbar";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
-import UploadPage from "./pages/UploadPage";
-import DashboardPage from "./pages/DashboardPage";
-import { BackTop, Result, Button } from "antd";
-
-import { RequireAuth } from "./components/RequireAuth";
-
 import { AuthProvider } from "./components/auth";
+import { BackTop } from "antd";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { RequireAuth } from "./components/RequireAuth";
+import DashboardPage from "./pages/DashboardPage";
+import LandingPage from "./pages/LandingPage";
+import Navbar from "./components/Navbar";
+import UploadPage from "./pages/UploadPage";
+import PageNotFound from "./pages/PageNotFound";
 
 function App() {
 	return (
@@ -35,24 +34,7 @@ function App() {
 								</RequireAuth>
 							}
 						/>
-						<Route
-							path="*"
-							element={
-								<Result
-									status="404"
-									title="404"
-									subTitle="Sorry, the page you visited does not exist."
-									extra={
-										<Button
-											type="link"
-											onClick={() => window.location.replace("/")}
-										>
-											Back Home
-										</Button>
-									}
-								/>
-							}
-						/>
+						<Route path="*" element={<PageNotFound />} />
 					</Routes>
 				</Router>
 			</AuthProvider>
