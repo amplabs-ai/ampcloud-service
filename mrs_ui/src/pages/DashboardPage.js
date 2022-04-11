@@ -78,7 +78,7 @@ const DashboardPage = () => {
     switch (chartType) {
       case "cycleIndex":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay`,
+          `/echarts/energyAndCapacityDecay`,
           cycleIndexChart,
           {
             mapToId: "cycle_index",
@@ -95,7 +95,7 @@ const DashboardPage = () => {
         break;
       case "timeSeries":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay`,
+          `/echarts/energyAndCapacityDecay`,
           timeSeriesChart,
           {
             mapToId: "test_time",
@@ -112,7 +112,7 @@ const DashboardPage = () => {
         break;
       case "efficiency":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/efficiency`,
+          `/echarts/efficiency`,
           efficiencyChart,
           {
             mapToId: "cycle_index",
@@ -129,7 +129,7 @@ const DashboardPage = () => {
         break;
       case "cycleQtyByStep":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/cycleQuantitiesByStep`,
+          `/echarts/cycleQuantitiesByStep`,
           cycleQtyByStepChart,
           {
             mapToId: "cycle_time",
@@ -146,7 +146,7 @@ const DashboardPage = () => {
         break;
       case "compareByCycleTime":
         [endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-          `http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/compareByCycleTime`,
+          `/echarts/compareByCycleTime`,
           compareByCycleTimeChart,
           {
             mapToId: "cycle_time",
@@ -169,8 +169,13 @@ const DashboardPage = () => {
     axios
       .get(endpoint, request)
       .then((result) => {
+        if (typeof result.data == "string") {
+          result = JSON.parse(result.data.replace(/\bNaN\b/g, "null"));
+        } else {
+          result = result.data;
+        }
         if (result.status !== 200) {
-          console.log("result status", result.status);
+          console.log("result status != 200", result.status);
         }
         ref.current.getEchartsInstance().dispatchAction({
           type: "restore",
@@ -185,9 +190,9 @@ const DashboardPage = () => {
               overflow: "breakAll",
             },
           },
-          dataset: result.data.records[0],
+          dataset: result.records[0],
           series: _createChartDataSeries(
-            result.data.records[0], // replace with actual data
+            result.records[0], // replace with actual data
             xAxis.mapToId,
             yAxis.mapToId,
             chartId
@@ -204,7 +209,7 @@ const DashboardPage = () => {
             nameLocation: "middle",
             nameGap: 30,
           },
-          legend: _createChartLegend(result.data.records[0], chartId),
+          legend: _createChartLegend(result.records[0], chartId),
           toolbox: {
             feature: {
               myTool: {
@@ -217,6 +222,9 @@ const DashboardPage = () => {
               },
               saveAsImage: {
                 show: "true",
+              },
+              dataZoom: {
+                yAxisIndex: "none",
               },
             },
           },
@@ -282,110 +290,114 @@ const DashboardPage = () => {
     };
   };
 
-  return noDataFound ? (
-    <Result
-      title="No Data was found! Please upload files."
-      extra={
-        <Button type="primary" key="console" href="/upload">
-          Go to Upload
-        </Button>
-      }
-    />
-  ) : internalServerError ? (
-    <Result
-      status="500"
-      title="500"
-      subTitle="Sorry, something went wrong."
-      extra={
-        <Button type="primary" href="/dashboard">
-          Reload
-        </Button>
-      }
-    />
-  ) : (
-    <div style={{ margin: "0.6rem" }}>
-      <DashboardFilterBar
-        onFilterChange={handleFilterChange}
-        internalServerErrorFound={internalServerErrorFound}
-      />
-      <ViewCodeModal
-        code={codeContent}
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        searchParams={searchParams}
-      />
-      <div className="row pb-5">
-        <div className="col-md-6 mt-2">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              {chartLoadingError.cycleIndexChart && (
-                <Alert message="Error" type="error" showIcon />
-              )}
-              <ReactEcharts
-                showLoading
-                ref={cycleIndexChart}
-                option={initialChartOptions}
-              />
+  return (
+    <div style={{ paddingTop: "75px" }}>
+      {noDataFound ? (
+        <Result
+          title="No Data was found! Please upload files."
+          extra={
+            <Button type="primary" key="console" href="/upload">
+              Go to Upload
+            </Button>
+          }
+        />
+      ) : internalServerError ? (
+        <Result
+          status="500"
+          title="500"
+          subTitle="Sorry, something went wrong."
+          extra={
+            <Button type="primary" href="/dashboard">
+              Reload
+            </Button>
+          }
+        />
+      ) : (
+        <div style={{ margin: "0.6rem" }}>
+          <DashboardFilterBar
+            onFilterChange={handleFilterChange}
+            internalServerErrorFound={internalServerErrorFound}
+          />
+          <ViewCodeModal
+            code={codeContent}
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            searchParams={searchParams}
+          />
+          <div className="row pb-5">
+            <div className="col-md-6 mt-2">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  {chartLoadingError.cycleIndexChart && (
+                    <Alert message="Error" type="error" showIcon />
+                  )}
+                  <ReactEcharts
+                    showLoading
+                    ref={cycleIndexChart}
+                    option={initialChartOptions}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6 mt-2">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  {chartLoadingError.timeSeriesChart && (
+                    <Alert message="Error" type="error" showIcon />
+                  )}
+                  <ReactEcharts
+                    showLoading
+                    ref={timeSeriesChart}
+                    option={initialChartOptions}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6 mt-2">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  {chartLoadingError.efficiencyChart && (
+                    <Alert message="Error" type="error" showIcon />
+                  )}
+                  <ReactEcharts
+                    showLoading
+                    ref={efficiencyChart}
+                    option={initialChartOptions}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6 mt-2">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  {chartLoadingError.cycleQtyByStepChart && (
+                    <Alert message="Error" type="error" showIcon />
+                  )}
+                  <ReactEcharts
+                    showLoading
+                    ref={cycleQtyByStepChart}
+                    option={initialChartOptions}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="col-md-12 mt-2">
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  {chartLoadingError.compareByCycleTimeChart && (
+                    <Alert message="Error" type="error" showIcon />
+                  )}
+                  <ReactEcharts
+                    showLoading
+                    ref={compareByCycleTimeChart}
+                    option={initialChartOptions}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="col-md-6 mt-2">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              {chartLoadingError.timeSeriesChart && (
-                <Alert message="Error" type="error" showIcon />
-              )}
-              <ReactEcharts
-                showLoading
-                ref={timeSeriesChart}
-                option={initialChartOptions}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="col-md-6 mt-2">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              {chartLoadingError.efficiencyChart && (
-                <Alert message="Error" type="error" showIcon />
-              )}
-              <ReactEcharts
-                showLoading
-                ref={efficiencyChart}
-                option={initialChartOptions}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="col-md-6 mt-2">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              {chartLoadingError.cycleQtyByStepChart && (
-                <Alert message="Error" type="error" showIcon />
-              )}
-              <ReactEcharts
-                showLoading
-                ref={cycleQtyByStepChart}
-                option={initialChartOptions}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="col-md-12 mt-2">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              {chartLoadingError.compareByCycleTimeChart && (
-                <Alert message="Error" type="error" showIcon />
-              )}
-              <ReactEcharts
-                showLoading
-                ref={compareByCycleTimeChart}
-                option={initialChartOptions}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

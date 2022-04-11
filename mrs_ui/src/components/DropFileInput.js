@@ -1,21 +1,15 @@
 import React, { useRef, useState } from "react";
 import PropTypes from "prop-types";
-
 import blankFileImage from "../assets/file-blank-solid-240.png";
-
 import uploadImg from "../assets/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
-
 import { Progress, Typography, Alert } from "antd";
-import { FaCheckCircle, FaTimes } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaTimes } from "react-icons/fa";
 
 const { Text } = Typography;
 
 const DropFileInput = (props) => {
-	const navigate = useNavigate();
 	console.log("props.uploadProgress", props.uploadProgress);
-
 	const wrapperRef = useRef(null);
 	const [fileList, setFileList] = useState([]);
 	const [uploadBtnDisabled, setUploadBtnDisabled] = useState(false);
@@ -30,8 +24,6 @@ const DropFileInput = (props) => {
 		for (let i = 0; i < e.target.files.length; i++) {
 			let file = e.target.files[i];
 			if (file) {
-				// file.id = new Date().getTime();
-				console.log(i);
 				updatedList.push(file);
 			}
 		}
@@ -59,8 +51,7 @@ const DropFileInput = (props) => {
 
 			return {
 				value: progress,
-				status:
-					progress === 100 ? "" : progress === -1 ? "exception" : "active",
+				status: progress === 100 ? "" : progress === -1 ? "exception" : "active",
 				message: progress === -1 ? props.uploadProgress[fileName].detail : "",
 			};
 		} else {
@@ -119,16 +110,9 @@ const DropFileInput = (props) => {
 							{getProgress(item.name).value ? (
 								<>
 									{getProgress(item.name).message ? (
-										<Alert
-											message={getProgress(item.name).message}
-											type="error"
-											showIcon
-										/>
+										<Alert message={getProgress(item.name).message} type="error" showIcon />
 									) : (
-										<Progress
-											percent={getProgress(item.name).value}
-											status={getProgress(item.name).status}
-										/>
+										<Progress percent={getProgress(item.name).value} status={getProgress(item.name).status} />
 									)}
 								</>
 							) : null}
@@ -139,7 +123,7 @@ const DropFileInput = (props) => {
 							className="btn btn-outline-dark"
 							style={{ float: "right" }}
 							onClick={(e) => {
-								setUploadBtnDisabled(true);
+								// setUploadBtnDisabled(true);
 								props.fileUploadHandler(e);
 							}}
 							disabled={uploadBtnDisabled}

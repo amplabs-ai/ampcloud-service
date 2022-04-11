@@ -1,4 +1,4 @@
-
+import gzip
 import datetime
 import pandas as pd
 from app.archive_constants import FORMAT
@@ -6,24 +6,20 @@ from app.archive_constants import FORMAT
 
 def read_generic(file, mapping='test_time,cycle,current,voltage'):
     df_tmerge = pd.DataFrame()
-    df_time_series_file = pd.read_csv(file, sep=',')
+    with gzip.open(file, 'rb') as decompressed_file:
+        df_time_series_file = pd.read_csv(decompressed_file, sep=',')
 
     df_ts = pd.DataFrame()
     column_list = mapping.split(",")
 
-    file_col = 0
     for col in column_list:
         if col == 'date_time':
-            file_col_name = df_time_series_file.columns[file_col]
             df_ts['date_time'] = pd.to_datetime(
-                df_time_series_file[file_col_name], format='%Y-%m-%d %H:%M:%S.%f')
+                df_time_series_file[col], format='%Y-%m-%d %H:%M:%S.%f')
         elif col != "skip":
-            file_col_name = df_time_series_file.columns[file_col]
-            df_ts[col] = df_time_series_file[file_col_name].apply(
+            df_ts[col] = df_time_series_file[col].apply(
                 pd.to_numeric)
 
-        file_col += 1
-    
     # need at the least one of date_time or test_time
     # TODO: how do we fail the import?
 
@@ -35,7 +31,7 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
         df_ts['test_time'] = df_ts['date_time'] - \
             df_ts['date_time'].iloc[0]
         df_ts['test_time'] = df_ts['test_time'].dt.total_seconds()
-   
+
     df_ts['ah_c'] = 0
     df_ts['e_c'] = 0
     df_ts['ah_d'] = 0
@@ -51,9 +47,9 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
     else:
         df_tmerge = df_tmerge.append(
             df_ts[df_ts['test_time'] > 0], ignore_index=True)
-    
-    df_tmerge.rename(columns = {'current': 'i', 'voltage': 'v'}, inplace = True)
-    df_tmerge.drop(['cycle'], axis = 1, inplace = True)
+
+    df_tmerge.rename(columns={'current': 'i', 'voltage': 'v'}, inplace=True)
+    df_tmerge.drop(['cycle'], axis=1, inplace=True)
     return df_tmerge
 
 
@@ -74,9 +70,11 @@ def read_arbin(file, file_type='xlsx'):
 
     df_cell = []
     if file_type == FORMAT.XLSX.value:
-        df_cell = pd.read_excel(file, None)
+        with gzip.open(file, 'rb') as decompressed_file:
+            df_cell = pd.read_excel(decompressed_file, None)
     if file_type == FORMAT.FEATHER.value:
-        df_cell = pd.read_feather(file, None)
+        with gzip.open(file, 'rb') as decompressed_file:
+            df_cell = pd.read_feather(decompressed_file, None)
 
     for k in df_cell.keys():
         if "hannel" in k:
@@ -116,14 +114,14 @@ def read_arbin(file, file_type='xlsx'):
                     past_cycle = x[0]
 
             df_tmp = pd.DataFrame(data=cycles_index[:, [0]],
-                                    columns=["cycle_index_file"])
+                                  columns=["cycle_index_file"])
             df_ts['cycle_index_file'] = df_tmp['cycle_index_file']
 
             if df_tmerge.empty:
                 df_tmerge = df_ts
             else:
                 df_tmerge = df_tmerge.append(df_ts,
-                                                ignore_index=True)
+                                             ignore_index=True)
 
     return df_tmerge
 
@@ -139,7 +137,6 @@ def read_maccor(file):
     # Voltage(V) -> v
     # Date_Time -> date_time
 
-
     df_tmerge = pd.DataFrame()
 
     file_df = prepare_maccor_file(file)
@@ -153,7 +150,7 @@ def read_maccor(file):
         'Cycle'].apply(pd.to_numeric)
     df_time_series['test_time'] = df_time_series_file[
         'Test Time (sec)'].str.replace(',',
-                                        '').apply(pd.to_numeric)
+                                       '').apply(pd.to_numeric)
 
     df_time_series['i'] = df_time_series_file['Current'].apply(
         pd.to_numeric)
@@ -182,26 +179,26 @@ def read_maccor(file):
         df_tmerge = df_time_series
     else:
         df_tmerge = df_tmerge.append(df_time_series,
-                                        ignore_index=True)
+                                     ignore_index=True)
     return df_tmerge
 
 
 def prepare_maccor_file(file):
-        
-        lines = file.readlines()
-        file.close()
+    with gzip.open(file, 'rb') as decompressed_file:
+        lines = decompressed_file.readlines()
+    file.close()
 
-        cellpath_df = "test" + "_df"
+    cellpath_df = "test" + "_df"
 
-        new_file = open(cellpath_df, "wb")
-        for line in lines:
-            forget_line = line.startswith(b"Today") or line.startswith(
-                b"Filename") or line.startswith(b"Procedure") or line.startswith(
-                    b"Comment")
-            if not forget_line:
-                new_file.write(line)
-        new_file.close()
-        return cellpath_df
+    new_file = open(cellpath_df, "wb")
+    for line in lines:
+        forget_line = line.startswith(b"Today") or line.startswith(
+            b"Filename") or line.startswith(b"Procedure") or line.startswith(
+                b"Comment")
+        if not forget_line:
+            new_file.write(line)
+    new_file.close()
+    return cellpath_df
 
 
 # identify the sign of the current for a MACCOR file

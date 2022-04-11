@@ -1,9 +1,9 @@
 .wrapper {
   display: flex;
   justify-content: center;
-  align-items: center;
-  margin-top: 100px;
-  padding: 0px 100px;
+  align-items: center; 
+  padding: 75px 100px 0px;
+  height: 100vh;
 }
 
 @media only screen and (max-width: 600px) {
@@ -20,4 +20,3 @@
   align-items: center;
   background-color: #f6f8f9;
 }
- 

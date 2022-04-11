@@ -13,7 +13,6 @@ import urllib.request
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import gzip
 
 url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
@@ -23,7 +22,7 @@ httprequest.add_header("Cookie", "userId={1}")
 status = 0
 try:
     with urllib.request.urlopen(httprequest) as httpresponse:
-        response = json.loads(gzip.decompress(httpresponse.read()))
+        response = json.loads(httpresponse.read())
         status = 1
 except urllib.error.HTTPError as e:
     print(e)
@@ -52,9 +51,8 @@ import urllib.request
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import gzip
 
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/energyAndCapacityDecay?{0}"
+url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -62,7 +60,7 @@ httprequest.add_header("Cookie", "userId={1}")
 status = 1
 try:
     with urllib.request.urlopen(httprequest) as httpresponse:
-        response = json.loads(gzip.decompress(httpresponse.read()))
+        response = json.loads(httpresponse.read())
         status = 1
 except urllib.error.HTTPError as e:
     print(e)
@@ -73,7 +71,7 @@ if status:
         df = df.append(pd.DataFrame.from_records(item['source']))
     df['value'] = pd.to_numeric(df['value'], errors='coerce')
     fig = px.scatter(df, x="test_time", y="value", color="series", labels={"test_time":"Time (s)", "value":"Wh/Ah"}, title = "Time Series Data - Energy and Capacity Decay")
-    fig.update_traces(mode="markers+lines", hovertemplate=None)
+    fig.update_traces(mode="markers", hovertemplate=None)
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./timeSeriesChart.png', format="png", scale=1, width=1200, height=800) 
     `,
@@ -91,7 +89,6 @@ import urllib.request
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import gzip
 
 url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/efficiency?{0}"
 httprequest = urllib.request.Request(
@@ -101,7 +98,7 @@ httprequest.add_header("Cookie", "userId={1}")
 status = 1
 try:
     with urllib.request.urlopen(httprequest) as httpresponse:
-        response = json.loads(gzip.decompress(httpresponse.read()))
+        response = json.loads(httpresponse.read())
         status = 1
 except urllib.error.HTTPError as e:
     print(e)
@@ -130,7 +127,6 @@ import urllib.request
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import gzip
 
 url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/cycleQuantitiesByStep?{0}"
 httprequest = urllib.request.Request(
@@ -140,7 +136,7 @@ httprequest.add_header("Cookie", "userId={1}")
 status = 1
 try:
     with urllib.request.urlopen(httprequest) as httpresponse:
-        response = json.loads(gzip.decompress(httpresponse.read()))
+        response = json.loads(httpresponse.read())
         status = 1
 except urllib.error.HTTPError as e:
     print(e)
@@ -153,7 +149,7 @@ if status:
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)  
-      `,
+    `,
   compareByCycleTimeChart: `
 '''
 Install required dependencies
@@ -168,7 +164,6 @@ import urllib.request
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
-import gzip
 
 url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/compareByCycleTime?{0}"
 httprequest = urllib.request.Request(
@@ -178,7 +173,7 @@ httprequest.add_header("Cookie", "userId={1}")
 status = 1
 try:
     with urllib.request.urlopen(httprequest) as httpresponse:
-        response = json.loads(gzip.decompress(httpresponse.read()))
+        response = json.loads(httpresponse.read())
         status = 1
 except urllib.error.HTTPError as e:
     print(e)

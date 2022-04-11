@@ -10,12 +10,12 @@
 
 body {
   font-family: "Montserrat", sans-serif;
-  padding-top: 75px;
+  /* padding-top: 75px; */
 }
 
 @media only screen and (max-width: 600px) {
   .para {
-    font-size: 1rem!important;
+    font-size: 0.6rem!important;
   }
   .ant-table-small .ant-table-selection-column {
     min-width: 111px!important;
@@ -33,7 +33,7 @@ input:focus,
 }
 
 .para {
-  font-size: 1.25rem;
+  font-size: 1rem;
 }
 
 .card-body {

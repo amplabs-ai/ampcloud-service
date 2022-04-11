@@ -6,7 +6,15 @@ from sqlalchemy import create_engine
 from app.exception_handler import *
 from app.model import Model
 from flask_cors import CORS
+from flask_compress import Compress
+import logging
 # from celery import Celery
+
+# Create and configure logger
+logging.basicConfig(filename="logs/audit.log",
+                    format='%(asctime)s %(levelname)s "%(message)s"',
+                    datefmt='%y/%m/%d-%H:%M:%S',
+                    level=logging.INFO)
 
 app = connexion.FlaskApp(__name__)
 app.add_api('../api/api.yaml') 
@@ -17,6 +25,7 @@ app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(ProblemException, problem_exception)
 CORS(app.app, origins=["http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com"], supports_credentials=True)
+Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 
 if __name__ == "__main__":

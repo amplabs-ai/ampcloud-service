@@ -81,11 +81,39 @@ paths:
       responses:
         "200":
           description: Successfull response
-  /upload/cells/status:
+  /upload/cells/initialize:
+    post:
+      summary: Upload cycle test file
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: init_file_upload
+      # parameters:
+      #   - name: tester
+      #     in: path
+      #     description: Cell ID of the resource to get
+      #     required: true
+      #     style: simple
+      #     explode: false
+      #     schema:
+      #       type: string
+      tags:
+        - Upload
+      responses:
+        "200":
+          description: Successfull response
+  /upload/cells/status/{cell_id}:
     get:
       summary: Check upload status
       x-openapi-router-controller: app.controllers.status_check_controller
       operationId: get_status
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       tags:
         - Upload
       responses:
