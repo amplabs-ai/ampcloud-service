@@ -9,7 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
-from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql.sqltypes import TIMESTAMP, FLOAT
 from app.archive_constants import (AMPLABS_DB_URL, DEGREE, OUTPUT_LABELS,
                                ARCHIVE_TABLE, DB_URL)
 from sqlalchemy import create_engine
@@ -18,6 +18,89 @@ from app.queries import *
 from sqlalchemy.pool import NullPool
 
 Model = declarative_base()
+
+class AbuseMeta(Model):
+    __tablename__ = ARCHIVE_TABLE.ABUSE_META.value
+    index = Column(Integer, primary_key=True)
+    cell_id = Column(TEXT, nullable=False)
+    temperature = Column(Float, nullable=True)
+    thickness = Column(Float, nullable=True)
+    v_init = Column(Float, nullable=True)
+    indentor = Column(Float, nullable=True)
+    nail_speed = Column(Float, nullable=True)
+    email = Column(TEXT, nullable=False)
+
+    def to_dict(self):
+        return {
+            "index": self.index,
+            "cell_id": self.cell_id,
+            "temperature": self.temperature,
+            "thickness": self.thickness,
+            "v_init": self.v_init,
+            "indentor": self.indentor,
+            "nail_speed": self.nail_speed    
+        }
+
+class AbuseTimeSeries(Model):
+    __tablename__ = ARCHIVE_TABLE.ABUSE_TS.value
+    index = Column(Integer, primary_key=True)
+    axial_d = Column(Float, nullable=True)
+    axial_f = Column(FLOAT, nullable=True)
+    v = Column(FLOAT, nullable=True)
+    norm_d = Column(Float, nullable=True)
+    strain = Column(Float, nullable=True)
+    pos_terminal_temperature = Column(Float, nullable=True)
+    neg_terminal_temperature = Column(Float, nullable=True)
+    left_bottom_temperature = Column(Float, nullable=True)
+    right_bottom_temperature = Column(Float, nullable=True)
+    above_punch_temperature = Column(Float, nullable=True)
+    below_punch_temperature = Column(Float, nullable=True)
+    test_time = Column(Float, nullable=True)
+    cell_id = Column(TEXT, nullable=False)
+    email = Column(TEXT, nullable=False)
+
+    def to_dict(self):
+        return {
+            "index": self.index,
+            "axial_d": self.axial_d,
+            "axial_f": self.axial_f,
+            "v": self.v,
+            "strain": self.strain,
+            "pos_terminal_temperature": self.pos_terminal_temperature,
+            "neg_terminal_temperature": self.neg_terminal_temperature,
+            "left_bottom_temperature": self.left_bottom_temperature,
+            "right_bottom_temperature": self.right_bottom_temperature,
+            "above_punch_temperature": self.above_punch_temperature,
+            "below_punch_temperature": self.below_punch_temperature,
+            "test_time": self.test_time,
+            "cell_id": self.cell_id
+        }
+
+class CycleMeta(Model):
+    __tablename__ = ARCHIVE_TABLE.CYCLE_META.value
+    index = Column(Integer, primary_key=True)
+    temperature = Column(Float, nullable=True)
+    soc_max = Column(Float, nullable=True)
+    soc_min = Column(Float, nullable=True)
+    v_max = Column(Float, nullable=True)
+    v_min = Column(Float, nullable=True)
+    crate_c = Column(Float, nullable=True)
+    crate_d = Column(Float, nullable=True)
+    cell_id = Column(TEXT, nullable=False)
+    email = Column(TEXT, nullable=False)
+
+    def to_dict(self):
+        return {
+            "index": self.index,
+            "temperature": self.temperature,
+            "soc_max": self.soc_max,
+            "soc_min": self.soc_min,
+            "v_max": self.v_max,
+            "v_min": self.v_min,
+            "crate_c": self.crate_c,
+            "crate_d": self.crate_d,
+            "cell_id": self.cell_id
+        }
 
 class CellMeta(Model):
     __tablename__ = ARCHIVE_TABLE.CELL_META.value
@@ -168,6 +251,9 @@ class ArchiveOperator:
         self.remove_cell_from_table(CellMeta, cell_id, email)
         self.remove_cell_from_table(CycleStats, cell_id, email)
         self.remove_cell_from_table(CycleTimeSeries, cell_id, email)
+        self.remove_cell_from_table(CycleMeta, cell_id, email)
+        self.remove_cell_from_table(AbuseTimeSeries, cell_id, email)
+        self.remove_cell_from_table(AbuseMeta, cell_id, email)
 
 
     """
@@ -208,46 +294,71 @@ class ArchiveOperator:
 
     # CELL
     
-    def get_all_cell_meta(self, email):
-        return self.select_table(CellMeta, email)
+    def get_all_cell_meta(self, email, test):
+        return self.select_table(CellMeta, email, test)
 
-    def get_all_cell_meta_with_id(self, cell_id, email):
-        return self.get_all_data_from_table_with_id(CellMeta, cell_id, email)
+    def get_all_cell_meta_with_id(self, cell_id, email, test):
+        return self.get_all_data_from_table_with_id(CellMeta, cell_id, email, test)
     
     #ECHARTS
 
     def get_all_data_from_CQBS_query(self, cell_id, step, email):
         if len(cell_id)>1:
             return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(tuple(cell_id), step, email))
+                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=tuple(cell_id), step=step, email=email))
         else:
             return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(("('" + cell_id[0] + "')"), step, email))
+                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=("('" + cell_id[0] + "')"), step=step, email=email))
 
     def get_all_data_from_ECAD_query(self, cell_id, email):
         if len(cell_id)>1:
+            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email))
             return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(tuple(cell_id), email))
+                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email))
         else:
+            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
             return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(("('" + cell_id[0] + "')"), email))
+                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
 
     def get_all_data_from_Eff_query(self, cell_id, email):
         if len(cell_id)>1:
             return self.session.execute(
-                EFFICIENCY_QUERY.format(tuple(cell_id), email))
+                EFFICIENCY_QUERY.format(cell_id=tuple(cell_id), email=email))
         else:
             return self.session.execute(
-                EFFICIENCY_QUERY.format(("('" + cell_id[0] + "')"), email))
+                EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
     
     def get_all_data_from_CCVC_query(self, cell_id, email):
         if len(cell_id)>1:
             return self.session.execute(
-                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(tuple(cell_id), email))
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(cell_id=tuple(cell_id), email=email))
         else:
             return self.session.execute(
-                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(("('" + cell_id[0] + "')"), email))
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
 
+    def get_all_data_from_AFD_query(self, cell_id, email, sample):
+        if len(cell_id)>1:
+            return self.session.execute(
+                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=tuple(cell_id), email=email, sample=sample))
+        else:
+            return self.session.execute(
+                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
+
+    def get_all_data_from_ATT_query(self, cell_id, email, sample):
+        if len(cell_id)>1:
+            return self.session.execute(
+                ABUSE_TEST_TEMPRATURES.format(cell_id=tuple(cell_id), email=email, sample=sample))
+        else:
+            return self.session.execute(
+                ABUSE_TEST_TEMPRATURES.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
+
+    def get_all_data_from_AV_query(self, cell_id, email, sample):
+        if len(cell_id)>1:
+            return self.session.execute(
+                ABUSE_VOLTAGE.format(cell_id=tuple(cell_id), email=email, sample=sample))
+        else:
+            return self.session.execute(
+                ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
 
 
     # GENERAL ORM
@@ -267,16 +378,16 @@ class ArchiveOperator:
     def get_all_data_from_table(self, table):
         return self.select_table(table).all()
 
-    def get_all_data_from_table_with_id(self, table, cell_id, email):
-        return self.select_table_with_id(table, cell_id, email).all()
+    def get_all_data_from_table_with_id(self, table, cell_id, email, test):
+        return self.select_table_with_id(table, cell_id, email, test).all()
 
     # BASIC
 
-    def select_table(self, table, email):
-        return self.session.query(table).filter(table.email == email)
+    def select_table(self, table, email, test):
+        return self.session.query(table).filter(table.email == email, table.test == test)
 
-    def select_table_with_id(self, table, cell_id, email):
-        return self.session.query(table).filter(table.cell_id == cell_id, table.email == email)
+    def select_table_with_id(self, table, cell_id, email, test):
+        return self.session.query(table).filter(table.cell_id == cell_id, table.email == email, table.test == test)
         
     def select_data_from_table(self, table, email):
         return self.session.query(table).filter(table.email == email).first()

@@ -5,9 +5,9 @@ from flask import request, make_response, jsonify
 from app.response import Response
 
 
-def get_cells():
+def get_cells(test):
     email = request.cookies.get("userId")
-    status, detail, *records = get_cellmeta_service(email)
+    status, detail, *records = get_cellmeta_service(email, test)
     return Response(status, detail, records).to_dict(), status
 
 def delete_cell(cell_id):

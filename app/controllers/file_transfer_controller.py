@@ -10,8 +10,8 @@ def init_file_upload():
     try:
         email = request.cookies.get("userId")
         data = request.form.to_dict()
-        status[f"{email}|{data['cell_id']}"] = {"dataframes":[], "progress": {'percentage':0, 'message': "IN PROGRESS"}, "file_count":int(data['file_count'])}
-        return Response(200, "Success", data['cell_id']).to_dict(), 200
+        status, detail = init_file_upload_service(email, data)
+        return Response(status, detail).to_dict(), status
     except Exception as err:
         print(err)
         return Response(500, "Failed").to_dict(), 500
@@ -20,8 +20,6 @@ def upload_file(tester):
     try:
         email = request.cookies.get("userId")
         data = request.form.to_dict()
-        if not status.get(f"{email}|{data['cell_id']}"):
-            status[f"{email}|{data['cell_id']}"] = {"dataframes":[], "progress": {'percentage':0, 'message': "IN PROGRESS"}, "file_count":int(data['file_count'])}
         file = request.files['file']
         df = file_data_read_service(tester, file)
         with lock:
@@ -30,8 +28,6 @@ def upload_file(tester):
         if not status[f"{email}|{data['cell_id']}"]['file_count']:
             threading.Thread(target = file_data_process_service, args = (data['cell_id'], email)).start()
         return Response(200, "Success").to_dict(), 200
-    except KeyError as err:
-        return Response(500, "Failed").to_dict(), 500
     except Exception as err:
         status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
         status[f"{email}|{data['cell_id']}"]['progress']['message'] = "FAILED"
@@ -61,4 +57,23 @@ def download_cycle_data(cell_id):
         resp.headers["Content-Type"] = "text/csv"
         return resp
     except:
+        return Response(500, "Failed").to_dict(), 500
+
+def get_cycle_data_json(cell_id):
+    try:
+        email = request.cookies.get("userId")
+        df = download_cycle_data_service(cell_id, email)
+        resp = df.to_dict('records')
+        return Response(200, "Records Retrieved", resp).to_dict(), 200
+    except Exception as err:
+        return Response(500, "Failed").to_dict(), 500
+
+
+def get_cycle_timeseries_json(cell_id):
+    try:
+        email = request.cookies.get("userId")
+        df = download_cycle_timeseries_service(cell_id, email)
+        resp = df.to_dict('records')
+        return Response(200, "Records Retrieved", resp).to_dict(), 200
+    except Exception as err:
         return Response(500, "Failed").to_dict(), 500

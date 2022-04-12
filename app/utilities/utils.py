@@ -219,7 +219,18 @@ def calc_cycle_stats(df_t, cell_id, email):
         # df_cc = df_cc.drop([LABEL.CELL_ID.value], axis=1)
     return df_cc, df_tt
 
- 
+def calc_abuse_stats(df_t, df_test_md, cell_id, email):
+    step = 60/len(df_t.index)
+    for _ in df_t.index:
+        status[f"{email}|{cell_id}"]['progress']['percentage'] += step
+        df_t[LABEL.NORM_D.value] = df_t.iloc[
+            0:, df_t.columns.get_loc(LABEL.AXIAL_D.value)] - df_t[
+                LABEL.AXIAL_D.value][0]
+        df_t[LABEL.STRAIN.value] = df_t.iloc[
+            0:, df_t.columns.get_loc(LABEL.NORM_D.value)] / df_test_md[
+                LABEL.THICKNESS.value]
+    return df_t
+
 # unpack the dataframe and calculate quantities used in statistics
 def calc_cycle_quantities(df):
     """

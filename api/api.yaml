@@ -33,13 +33,22 @@ paths:
       responses:
         "200":
           description: Successfull response
-  /cells/all/meta:
+  /cells/{test}/meta:
     get:
       summary: Fetches metadata for all cells
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: get_cells
       tags:
         - Cell Meta
+      parameters:
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
         "200":
           description: Successfull
@@ -121,7 +130,7 @@ paths:
           description: Successfull response
   /download/cells/cycle_timeseries/{cell_id}:
     get:
-      summary: Download Cycle data
+      summary: Download Cycle timeseries
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_timeseries
       parameters:
@@ -140,7 +149,7 @@ paths:
           description: Successfull response
   /download/cells/cycle_data/{cell_id}:
     get:
-      summary: Download cycle timeseries
+      summary: Download cycle data
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_data
       parameters:
@@ -248,6 +257,137 @@ paths:
             type: array
             items:
               type: string
+      responses:
+        "200":
+          description: Successfull response
+  /echarts/forceAndDisplacement:
+    get:
+      summary: Fetches force and displacement query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_force_and_displacement
+      tags:
+        - Echart
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sample
+          in: query
+          description: sample
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            items:
+              type: integer
+      responses:
+        "200":
+          description: Successfull response
+  /echarts/testTempratures:
+    get:
+      summary: Fetches test tempratures query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_test_tempratures
+      tags:
+        - Echart
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sample
+          in: query
+          description: sample
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            items:
+              type: integer
+      responses:
+        "200":
+          description: Successfull response
+  /echarts/voltage:
+    get:
+      summary: Fetches voltage query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_voltage
+      tags:
+        - Echart
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+        - name: sample
+          in: query
+          description: sample
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            items:
+              type: integer
+      responses:
+        "200":
+          description: Successfull response
+  /download/cells/cycle_data_json/{cell_id}:
+    get:
+      summary: Download cycle timeseries
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_cycle_data_json
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull response
+  /download/cells/cycle_timeseries_json/{cell_id}:
+    get:
+      summary: Download cycle timeseries
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_cycle_timeseries_json
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      tags:
+        - Download
       responses:
         "200":
           description: Successfull response

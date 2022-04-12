@@ -1,7 +1,7 @@
 import gzip
 import datetime
 import pandas as pd
-from app.archive_constants import FORMAT
+from app.archive_constants import ARCHIVE_COLS, FORMAT, INP_LABELS
 
 
 def read_generic(file, mapping='test_time,cycle,current,voltage'):
@@ -182,6 +182,97 @@ def read_maccor(file):
                                      ignore_index=True)
     return df_tmerge
 
+def read_ornlabuse(file):
+
+    # excels = glob.glob(file_path + '*.xls*')
+
+    df_tmerge = pd.DataFrame()
+    # for excel in excels:
+    #     if '~$' in excel:
+    #         continue
+    with gzip.open(file, 'rb') as decompressed_file:
+            df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
+
+    df_ts_a = pd.DataFrame()
+    df_ts_a['test_time'] = df_ts_file['Running Time']
+    df_ts_a['axial_d'] = df_ts_file['Axial Displacement']
+    df_ts_a['v'] = df_ts_file['Analog 1']
+    df_ts_a['axial_f'] = df_ts_file['Axial Force']
+    df_ts_a[ARCHIVE_COLS.temp_1.value] = 0
+    df_ts_a[ARCHIVE_COLS.temp_2.value] = 0
+    df_ts_a[ARCHIVE_COLS.temp_3.value] = 0
+    df_ts_a[ARCHIVE_COLS.temp_4.value] = 0
+    df_ts_a[ARCHIVE_COLS.temp_5.value] = 0
+    df_ts_a[ARCHIVE_COLS.temp_6.value] = 0
+    # df_time_series_a['cell_id'] = cell_id
+
+    df_ts_b = pd.DataFrame()
+    df_ts_b['test_time'] = df_ts_file['Running Time 1']
+    df_ts_b[ARCHIVE_COLS.AXIAL_D.value] = 0
+    df_ts_b[ARCHIVE_COLS.V.value] = 0
+    df_ts_b[ARCHIVE_COLS.AXIAL_F.value] = 0
+    df_ts_b[ARCHIVE_COLS.temp_1.value] = df_ts_file[
+        INP_LABELS.TC_01.value]
+    df_ts_b[ARCHIVE_COLS.temp_2.value] = df_ts_file[
+        INP_LABELS.TC_02.value]
+    df_ts_b[ARCHIVE_COLS.temp_3.value] = df_ts_file[
+        INP_LABELS.TC_03.value]
+    df_ts_b[ARCHIVE_COLS.temp_4.value] = df_ts_file[
+        INP_LABELS.TC_04.value]
+    df_ts_b[ARCHIVE_COLS.temp_5.value] = df_ts_file[
+        INP_LABELS.TC_05.value]
+    df_ts_b[ARCHIVE_COLS.temp_6.value] = df_ts_file[
+        INP_LABELS.TC_06.value]
+        # df_time_series_b['cell_id'] = cell_id
+
+        # if df_tmerge.empty:
+    df_tmerge = df_ts_a
+    df_tmerge = df_tmerge.append(df_ts_b, ignore_index=True)
+        # else:
+        #     df_tmerge = df_tmerge.append(df_ts_a, ignore_index=True)
+        #     df_tmerge = df_tmerge.append(df_ts_b, ignore_index=True)
+
+    return df_tmerge
+
+# read the abuse excel files from SNL
+def read_snlabuse(file):
+
+    # excels = glob.glob(file_path + '*.xls*')
+
+    df_tmerge = pd.DataFrame()
+
+    # for excel in excels:
+    #     if '~$' in excel:
+    #         continue
+    
+    with gzip.open(file, 'rb') as decompressed_file:
+            df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
+
+    df_ts = pd.DataFrame()
+    df_ts[ARCHIVE_COLS.TEST_TIME.value] = df_ts_file[
+        INP_LABELS.TEST_TIME.value]
+    df_ts[ARCHIVE_COLS.AXIAL_D.value] = df_ts_file[
+        INP_LABELS.AXIAL_D.value]
+    df_ts[ARCHIVE_COLS.AXIAL_F.value] = df_ts_file[
+        INP_LABELS.AXIAL_F.value]
+    df_ts[ARCHIVE_COLS.V.value] = df_ts_file[INP_LABELS.V.value]
+    df_ts[ARCHIVE_COLS.temp_1.value] = df_ts_file[
+        INP_LABELS.TC_01.value]
+    df_ts[ARCHIVE_COLS.temp_2.value] = df_ts_file[
+        INP_LABELS.TC_02.value]
+    df_ts[ARCHIVE_COLS.temp_3.value] = df_ts_file[
+        INP_LABELS.TC_03.value]
+    df_ts[ARCHIVE_COLS.temp_4.value] = df_ts_file[
+        INP_LABELS.TC_04.value]
+    df_ts[ARCHIVE_COLS.temp_5.value] = df_ts_file[
+        INP_LABELS.TC_05.value]
+    df_ts[ARCHIVE_COLS.temp_6.value] = df_ts_file[
+        INP_LABELS.TC_06.value]
+    # df_time_series['cell_id'] = cell_id
+
+    df_tmerge = df_ts
+
+    return df_tmerge
 
 def prepare_maccor_file(file):
     with gzip.open(file, 'rb') as decompressed_file:
