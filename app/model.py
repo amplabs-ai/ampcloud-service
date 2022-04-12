@@ -219,35 +219,60 @@ class ArchiveOperator:
     def get_all_data_from_CQBS_query(self, cell_id, step, email):
         if len(cell_id)>1:
             return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(tuple(cell_id), step, email))
+                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=tuple(cell_id), step=step, email=email))
         else:
             return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(("('" + cell_id[0] + "')"), step, email))
+                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=("('" + cell_id[0] + "')"), step=step, email=email))
 
     def get_all_data_from_ECAD_query(self, cell_id, email):
         if len(cell_id)>1:
+            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email))
             return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(tuple(cell_id), email))
+                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email))
         else:
+            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
             return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(("('" + cell_id[0] + "')"), email))
+                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
 
     def get_all_data_from_Eff_query(self, cell_id, email):
         if len(cell_id)>1:
             return self.session.execute(
-                EFFICIENCY_QUERY.format(tuple(cell_id), email))
+                EFFICIENCY_QUERY.format(cell_id=tuple(cell_id), email=email))
         else:
             return self.session.execute(
-                EFFICIENCY_QUERY.format(("('" + cell_id[0] + "')"), email))
+                EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
     
     def get_all_data_from_CCVC_query(self, cell_id, email):
         if len(cell_id)>1:
             return self.session.execute(
-                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(tuple(cell_id), email))
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(cell_id=tuple(cell_id), email=email))
         else:
             return self.session.execute(
-                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(("('" + cell_id[0] + "')"), email))
+                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
 
+    def get_all_data_from_AFD_query(self, cell_id, email, query, step, sample):
+        if len(cell_id)>1:
+            return self.session.execute(
+                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=tuple(cell_id), email=email, sample=sample))
+        else:
+            return self.session.execute(
+                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
+
+    def get_all_data_from_ATT_query(self, cell_id, email, query, step, sample):
+        if len(cell_id)>1:
+            return self.session.execute(
+                ABUSE_TEST_TEMPRATURES.format(cell_id=tuple(cell_id), email=email, sample=sample))
+        else:
+            return self.session.execute(
+                ABUSE_TEST_TEMPRATURES.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
+
+    def get_all_data_from_AV_query(self, cell_id, email, query, step=1, sample=5):
+        if len(cell_id)>1:
+            return self.session.execute(
+                ABUSE_VOLTAGE.format(cell_id=tuple(cell_id), email=email, sample=sample))
+        else:
+            return self.session.execute(
+                ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
 
 
     # GENERAL ORM
