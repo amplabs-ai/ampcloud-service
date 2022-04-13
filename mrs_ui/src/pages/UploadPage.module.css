@@ -1,8 +1,5 @@
 .wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 75px;
+  padding-top: 75px;
   width: 100%;
 }
 
@@ -11,13 +8,7 @@
     height: 300px;
     padding: 0px 0px;
   }
-}
-
-.uploadSection {
-  /* height: 400px; */
-  padding: 0px;
-  margin-bottom: 400px;
-}
+} 
 
 .errorMsg {
   color: red;

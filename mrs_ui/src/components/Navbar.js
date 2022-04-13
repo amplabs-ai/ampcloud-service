@@ -9,18 +9,27 @@ import { FaAngleDown } from "react-icons/fa";
 const Navbar = () => {
 	const location = useLocation();
 	const auth = useAuth();
-	const menu = (
+	const uploadMenu = (
 		<Menu>
 			<Menu.Item>
 				<Link className="nav-link" to="/upload">
 					Cycle Test
 				</Link>
 			</Menu.Item>
-			{/* <Menu.Item>
+			<Menu.Item>
 				<Link className="nav-link" to="/upload/abuse-test">
 					Abuse Test
 				</Link>
-			</Menu.Item> */}
+			</Menu.Item>
+		</Menu>
+	);
+	const userProfileMenu = (
+		<Menu>
+			<Menu.Item>
+				<Link className="nav-link" onClick={() => auth.logout()} to="/">
+					Sign-out
+				</Link>
+			</Menu.Item>
 		</Menu>
 	);
 
@@ -56,7 +65,7 @@ const Navbar = () => {
 									</Link>
 								</li> */}
 								<li className="nav-item">
-									<Dropdown overlay={menu}>
+									<Dropdown overlay={uploadMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
 											Upload <FaAngleDown />
 										</Link>
@@ -68,9 +77,11 @@ const Navbar = () => {
 									</Link>
 								</li>
 								<li className="nav-item">
-									<Link className="nav-link" onClick={() => auth.logout()} to="/">
-										Sign-out
-									</Link>
+									<Dropdown overlay={userProfileMenu}>
+										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
+											{auth.user} <FaAngleDown />
+										</Link>
+									</Dropdown>
 								</li>
 							</ul>
 						</div>

@@ -15,7 +15,7 @@ body {
 
 @media only screen and (max-width: 600px) {
   .para {
-    font-size: 0.6rem!important;
+    font-size: 0.8rem!important;
   }
   .ant-table-small .ant-table-selection-column {
     min-width: 111px!important;
@@ -26,14 +26,14 @@ body {
 }
 
 input:focus,
-.btn:focus {
+.btn:focus, a:focus {
   outline: 0px !important;
   -webkit-appearance: none;
   box-shadow: none !important;
 }
 
 .para {
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 
 .card-body {
