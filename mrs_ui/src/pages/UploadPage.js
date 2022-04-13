@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import DropFileInput from "../components/DropFileInput";
 import styles from "./UploadPage.module.css";
 import axios from "axios";
-import { Radio, Typography, Progress, Form, Input, message } from "antd";
+import { Radio, Typography, Progress, Form, Input, message, Collapse } from "antd";
 import { useNavigate } from "react-router-dom";
 import pako from "pako";
 import { useTransition, animated } from "react-spring";
+import { CaretRightOutlined } from "@ant-design/icons";
 
 import UploadPageForms from "../components/UploadPageForms";
 
 const { Title } = Typography;
+const { Panel } = Collapse;
 
 const UploadPage = () => {
 	const navigate = useNavigate();
@@ -30,9 +32,9 @@ const UploadPage = () => {
 	const [processingProgressMsg, setprocessingProgressMsg] = useState("Please Wait... We're processing your uploads.");
 
 	const transition = useTransition(showProcessing, {
-		from: { x: -300, opacity: 0 },
+		from: { x: -600, opacity: 0 },
 		enter: { x: 0, opacity: 1 },
-		leave: { x: -300, opacity: 0 },
+		// leave: { x: -600, opacity: 0 },
 	});
 
 	// used to clearInterval for status
@@ -74,6 +76,7 @@ const UploadPage = () => {
 
 	const showProcessingBar = () => {
 		setShowProcessing(true);
+		window.scrollTo(0, 0);
 		getStatus();
 	};
 
@@ -234,9 +237,9 @@ const UploadPage = () => {
 	};
 
 	return (
-		<div className={styles.wrapper + " container pb-5"}>
+		<div className={styles.wrapper + " container"}>
 			<div className="row">
-				<div className={`col-md-12 ${styles.uploadSection}`}>
+				<div className="col-md-12 pb-5">
 					<div>
 						{transition((style, item) => {
 							return item ? (
@@ -248,7 +251,7 @@ const UploadPage = () => {
 										<Progress
 											type="circle"
 											width="300px"
-											status={Math.floor(parseInt(processingProgress.percentage)) === -1 ? "exception" : ""}
+											status={Math.floor(parseInt(processingProgress.percentage)) === -1 ? "exception" : "active"}
 											percent={Math.floor(processingProgress.percentage)}
 											format={(percent) => <div className="fs-4">{percent}%</div>}
 										/>
@@ -270,6 +273,7 @@ const UploadPage = () => {
 											</p>
 										</div>
 									</div>
+
 									<div>
 										<Form
 											name="basic"

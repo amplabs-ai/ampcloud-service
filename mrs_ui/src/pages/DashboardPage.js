@@ -46,9 +46,8 @@ const DashboardPage = () => {
   };
 
   const handleFilterChange = (cellIds, step) => {
-    console.log("yrrr", cellIds);
+    console.log("cellIds->filterbar", cellIds);
     if (!cellIds.length) {
-      console.log("firstfirstfirstfirst");
       setNoDataFound(true);
     }
 
@@ -175,7 +174,7 @@ const DashboardPage = () => {
           result = result.data;
         }
         if (result.status !== 200) {
-          console.log("result status != 200", result.status);
+          console.log("result status", result.status);
         }
         ref.current.getEchartsInstance().dispatchAction({
           type: "restore",

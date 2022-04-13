@@ -3,8 +3,9 @@ import PropTypes from "prop-types";
 import blankFileImage from "../assets/file-blank-solid-240.png";
 import uploadImg from "../assets/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
-import { Progress, Typography, Alert } from "antd";
+import { Progress, Typography, Alert, List, Avatar } from "antd";
 import { FaTimes } from "react-icons/fa";
+import { FaCloudUploadAlt } from "react-icons/fa";
 
 const { Text } = Typography;
 
@@ -89,7 +90,53 @@ const DropFileInput = (props) => {
 					<div className="mb-1">
 						<Text type="secondary">Ready to upload</Text>
 					</div>
-					{fileList.map((item, index) => (
+					<List
+						footer={
+							<button
+								className="btn btn-sm btn-outline-dark"
+								style={{ float: "right" }}
+								onClick={(e) => {
+									// setUploadBtnDisabled(true);
+									props.fileUploadHandler(e);
+								}}
+								disabled={uploadBtnDisabled}
+							>
+								Upload <FaCloudUploadAlt />
+							</button>
+						}
+						dataSource={fileList}
+						renderItem={(item) => (
+							<List.Item
+								key={item.id}
+								extra={
+									!Object.keys(props.uploadProgress).length && (
+										<span style={{ cursor: "pointer" }} onClick={() => fileRemove(item)}>
+											<FaTimes />
+										</span>
+									)
+								}
+							>
+								<List.Item.Meta
+									avatar={<Avatar src={blankFileImage} />}
+									title={item.name}
+									description={
+										getProgress(item.name).value ? (
+											<>
+												{getProgress(item.name).message ? (
+													<Alert message={getProgress(item.name).message} type="error" showIcon />
+												) : (
+													<Progress percent={getProgress(item.name).value} status={getProgress(item.name).status} />
+												)}
+											</>
+										) : (
+											bytesToSize(item.size)
+										)
+									}
+								/>
+							</List.Item>
+						)}
+					/>
+					{/* {fileList.map((item, index) => (
 						<div key={index}>
 							<div className="drop-file-preview__item">
 								<img src={blankFileImage} alt="" />
@@ -117,8 +164,8 @@ const DropFileInput = (props) => {
 								</>
 							) : null}
 						</div>
-					))}
-					<div className="my-4 text-align-right btn-lg">
+					))} */}
+					{/* <div className="my-3 text-align-right btn-lg">
 						<button
 							className="btn btn-outline-dark"
 							style={{ float: "right" }}
@@ -128,9 +175,9 @@ const DropFileInput = (props) => {
 							}}
 							disabled={uploadBtnDisabled}
 						>
-							Upload
+							Upload <FaCloudUploadAlt />
 						</button>
-					</div>
+					</div> */}
 				</div>
 			) : null}
 		</>
