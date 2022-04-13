@@ -33,13 +33,22 @@ paths:
       responses:
         "200":
           description: Successfull response
-  /cells/all/meta:
+  /cells/{test}/meta:
     get:
       summary: Fetches metadata for all cells
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: get_cells
       tags:
         - Cell Meta
+      parameters:
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
       responses:
         "200":
           description: Successfull
@@ -348,7 +357,26 @@ paths:
     get:
       summary: Download cycle timeseries
       x-openapi-router-controller: app.controllers.file_transfer_controller
-      operationId: download_cycle_data_json
+      operationId: get_cycle_data_json
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull response
+  /download/cells/cycle_timeseries_json/{cell_id}:
+    get:
+      summary: Download cycle timeseries
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_cycle_timeseries_json
       parameters:
         - name: cell_id
           in: path

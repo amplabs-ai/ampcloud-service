@@ -95,9 +95,9 @@ def get_force_and_displacement_service(cell_id, email, sample):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series_2']):
-                series[row['series_2']] = []
-            series[row['series_2']].append(row)
+            if not series.get(row['series']):
+                series[row['series']] = []
+            series[row['series']].append(row)
 
         for key, value in series.items():
             records.append({"id": key, "source": value}) 
@@ -116,9 +116,9 @@ def get_test_tempratures_service(cell_id, email, sample):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series_2']):
-                series[row['series_2']] = []
-            series[row['series_2']].append(row)
+            if not series.get(row['series_1']):
+                series[row['series_1']] = []
+            series[row['series_1']].append(row)
 
         for key, value in series.items():
             records.append({"id": key, "source": value}) 
@@ -137,9 +137,9 @@ def get_voltage_service(cell_id, email, sample):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series_2']):
-                series[row['series_2']] = []
-            series[row['series_2']].append(row)
+            if not series.get(row['series']):
+                series[row['series']] = []
+            series[row['series']].append(row)
 
         for key, value in series.items():
             records.append({"id": key, "source": value}) 

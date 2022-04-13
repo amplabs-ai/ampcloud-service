@@ -43,8 +43,8 @@ select * from
         end series
 FROM cycle_timeseries
 where 
-    cell_id IN {email} and 
-    MOD(cycle_index,{email})=0 and
+    cell_id IN {cell_id} and 
+    MOD(cycle_index,{step})=0 and
     email = '{email}'
 order by cycle_index, series) as foo where series is not null
 """
@@ -86,7 +86,7 @@ FROM
             'Tpt', pos_terminal_temperature,
             'Tnp', neg_terminal_temperature
         ) AS line
-   FROM abuse_timeseries TABLESAMPLE BERNOULLI {sample}
+   FROM abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
    WHERE cell_id IN {cell_id} and email = '{email}') AS r
 JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[Tbp,Tap,Tlb,Trb,Tpt,Tnp]')
 where value <> '0' 
@@ -105,7 +105,7 @@ FROM
             'F', axial_f,
             'D', axial_d
         ) AS line
-   FROM abuse_timeseries TABLESAMPLE BERNOULLI {sample}
+   FROM abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
    WHERE cell_id IN {cell_id}  and email = '{email}') AS r
 JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[F,D]')
 where value <> '0' 
@@ -123,7 +123,7 @@ FROM
           json_build_object(
             'v',v
         ) AS line
-   FROM abuse_timeseries TABLESAMPLE BERNOULLI {sample}
+   FROM abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
    WHERE cell_id IN {cell_id} and email = '{email}') AS r
 JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[v]')
 where value <> '0' 
