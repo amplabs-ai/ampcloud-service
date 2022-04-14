@@ -14,7 +14,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay?{0}"
+url = "http://www.amplabs.ai:81/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -52,7 +52,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/energyAndCapacityDecay?{0}"
+url = "http://www.amplabs.ai:81/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -90,7 +90,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/efficiency?{0}"
+url = "http://www.amplabs.ai:81/echarts/efficiency?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -128,7 +128,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/cycleQuantitiesByStep?{0}"
+url = "http://www.amplabs.ai:81/echarts/cycleQuantitiesByStep?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -165,7 +165,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/echarts/compareByCycleTime?{0}"
+url = "http://www.amplabs.ai:81/echarts/compareByCycleTime?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )

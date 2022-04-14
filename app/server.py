@@ -24,7 +24,7 @@ app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(ProblemException, problem_exception)
-CORS(app.app, origins=["http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com"], supports_credentials=True)
+CORS(app.app, origins=["http://www.amplabs.ai"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 
