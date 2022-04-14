@@ -7,6 +7,11 @@ Install required dependencies
 >>>pip3 install kaleido
 '''
 
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
+
 import json
 import urllib.error
 import urllib.request
@@ -44,6 +49,11 @@ Install required dependencies
 >>>pip3 install plotly
 >>>pip3 install kaleido
 '''
+
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
 
 import json
 import urllib.error
@@ -83,6 +93,11 @@ Install required dependencies
 >>>pip3 install kaleido
 '''
 
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
+
 import json
 import urllib.error
 import urllib.request
@@ -121,6 +136,11 @@ Install required dependencies
 >>>pip3 install kaleido
 '''
 
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
+
 import json
 import urllib.error
 import urllib.request
@@ -157,6 +177,11 @@ Install required dependencies
 >>>pip3 install plotly
 >>>pip3 install kaleido
 '''
+
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
 
 import json
 import urllib.error

@@ -37,8 +37,8 @@ const UploadPageForms = ({ pageType }, ref) => {
 	return (
 		<div className="row">
 			<div className="col-md-6">
-				<Collapse accordion>
-					<Panel header="Cell ID Metadata">
+				<Collapse defaultActiveKey={["1"]}>
+					<Panel header="Enter Cell Metadata" key="1">
 						{/* <div className="my-1 text-center">
 							<Title level={5}>Cell ID Metadata</Title>
 						</div> */}
@@ -87,8 +87,8 @@ const UploadPageForms = ({ pageType }, ref) => {
 			<div className="col-md-6">
 				{pageType === "cycle-test" ? (
 					<>
-						<Collapse>
-							<Panel header="Cycle Test Metadata">
+						<Collapse defaultActiveKey={["1"]}>
+							<Panel header="Enter Cycle Test Metadata" key="1">
 								{/* <div className="my-1 text-center">
 							<Title level={5}>Cycle Test Metadata</Title>
 						</div> */}
@@ -123,8 +123,8 @@ const UploadPageForms = ({ pageType }, ref) => {
 					</>
 				) : (
 					<>
-						<Collapse>
-							<Panel header="Abuse Test Metadata">
+						<Collapse defaultActiveKey={["1"]}>
+							<Panel header="Enter Abuse Test Metadata" key="1">
 								{/* <div className="my-1 text-center">
 									<Title level={5}>Abuse Test Metadata</Title>
 								</div> */}

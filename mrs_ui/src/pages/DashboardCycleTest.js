@@ -12,7 +12,7 @@ const DashboardCycleTest = () => {
 	const timeSeriesChart = useRef();
 	const efficiencyChart = useRef();
 	const cycleQtyByStepChart = useRef();
-	const compareByCycleTimeChart = useRef();
+	// const compareByCycleTimeChart = useRef();
 
 	const [searchParams, setSearchParams] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);
@@ -23,7 +23,7 @@ const DashboardCycleTest = () => {
 		timeSeriesChart: false,
 		efficiencyChart: false,
 		cycleQtyByStepChart: false,
-		compareByCycleTimeChart: false,
+		// compareByCycleTimeChart: false,
 	});
 
 	const [internalServerError, setInternalServerError] = useState("");
@@ -58,7 +58,7 @@ const DashboardCycleTest = () => {
 		fetchData(request, "timeSeries");
 		fetchData(request, "efficiency");
 		fetchData(request, "cycleQtyByStep");
-		fetchData(request, "compareByCycleTime");
+		// fetchData(request, "compareByCycleTime");
 		return true;
 	};
 
@@ -122,7 +122,7 @@ const DashboardCycleTest = () => {
 					cycleQtyByStepChart,
 					{
 						mapToId: "cycle_time",
-						title: "Cycle Tiime (s)",
+						title: "Cycle Time (s)",
 					},
 					{
 						mapToId: "v",
@@ -133,23 +133,23 @@ const DashboardCycleTest = () => {
 					sourceCode.cycleQtyByStepChart,
 				];
 				break;
-			case "compareByCycleTime":
-				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-					`/echarts/compareByCycleTime`,
-					compareByCycleTimeChart,
-					{
-						mapToId: "cycle_time",
-						title: "Cycle time (s)",
-					},
-					{
-						mapToId: "value",
-						title: "Voltage (V)/Current (A)",
-					},
-					"Compare by Cycle Time - Compare Cycle Voltage and Current",
-					"compareByCycleTime",
-					sourceCode.compareByCycleTimeChart,
-				];
-				break;
+			// case "compareByCycleTime":
+			// 	[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+			// 		`/echarts/compareByCycleTime`,
+			// 		compareByCycleTimeChart,
+			// 		{
+			// 			mapToId: "cycle_time",
+			// 			title: "Cycle time (s)",
+			// 		},
+			// 		{
+			// 			mapToId: "value",
+			// 			title: "Voltage (V)/Current (A)",
+			// 		},
+			// 		"Compare by Cycle Time - Compare Cycle Voltage and Current",
+			// 		"compareByCycleTime",
+			// 		sourceCode.compareByCycleTimeChart,
+			// 	];
+			// 	break;
 			default:
 				break;
 		}
@@ -185,13 +185,19 @@ const DashboardCycleTest = () => {
 						type: "value",
 						name: xAxis.title,
 						nameLocation: "middle",
-						nameGap: 20,
+						nameGap: 25,
+						nameTextStyle: {
+							fontSize: 14,
+						},
 					},
 					yAxis: {
 						type: "value",
 						name: yAxis.title,
 						nameLocation: "middle",
-						nameGap: 30,
+						nameGap: 25,
+						nameTextStyle: {
+							fontSize: 14,
+						},
 					},
 					legend: _createChartLegend(result.data.records[0], chartId),
 					toolbox: {
@@ -317,16 +323,16 @@ const DashboardCycleTest = () => {
 						<div className="col-md-6 mt-2">
 							<div className="card shadow-sm">
 								<div className="card-body">
-									{chartLoadingError.timeSeriesChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={timeSeriesChart} option={initialChartOptions} />
+									{chartLoadingError.efficiencyChart && <Alert message="Error" type="error" showIcon />}
+									<ReactEcharts showLoading ref={efficiencyChart} option={initialChartOptions} />
 								</div>
 							</div>
 						</div>
 						<div className="col-md-6 mt-2">
 							<div className="card shadow-sm">
 								<div className="card-body">
-									{chartLoadingError.efficiencyChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={efficiencyChart} option={initialChartOptions} />
+									{chartLoadingError.timeSeriesChart && <Alert message="Error" type="error" showIcon />}
+									<ReactEcharts showLoading ref={timeSeriesChart} option={initialChartOptions} />
 								</div>
 							</div>
 						</div>
@@ -338,14 +344,14 @@ const DashboardCycleTest = () => {
 								</div>
 							</div>
 						</div>
-						<div className="col-md-12 mt-2">
+						{/* <div className="col-md-12 mt-2">
 							<div className="card shadow-sm">
 								<div className="card-body">
 									{chartLoadingError.compareByCycleTimeChart && <Alert message="Error" type="error" showIcon />}
 									<ReactEcharts showLoading ref={compareByCycleTimeChart} option={initialChartOptions} />
 								</div>
 							</div>
-						</div>
+						</div> */}
 					</div>
 				</div>
 			)}
