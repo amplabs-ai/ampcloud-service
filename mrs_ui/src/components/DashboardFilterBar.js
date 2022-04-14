@@ -217,18 +217,6 @@ const DashboardFilterBar = (props) => {
 			setSelectedRowKeys(selectedRowKeys);
 			setSelectedRows(selectedRows);
 			// setCellIds(selectedRows);
-			if (!step) {
-				setStepInputStatus("error");
-				setStepInputPlaceholder("This field is required!");
-				message.error("Step field is required!");
-				message.error("Step field is required!");
-				return;
-			} else if (!selectedRows.length) {
-				message.error("Please Select atleast one cell Id!");
-				message.error("Please Select atleast one cell Id!");
-				return;
-			}
-			props.onFilterChange(selectedRows, props.testType === "abuseTest" ? sample : step);
 			console.log("selectedRows", selectedRows);
 		},
 	};
@@ -279,7 +267,7 @@ const DashboardFilterBar = (props) => {
 						onClick={() => handleApplyFilter()}
 						className=" btn btn-outline-dark btn-sm"
 					>
-						{props.testType === "abuseTest" ? "Apply Sample" : "Apply Step"}
+						Apply Filter
 					</button>
 					{/* view code modal */}
 					<ViewCodeModal
