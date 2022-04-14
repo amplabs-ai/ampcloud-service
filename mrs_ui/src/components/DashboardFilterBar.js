@@ -15,12 +15,14 @@ const DashboardFilterBar = (props) => {
 	const [tableLoading, setTableLoading] = useState(true);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
-	const [step, setStep] = useState(1);
+	const [step, setStep] = useState(localStorage.getItem("step") ? localStorage.getItem("step") : 1);
 	const [stepInputPlaceholder, setStepInputPlaceholder] = useState("Step");
 	const [stepInputStatus, setStepInputStatus] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);
 	const [searchParams, setSearchParams] = useState("");
-	const [sample, setSample] = useState(10);
+	const [sample, setSample] = useState(localStorage.getItem("sample") ? localStorage.getItem("sample") : 10);
+
+	console.log("localStorage", localStorage.getItem("sample"), localStorage.getItem("step"));
 
 	console.log("testType", props.testType);
 
@@ -56,10 +58,10 @@ const DashboardFilterBar = (props) => {
 				console.log("get cellId err", err);
 				props.internalServerErrorFound("500");
 			});
-		const filterTitle = document.createElement("span");
-		filterTitle.innerHTML = "Select Filter ";
-		filterTitle.className = "ms-1";
-		document.querySelector(".ant-table-container table > thead > tr:first-child th:first-child").append(filterTitle);
+		// const filterTitle = document.createElement("span");
+		// filterTitle.innerHTML = "Select Filter ";
+		// filterTitle.className = "ms-1";
+		// document.querySelector(".ant-table-container table > thead > tr:first-child th:first-child").append(filterTitle);
 	}, []);
 
 	const handleCellDelete = (record) => {
@@ -90,6 +92,8 @@ const DashboardFilterBar = (props) => {
 			message.error("Please Select atleast one cell Id!");
 			return;
 		}
+		localStorage.setItem("sample", sample);
+		localStorage.setItem("step", step);
 		let result = props.onFilterChange(selectedRows, props.testType === "abuseTest" ? sample : step);
 		if (result) {
 			message.success("Filter Applied!"); // potential bug in antd need to call msg twice
@@ -213,9 +217,22 @@ const DashboardFilterBar = (props) => {
 			setSelectedRowKeys(selectedRowKeys);
 			setSelectedRows(selectedRows);
 			// setCellIds(selectedRows);
+			if (!step) {
+				setStepInputStatus("error");
+				setStepInputPlaceholder("This field is required!");
+				message.error("Step field is required!");
+				message.error("Step field is required!");
+				return;
+			} else if (!selectedRows.length) {
+				message.error("Please Select atleast one cell Id!");
+				message.error("Please Select atleast one cell Id!");
+				return;
+			}
+			props.onFilterChange(selectedRows, props.testType === "abuseTest" ? sample : step);
 			console.log("selectedRows", selectedRows);
 		},
 	};
+
 	return (
 		<div>
 			<div className="card shadow-sm">
@@ -225,7 +242,7 @@ const DashboardFilterBar = (props) => {
 						{props.testType === "abuseTest" ? (
 							<>
 								<span style={{ fontSize: "0.7rem" }}>Sample % : </span>
-								<Select defaultValue="10" onChange={(e) => setSample(e)} showArrow title="Sample">
+								<Select defaultValue={sample} onChange={(e) => setSample(e)} showArrow title="Sample">
 									{SAMPLE_OPTIONS.map((o, i) => (
 										<Option key={i} value={o}>
 											{o}
@@ -262,7 +279,7 @@ const DashboardFilterBar = (props) => {
 						onClick={() => handleApplyFilter()}
 						className=" btn btn-outline-dark btn-sm"
 					>
-						Apply Filter
+						{props.testType === "abuseTest" ? "Apply Sample" : "Apply Step"}
 					</button>
 					{/* view code modal */}
 					<ViewCodeModal

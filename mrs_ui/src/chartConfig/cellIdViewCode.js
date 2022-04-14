@@ -6,12 +6,18 @@ Install required dependencies
 >>>pip3 install kaleido
 '''
 
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
+
 import json
 import urllib.error
 import urllib.request
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
+
 
 url = "/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(

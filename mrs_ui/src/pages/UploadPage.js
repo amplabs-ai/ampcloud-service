@@ -51,6 +51,7 @@ const UploadPage = () => {
 			setPageType("abuse-test");
 		} else if (location.pathname === "/upload/cycle-test" || location.pathname === "/upload") {
 			setPageType("cycle-test");
+			setFileUploadType("generic");
 		}
 		uploadPageFormsRef.current.resetForm();
 	}, [location.pathname]);
@@ -211,6 +212,7 @@ const UploadPage = () => {
 			.catch((error) => {
 				console.log("init file upload err", error.response.data.detail);
 				message.error(error.response.data.detail);
+				message.error(error.response.data.detail);
 			});
 	};
 
@@ -250,7 +252,8 @@ const UploadPage = () => {
 					if (res.data.records) {
 						if (parseInt(res.data.records.percentage) === 100) {
 							// redirect user
-							setTimeout(() => navigate("/dashboard"), 1000);
+							let navigateTo = pageType === "cycle-test" ? "/dashboard/cycle-test" : "/dashboard/abuse-test";
+							setTimeout(() => navigate(navigateTo), 1000);
 							clearInterval(intervalId);
 						} else if (parseInt(res.data.records.percentage) === -1) {
 							setprocessingProgressMsg("Oops! Error occured while processing uploads...");
@@ -297,24 +300,27 @@ const UploadPage = () => {
 								<animated.div style={style}>
 									<div className="my-3">
 										<Alert
+											closable
 											description={
-												<div>
-													<p className="para">We provide support for Arbin, Maccor cell test files.</p>
-													<p className="para">
-														Arbin: xlsx format <br />
-														Maccor: txt format
-													</p>
-													<Divider plain></Divider>
-													<div className="para">
-														We also provide support for generic csv files:
-														<br />
-														<p className="ms-2">
-															CSV with columns (cycle, test_time, current, voltage)<br></br>
-															units for columns = cycle (#), test_time (seconds), current (Amps), voltage (Volts)
-															<br></br> <span className="text-muted">Note: For current (A) charging is Positive</span>
-														</p>
+												pageType === "cycle-test" ? (
+													<div>
+														<div className="para">
+															We provide support for generic csv files:
+															<br />
+															<p className="ms-2">
+																CSV with columns <b>(cycle, test_time, current, voltage)</b>
+																<br></br>
+																Units for columns ={" "}
+																<b>cycle (#), test_time (seconds), current (Amps), voltage (Volts)</b>
+																<br></br> <span className="text-muted">Note: For current (A) charging is Positive</span>
+															</p>
+														</div>
 													</div>
-												</div>
+												) : (
+													<div>
+														<div className="para">We provide support for ORNL/SNL excel files</div>
+													</div>
+												)
 											}
 											type="info"
 											showIcon
@@ -323,34 +329,39 @@ const UploadPage = () => {
 
 									<UploadPageForms pageType={pageType} ref={uploadPageFormsRef} />
 
-									<div className="my-2">
-										<Title level={5}>File-Type:</Title>
-										<Radio.Group
-											// defaultValue={fileUploadType}
-											onChange={(e) => setFileUploadType(e.target.value)}
-											buttonStyle="solid"
-										>
-											{pageType === "cycle-test" ? (
-												<>
-													<Radio.Button value="arbin">arbin</Radio.Button>
-													<Radio.Button value="maccor">maccor</Radio.Button>
-													<Radio.Button value="generic">generic</Radio.Button>
-												</>
-											) : (
-												<>
-													<Radio.Button value="ornl">ORNL</Radio.Button>
-													<Radio.Button value="snl">SNL</Radio.Button>
-												</>
-											)}
-										</Radio.Group>
+									{pageType !== "cycle-test" && (
+										<div className="my-2">
+											<Title level={5}>File-Type:</Title>
+											<Radio.Group
+												// defaultValue={fileUploadType}
+												onChange={(e) => setFileUploadType(e.target.value)}
+												buttonStyle="solid"
+											>
+												{pageType === "cycle-test" ? (
+													<>
+														<Radio.Button value="arbin">arbin</Radio.Button>
+														<Radio.Button value="maccor">maccor</Radio.Button>
+														<Radio.Button value="generic">generic</Radio.Button>
+													</>
+												) : (
+													<>
+														<Radio.Button value="ornl">ORNL</Radio.Button>
+														<Radio.Button value="snl">SNL</Radio.Button>
+													</>
+												)}
+											</Radio.Group>
+										</div>
+									)}
+
+									<div className="py-2">
+										<DropFileInput
+											onFileChange={(files) => onFileChange(files)}
+											fileUploadHandler={fileUploadHandler}
+											uploadProgress={uploadProgress}
+											shallRedirectToDashBoard={shallRedirectToDashBoard}
+											reUpload={reUpload}
+										/>
 									</div>
-									<DropFileInput
-										onFileChange={(files) => onFileChange(files)}
-										fileUploadHandler={fileUploadHandler}
-										uploadProgress={uploadProgress}
-										shallRedirectToDashBoard={shallRedirectToDashBoard}
-										reUpload={reUpload}
-									/>
 								</animated.div>
 							);
 						})}
