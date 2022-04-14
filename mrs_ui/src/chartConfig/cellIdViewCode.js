@@ -1,15 +1,19 @@
-export const cycleDataCodeContent = `
+const codeContent = `
 '''
 Install required dependencies
 >>>pip3 install pandas
+>>>pip3 install plotly
+>>>pip3 install kaleido
 '''
 
 import json
 import urllib.error
 import urllib.request
 import pandas as pd
+import plotly.express as px
+import plotly.io as pio
 
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/download/cells/cycle_data_json/{0}"
+url = "/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -22,35 +26,15 @@ try:
 except urllib.error.HTTPError as e:
     print(e)
 
-if status and response['records']:
-    df = pd.DataFrame(response['records'])
-    print("Process complete", df.info())
+df = pd.DataFrame()
+if status:
+    for item in response['records'][0]:
+        df = df.append(pd.DataFrame.from_records(item['source']))
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+    fig = px.line(df, x="cycle_index", y="value", color="series", labels={"cycle_index":"Cycle Index", "value":"Ah/Wh"}, title = "Cycle Index Data - Energy and Capacity Decay")
+    fig.update_traces(mode="markers+lines", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./cycleIndexChart.png', format="png", scale=1, width=1200, height=800)
 `;
-export const timeSeriesDataCodeContent = `
-'''
- Install required dependencies
- >>>pip3 install pandas
-'''
 
-import json
-import urllib.error
-import urllib.request
-import pandas as pd
-
-url = "http://batteryarchivemrstutoriallb-436798068.ap-south-1.elb.amazonaws.com:81/download/cells/cycle_timeseries_json/{0}"
-httprequest = urllib.request.Request(
-        url, method="GET"
-    )
-httprequest.add_header("Cookie", "userId={1}")
-status = 0
-try:
-    with urllib.request.urlopen(httprequest) as httpresponse:
-        response = json.loads(httpresponse.read())
-        status = 1
-except urllib.error.HTTPError as e:
-    print(e)
-
-if status and response['records']:
-    df = pd.DataFrame(response['records'])
-    print("Process complete", df.info())
-`;
+export default codeContent;

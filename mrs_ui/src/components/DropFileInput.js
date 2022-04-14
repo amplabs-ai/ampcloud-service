@@ -83,27 +83,44 @@ const DropFileInput = (props) => {
 					<img src={uploadImg} alt="" />
 					<p>Click or drag file to this area to upload</p>
 				</div>
-				<input type="file" value="" onChange={onFileDrop} multiple />
+				<input
+					type="file"
+					value=""
+					accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"
+					onChange={onFileDrop}
+					// multiple
+				/>
 			</div>
 			{fileList.length > 0 ? (
 				<div className="drop-file-preview">
 					<div className="mb-1">
 						<Text type="secondary">Ready to upload</Text>
+						<button
+							className="btn btn-sm btn-outline-dark"
+							style={{ float: "right" }}
+							onClick={(e) => {
+								// setUploadBtnDisabled(true);
+								props.fileUploadHandler(e);
+							}}
+							disabled={uploadBtnDisabled}
+						>
+							Upload <FaCloudUploadAlt />
+						</button>
 					</div>
 					<List
-						footer={
-							<button
-								className="btn btn-sm btn-outline-dark"
-								style={{ float: "right" }}
-								onClick={(e) => {
-									// setUploadBtnDisabled(true);
-									props.fileUploadHandler(e);
-								}}
-								disabled={uploadBtnDisabled}
-							>
-								Upload <FaCloudUploadAlt />
-							</button>
-						}
+						// footer={
+						// 	<button
+						// 		className="btn btn-sm btn-outline-dark"
+						// 		style={{ float: "right" }}
+						// 		onClick={(e) => {
+						// 			// setUploadBtnDisabled(true);
+						// 			props.fileUploadHandler(e);
+						// 		}}
+						// 		disabled={uploadBtnDisabled}
+						// 	>
+						// 		Upload <FaCloudUploadAlt />
+						// 	</button>
+						// }
 						dataSource={fileList}
 						renderItem={(item) => (
 							<List.Item
@@ -188,4 +205,4 @@ DropFileInput.propTypes = {
 	onFileChange: PropTypes.func,
 };
 
-export default DropFileInput;
+export default React.memo(DropFileInput);

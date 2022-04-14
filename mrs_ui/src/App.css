@@ -33,7 +33,8 @@ input:focus,
 }
 
 .para {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
+  line-height: 1.4rem;
 }
 
 .card-body {
@@ -60,4 +61,8 @@ h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant
 
 .navbar-dark .navbar-nav .nav-link:hover {
   color: rgb(255, 255, 255, 70%)!important;
+}
+
+.ant-form-item {
+  margin-bottom: 12px!important;
 }

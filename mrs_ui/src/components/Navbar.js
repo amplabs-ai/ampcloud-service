@@ -11,23 +11,39 @@ const Navbar = () => {
 	const auth = useAuth();
 	const uploadMenu = (
 		<Menu>
-			<Menu.Item>
-				<Link className="nav-link" to="/upload">
+			<Menu.Item key="cycleTest">
+				<Link className="nav-link" to="/upload/cycle-test">
 					Cycle Test
 				</Link>
 			</Menu.Item>
-			<Menu.Item>
+			<Menu.Item key="abuseTest">
 				<Link className="nav-link" to="/upload/abuse-test">
 					Abuse Test
 				</Link>
 			</Menu.Item>
 		</Menu>
 	);
+
 	const userProfileMenu = (
 		<Menu>
-			<Menu.Item>
+			<Menu.Item key="logout">
 				<Link className="nav-link" onClick={() => auth.logout()} to="/">
 					Sign-out
+				</Link>
+			</Menu.Item>
+		</Menu>
+	);
+
+	const dashboardMenu = (
+		<Menu>
+			<Menu.Item key="cycleTest">
+				<Link className="nav-link" to="/dashboard/cycle-test">
+					Cycle Test
+				</Link>
+			</Menu.Item>
+			<Menu.Item key="abuseTest">
+				<Link className="nav-link" to="/dashboard/abuse-test">
+					Abuse Test
 				</Link>
 			</Menu.Item>
 		</Menu>
@@ -72,9 +88,11 @@ const Navbar = () => {
 									</Dropdown>
 								</li>
 								<li className="nav-item">
-									<Link className="nav-link" to="/dashboard">
-										Dashboard
-									</Link>
+									<Dropdown overlay={dashboardMenu}>
+										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
+											Dashboard <FaAngleDown />
+										</Link>
+									</Dropdown>
 								</li>
 								<li className="nav-item">
 									<Dropdown overlay={userProfileMenu}>
