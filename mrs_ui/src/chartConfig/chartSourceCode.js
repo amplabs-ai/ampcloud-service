@@ -1,5 +1,5 @@
 const sourceCode = {
-  cycleIndexChart: `
+	cycleIndexChart: `
 '''
 Install required dependencies
 >>>pip3 install pandas
@@ -14,7 +14,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/energyAndCapacityDecay?{0}"
+url = "/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -35,9 +35,9 @@ if status:
     fig = px.line(df, x="cycle_index", y="value", color="series", labels={"cycle_index":"Cycle Index", "value":"Ah/Wh"}, title = "Cycle Index Data - Energy and Capacity Decay")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
-    pio.write_image(fig, file='./cycleIndexChart.png', format="png", scale=1, width=1200, height=800) 
+    pio.write_image(fig, file='./cycleIndexChart.png', format="png", scale=1, width=1200, height=800)
     `,
-  timeSeriesChart: `
+	timeSeriesChart: `
 '''
 Install required dependencies
 >>>pip3 install pandas
@@ -52,7 +52,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/energyAndCapacityDecay?{0}"
+url = "/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -71,11 +71,11 @@ if status:
         df = df.append(pd.DataFrame.from_records(item['source']))
     df['value'] = pd.to_numeric(df['value'], errors='coerce')
     fig = px.scatter(df, x="test_time", y="value", color="series", labels={"test_time":"Time (s)", "value":"Wh/Ah"}, title = "Time Series Data - Energy and Capacity Decay")
-    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
-    pio.write_image(fig, file='./timeSeriesChart.png', format="png", scale=1, width=1200, height=800) 
+    pio.write_image(fig, file='./timeSeriesChart.png', format="png", scale=1, width=1200, height=800)
     `,
-  efficiencyChart: `
+	efficiencyChart: `
 '''
 Install required dependencies
 >>>pip3 install pandas
@@ -90,7 +90,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/efficiency?{0}"
+url = "/echarts/efficiency?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -111,9 +111,9 @@ if status:
     fig = px.line(df, x="cycle_index", y="value", color="series", labels={"cycle_index":"Cycle Index", "value":"Enery and Coulombic Efficiencies"}, title = "Efficiencies")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
-    pio.write_image(fig, file='./efficiencyChart.png', format="png", scale=1, width=1200, height=800)  
+    pio.write_image(fig, file='./efficiencyChart.png', format="png", scale=1, width=1200, height=800)
     `,
-  cycleQtyByStepChart: `
+	cycleQtyByStepChart: `
 '''
 Install required dependencies
 >>>pip3 install pandas
@@ -128,7 +128,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/cycleQuantitiesByStep?{0}"
+url = "/echarts/cycleQuantitiesByStep?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -148,9 +148,9 @@ if status:
     fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Volateg (V)"}, title = "Cycle Quantities by step")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
-    pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)  
+    pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)
     `,
-  compareByCycleTimeChart: `
+	compareByCycleTimeChart: `
 '''
 Install required dependencies
 >>>pip3 install pandas
@@ -165,7 +165,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/compareByCycleTime?{0}"
+url = "/echarts/compareByCycleTime?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -186,8 +186,11 @@ if status:
     fig = px.line(df, x="cycle_time", y="value", color="series_2", labels={"cycle_time":"Cycle Time (s)", "value":"Voltage (V)/Current (A)"}, title = "Compare by Cycle Time - Compare Cycle Voltage and Current")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
-    pio.write_image(fig, file='./compareByCycleTimeChart.png', format="png", scale=1, width=1200, height=800)  
+    pio.write_image(fig, file='./compareByCycleTimeChart.png', format="png", scale=1, width=1200, height=800)
     `,
+	forceAndDisplacementChart: ``,
+	testTempraturesChart: ``,
+	voltageChart: ``,
 };
 
 export default sourceCode;

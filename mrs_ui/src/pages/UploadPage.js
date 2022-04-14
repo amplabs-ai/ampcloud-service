@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DropFileInput from "../components/DropFileInput";
 import styles from "./UploadPage.module.css";
 import axios from "axios";
-import { Radio, Typography, Progress, Form, Input, message, Collapse } from "antd";
-import { useNavigate } from "react-router-dom";
+import { Radio, Typography, Progress, message, Alert, Divider } from "antd";
+import { useNavigate, useLocation } from "react-router-dom";
 import pako from "pako";
 import { useTransition, animated } from "react-spring";
-import { CaretRightOutlined } from "@ant-design/icons";
-
 import UploadPageForms from "../components/UploadPageForms";
 
 const { Title } = Typography;
-const { Panel } = Collapse;
 
 const UploadPage = () => {
+	const uploadPageFormsRef = useRef();
 	const navigate = useNavigate();
+	const location = useLocation();
 
+	const [pageType, setPageType] = useState("cycle-test");
 	const [files, setFiles] = useState([]);
 	const [uploadProgress, setUploadProgress] = useState({});
-	const [fileUploadType, setFileUploadType] = useState("arbin");
+	const [fileUploadType, setFileUploadType] = useState("");
 	const [reUpload, setReUpload] = useState(false);
 	const [intervalId, setIntervalId] = useState(null);
 	const [shallRedirectToDashBoard, setShallRedirectToDashBoard] = useState(false);
-	const [userInputCellId, setUserInputCellId] = useState("");
 	const [filesUploadedCount, setFilesUploadedCount] = useState(0);
 	const [showProcessing, setShowProcessing] = useState(false);
 	const [processingProgress, setProcessingProgress] = useState({
@@ -45,6 +44,16 @@ const UploadPage = () => {
 			}
 		};
 	}, [intervalId]);
+
+	useEffect(() => {
+		console.log("uploadsadasdasd", location);
+		if (location.pathname === "/upload/abuse-test") {
+			setPageType("abuse-test");
+		} else if (location.pathname === "/upload/cycle-test" || location.pathname === "/upload") {
+			setPageType("cycle-test");
+		}
+		uploadPageFormsRef.current.resetForm();
+	}, [location.pathname]);
 
 	const onFileChange = (files) => {
 		console.log(files);
@@ -69,18 +78,18 @@ const UploadPage = () => {
 				return "/upload/cells/maccor";
 			case "generic":
 				return "/upload/cells/generic";
-			default:
+			case "arbin":
 				return "/upload/cells/arbin";
+			case "snl":
+				return "/upload/cells/snl";
+			case "ornl":
+				return "/upload/cells/ornl";
+			default:
+				return;
 		}
 	};
 
-	const showProcessingBar = () => {
-		setShowProcessing(true);
-		window.scrollTo(0, 0);
-		getStatus();
-	};
-
-	const doFileUpload = () => {
+	const doFileUpload = (cellId) => {
 		setReUpload(false);
 		let endpoint = _getUploadEndpoint();
 		_initializeUploadProgress();
@@ -94,7 +103,8 @@ const UploadPage = () => {
 				const dataToUpload = new Blob([compressedFile], { type: file.type });
 				const fileToUpload = new Blob([dataToUpload], { type: file.type });
 				formData.append("file", fileToUpload, file.name);
-				formData.append("cell_id", userInputCellId);
+				console.log("before append", cellId);
+				formData.append("cell_id", cellId);
 
 				console.log("compression size", fileToUpload.size);
 				axios
@@ -121,7 +131,9 @@ const UploadPage = () => {
 									if (c + 1 === files.length) {
 										setTimeout(() => {
 											console.log("show processing...");
-											showProcessingBar();
+											setShowProcessing(true);
+											window.scrollTo(0, 0);
+											getStatus(cellId);
 										}, 1000);
 									}
 									return c + 1;
@@ -148,14 +160,39 @@ const UploadPage = () => {
 	};
 
 	const fileUploadHandler = async (e) => {
-		if (!userInputCellId) {
+		let cellMetadata = uploadPageFormsRef.current.getCellMetadata();
+		console.log(cellMetadata);
+		if (!cellMetadata.cell_id) {
 			message.warning("Please provide Cell Id");
 			message.warning("Please provide Cell Id");
 			return;
 		}
+		if (!fileUploadType) {
+			message.warning("Please Select File-Type!");
+			message.warning("Please Select File-Type!");
+			return;
+		}
 		let uploadInitReqData = new FormData();
-		uploadInitReqData.append("cell_id", userInputCellId);
 		uploadInitReqData.append("file_count", files.length);
+		for (const key in cellMetadata) {
+			const value = cellMetadata[key];
+			uploadInitReqData.append(key, value);
+		}
+		if (pageType === "cycle-test") {
+			let cycleTestMetadata = uploadPageFormsRef.current.getCycleTestMetadata();
+			for (const key in cycleTestMetadata) {
+				const value = cycleTestMetadata[key];
+				uploadInitReqData.append(key, value);
+			}
+			uploadInitReqData.append("test_type", "cycle");
+		} else if (pageType === "abuse-test") {
+			let abuseTestMetadata = uploadPageFormsRef.current.getAbuseTestMetadata();
+			for (const key in abuseTestMetadata) {
+				const value = abuseTestMetadata[key];
+				uploadInitReqData.append(key, value);
+			}
+			uploadInitReqData.append("test_type", "abuse");
+		}
 		// initial upload request
 		axios
 			.post("/upload/cells/initialize", uploadInitReqData, {
@@ -166,11 +203,14 @@ const UploadPage = () => {
 			.then((response) => {
 				if (response.status === 200) {
 					console.log("initiate file upload success!");
-					doFileUpload();
+					doFileUpload(cellMetadata.cell_id);
+				} else if (response.status === 400) {
+					console.log(response);
 				}
 			})
 			.catch((error) => {
-				console.log("init file upload err", error);
+				console.log("init file upload err", error.response.data.detail);
+				message.error(error.response.data.detail);
 			});
 	};
 
@@ -200,11 +240,11 @@ const UploadPage = () => {
 		}
 	};
 
-	const getStatus = () => {
+	const getStatus = (cellId) => {
 		let errorCount = 0;
 		let intervalId = setInterval(() => {
 			axios
-				.get(`/upload/cells/status/${userInputCellId}`)
+				.get(`/upload/cells/status/${cellId}`)
 				.then((res) => {
 					console.log("status", res.data.records);
 					if (res.data.records) {
@@ -222,6 +262,7 @@ const UploadPage = () => {
 				.catch((err) => {
 					if (errorCount > 5) {
 						clearInterval(intervalId);
+						setprocessingProgressMsg("Oops! Error occured while processing uploads...");
 					}
 					console.log(err);
 					errorCount++;
@@ -229,11 +270,6 @@ const UploadPage = () => {
 		}, 1000);
 		setIntervalId(intervalId);
 		return intervalId;
-	};
-
-	const setCellMetadataObject = (event) => {
-		setUserInputCellId(event[0].value);
-		console.log(event[0].name[0], event[0].value);
 	};
 
 	return (
@@ -259,49 +295,53 @@ const UploadPage = () => {
 								</animated.div>
 							) : (
 								<animated.div style={style}>
-									<div className="card col-md-12 p-2 my-3 w-100">
-										<div className="card-body">
-											<p className="para">
-												We provide support for Arbin, Maccor cell test files.<br></br>
-												Arbin: xlsx format Maccor: txt format
-											</p>
-											<p className="para">
-												We also provide support for generic csv files:<br></br>
-												CSV with columns (cycle, test_time, current, voltage)<br></br>
-												units for columns = cycle (#), test_time (seconds), current (Amps), voltage (Volts)<br></br>{" "}
-												Note: For current (A) charging is Positive
-											</p>
-										</div>
+									<div className="my-3">
+										<Alert
+											description={
+												<div>
+													<p className="para">We provide support for Arbin, Maccor cell test files.</p>
+													<p className="para">
+														Arbin: xlsx format <br />
+														Maccor: txt format
+													</p>
+													<Divider plain></Divider>
+													<div className="para">
+														We also provide support for generic csv files:
+														<br />
+														<p className="ms-2">
+															CSV with columns (cycle, test_time, current, voltage)<br></br>
+															units for columns = cycle (#), test_time (seconds), current (Amps), voltage (Volts)
+															<br></br> <span className="text-muted">Note: For current (A) charging is Positive</span>
+														</p>
+													</div>
+												</div>
+											}
+											type="info"
+											showIcon
+										/>
 									</div>
 
-									<div>
-										<Form
-											name="basic"
-											labelCol={{ span: 0 }}
-											wrapperCol={{ span: 8 }}
-											initialValues={{ remember: true }}
-											onFieldsChange={(e) => setCellMetadataObject(e)}
-											layout="vertical"
-										>
-											<Form.Item
-												label="Cell Id"
-												name="cell_id"
-												rules={[{ required: true, message: "Please provide Cell Id!" }]}
-											>
-												<Input />
-											</Form.Item>
-										</Form>
-									</div>
-									<div className="mb-2">
+									<UploadPageForms pageType={pageType} ref={uploadPageFormsRef} />
+
+									<div className="my-2">
 										<Title level={5}>File-Type:</Title>
 										<Radio.Group
-											defaultValue={fileUploadType}
+											// defaultValue={fileUploadType}
 											onChange={(e) => setFileUploadType(e.target.value)}
 											buttonStyle="solid"
 										>
-											<Radio.Button value="arbin">arbin</Radio.Button>
-											<Radio.Button value="maccor">maccor</Radio.Button>
-											<Radio.Button value="generic">generic</Radio.Button>
+											{pageType === "cycle-test" ? (
+												<>
+													<Radio.Button value="arbin">arbin</Radio.Button>
+													<Radio.Button value="maccor">maccor</Radio.Button>
+													<Radio.Button value="generic">generic</Radio.Button>
+												</>
+											) : (
+												<>
+													<Radio.Button value="ornl">ORNL</Radio.Button>
+													<Radio.Button value="snl">SNL</Radio.Button>
+												</>
+											)}
 										</Radio.Group>
 									</div>
 									<DropFileInput
@@ -322,31 +362,3 @@ const UploadPage = () => {
 };
 
 export default UploadPage;
-
-// {showProcessing ? (
-// 	<div>
-// 		<Progress type="circle" width="200px" percent={75} />
-// 	</div>
-// ) : (
-// 	<>
-// 		<div className="mb-2">
-// 			<Title level={5}>File-Type:</Title>
-// 			<Radio.Group
-// 				defaultValue={fileUploadType}
-// 				onChange={(e) => setFileUploadType(e.target.value)}
-// 				buttonStyle="solid"
-// 			>
-// 				<Radio.Button value="arbin">arbin</Radio.Button>
-// 				<Radio.Button value="maccor">maccor</Radio.Button>
-// 				<Radio.Button value="generic">generic</Radio.Button>
-// 			</Radio.Group>
-// 		</div>
-// 		<DropFileInput
-// 			onFileChange={(files) => onFileChange(files)}
-// 			fileUploadHandler={fileUploadHandler}
-// 			uploadProgress={uploadProgress}
-// 			shallRedirectToDashBoard={shallRedirectToDashBoard}
-// 			reUpload={reUpload}
-// 		/>
-// 	</>
-// )}

@@ -1,7 +1,167 @@
-import React from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
+import { Form, Input, Typography, Button, Collapse } from "antd";
 
-const UploadPageForms = () => {
-	return <div></div>;
+const { Panel } = Collapse;
+
+const { Title } = Typography;
+
+const UploadPageForms = ({ pageType }, ref) => {
+	const [cellMdform] = Form.useForm();
+	const [cycleMdform] = Form.useForm();
+	const [abuseMdform] = Form.useForm();
+
+	const [cellMetadata, setCellMetadata] = useState({});
+	const [cycleTestMetadata, setCycleTestMetadata] = useState({});
+	const [abuseTestMetadata, setAbuseTestMetadata] = useState({});
+
+	useImperativeHandle(ref, () => ({
+		getCellMetadata() {
+			return cellMetadata;
+		},
+		getCycleTestMetadata() {
+			return cycleTestMetadata;
+		},
+		getAbuseTestMetadata() {
+			return abuseTestMetadata;
+		},
+		resetForm() {
+			cellMdform.resetFields();
+			cycleMdform.resetFields();
+			abuseMdform.resetFields();
+			setCellMetadata({});
+			setCycleTestMetadata({});
+			setAbuseTestMetadata({});
+		},
+	}));
+
+	return (
+		<div className="row">
+			<div className="col-md-6">
+				<Collapse accordion>
+					<Panel header="Cell ID Metadata">
+						{/* <div className="my-1 text-center">
+							<Title level={5}>Cell ID Metadata</Title>
+						</div> */}
+						<Form
+							form={cellMdform}
+							layout="vertical"
+							name="cellId"
+							onFieldsChange={(e) => {
+								let x = {};
+								x[e[0].name[0]] = e[0].value;
+								console.log(cellMetadata);
+								setCellMetadata({ ...cellMetadata, ...x });
+							}}
+						>
+							<Form.Item
+								label="Cell Id"
+								name="cell_id"
+								rules={[
+									{
+										required: true,
+										message: "Please provide a Cell Id!",
+									},
+								]}
+							>
+								<Input allowClear />
+							</Form.Item>
+							<Form.Item label="Anode" name="anode">
+								<Input type="number" allowClear />
+							</Form.Item>
+							<Form.Item label="Cathode" name="cathode">
+								<Input type="number" allowClear />
+							</Form.Item>
+							<Form.Item label="Source" name="source">
+								<Input type="number" allowClear />
+							</Form.Item>
+							<Form.Item label="Ah" name="ah">
+								<Input type="number" allowClear />
+							</Form.Item>
+							<Form.Item label="Form Factor" name="form_factor">
+								<Input type="number" allowClear />
+							</Form.Item>
+						</Form>
+					</Panel>
+				</Collapse>
+			</div>
+			<div className="col-md-6">
+				{pageType === "cycle-test" ? (
+					<>
+						<Collapse>
+							<Panel header="Cycle Test Metadata">
+								{/* <div className="my-1 text-center">
+							<Title level={5}>Cycle Test Metadata</Title>
+						</div> */}
+								<Form
+									form={cycleMdform}
+									layout="vertical"
+									name="cycleTest"
+									onFieldsChange={(e) => {
+										let x = {};
+										x[e[0].name[0]] = e[0].value;
+										setCycleTestMetadata({ ...cycleTestMetadata, ...x });
+									}}
+								>
+									<Form.Item label="Temperature (C)" name="temperature">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="Max SOC" name="soc_max">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="Min SOC" name="soc_min">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="Chart Rate (C)" name="crate_c">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="Discharge Rate (C)" name="crate_d">
+										<Input allowClear />
+									</Form.Item>
+								</Form>
+							</Panel>
+						</Collapse>
+					</>
+				) : (
+					<>
+						<Collapse>
+							<Panel header="Abuse Test Metadata">
+								{/* <div className="my-1 text-center">
+									<Title level={5}>Abuse Test Metadata</Title>
+								</div> */}
+								<Form
+									form={abuseMdform}
+									layout="vertical"
+									name="cycleTest"
+									onFieldsChange={(e) => {
+										let x = {};
+										x[e[0].name[0]] = e[0].value;
+										console.log("abuse", abuseTestMetadata);
+										setAbuseTestMetadata({ ...abuseTestMetadata, ...x });
+									}}
+								>
+									<Form.Item label="Temperature (C)" name="temperature">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="Thickness (in)" name="thickness">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="V t=0 (V)" name="v_init">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="Indentor" name="indentor">
+										<Input allowClear />
+									</Form.Item>
+									<Form.Item label="Nail Speed" name="nail_speed">
+										<Input allowClear />
+									</Form.Item>
+								</Form>
+							</Panel>
+						</Collapse>
+					</>
+				)}
+			</div>
+		</div>
+	);
 };
 
-export default UploadPageForms;
+export default React.memo(forwardRef(UploadPageForms));
