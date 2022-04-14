@@ -6,11 +6,11 @@ from app.utilities.file_reader import read_generic, read_maccor, read_arbin, rea
 from app.utilities.utils import calc_abuse_stats, status, calc_cycle_stats, sort_timeseries
 
 def init_file_upload_service(email, data):
-    cell_id = data['cell_id']
+    cell_id = data.get('cell_id')
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if ao.get_all_cell_meta_with_id(cell_id, email, data['test_type']):
+        if ao.get_all_cell_meta_with_id(cell_id, email, data.get('test_type')):
             return 400, RESPONSE_MESSAGE['CELL_ID_EXISTS'].format(cell_id)
     except ValueError as err:
         print(err)
@@ -20,43 +20,43 @@ def init_file_upload_service(email, data):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
-    test_type = data['test_type']
+    test_type = data.get('test_type')
     cell_metadata = pd.DataFrame([{
-            "cell_id": data['cell_id'],
-            "anode": data['anode'],
-            "cathode": data['cathode'],
-            "source": data['source'],
-            "ah": float(data['ah']),
-            "form_factor": data['form_factor'],
-            "test": data['test_type'],
+            "cell_id": data.get('cell_id'),
+            "anode": data.get('anode'),
+            "cathode": data.get('cathode'),
+            "source": data.get('source'),
+            "ah": float(data.get('ah') or 0.0),
+            "form_factor": data.get('form_factor'),
+            "test": data.get('test_type'),
             "email": email
         }])
     if test_type == archive_constants.TEST_TYPE.CYCLE.value:
         test_metadata = pd.DataFrame([{
-            "cell_id": data['cell_id'],
-            "temperature": float(data['temperature']),
-            "soc_max": float(data['soc_max']),
-            "soc_min": float(data['soc_min']),
-            "crate_c": float(data['crate_c']),
-            "crate_d": float(data['crate_d']),
+            "cell_id": data.get('cell_id'),
+            "temperature": float(data.get('temperature') or 0.0),
+            "soc_max": float(data.get('soc_max') or 0.0),
+            "soc_min": float(data.get('soc_min') or 0.0),
+            "crate_c": float(data.get('crate_c') or 0.0),
+            "crate_d": float(data.get('crate_d') or 0.0),
             "email": email
         }])
     else:
         test_metadata = pd.DataFrame([{
-            "cell_id": data['cell_id'],
-            "thickness": float(data['thickness']),
-            "temperature": float(data['temperature']),
-            "v_init": float(data['v_init']),
-            "nail_speed": float(data['nail_speed']),
-            "indentor": float(data['indentor']),
+            "cell_id": data.get('cell_id'),
+            "thickness": float(data.get('thickness') or 0.0),
+            "temperature": float(data.get('temperature') or 0.0),
+            "v_init": float(data.get('v_init') or 0.0),
+            "nail_speed": float(data.get('nail_speed') or 0.0),
+            "indentor": float(data.get('indentor') or 0.0),
             "email": email
         }])
 
-    status[f"{email}|{data['cell_id']}"] = {
+    status[f"{email}|{data.get('cell_id')}"] = {
         "dataframes":[],
         "progress": {'percentage':0, 'message': "IN PROGRESS"},
-        "file_count":int(data['file_count']),
-        "test_type": data['test_type'],
+        "file_count":int(data.get('file_count')),
+        "test_type": data.get('test_type'),
         "cell_metadata": cell_metadata,
         "test_metadata": test_metadata}
     return 200, "Success"
@@ -109,7 +109,7 @@ def file_data_process_service(cell_id, email):
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 66
             ao.add_all(test_metadata, AbuseMeta)
             ao.add_all(final_df, AbuseTimeSeries)
-        status[f"{email}|{cell_id}"]['progress']['percentage'] = 78   
+        status[f"{email}|{cell_id}"]['progress']['percentage'] = 78
         ao.commit()
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 100
         status[f"{email}|{cell_id}"]['progress']['message'] = "COMPLETED"
