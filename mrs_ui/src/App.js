@@ -14,6 +14,7 @@ import DashboardCycleTest from "./pages/DashboardCycleTest";
 function App() {
 	return (
 		<>
+			<p>My Token = {window.token}</p>
 			<AuthProvider>
 				<Router>
 					<BackTop />
