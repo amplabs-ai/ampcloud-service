@@ -20,7 +20,7 @@ const DropFileInput = (props) => {
 	const onDrop = () => wrapperRef.current.classList.remove("dragover");
 
 	const onFileDrop = (e) => {
-		let updatedList = props.reUpload ? [] : [...fileList];
+		let updatedList = [] //props.reUpload ? [] : [...fileList];
 		setUploadBtnDisabled(false);
 		for (let i = 0; i < e.target.files.length; i++) {
 			let file = e.target.files[i];
