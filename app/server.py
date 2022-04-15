@@ -25,13 +25,14 @@ app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(ProblemException, problem_exception)
-# CORS(app.app, origins=["http://3.108.215.32:3000"], supports_credentials=True)
+# CORS(app.app, origins=["http://www.amplabs.ai"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 
 if __name__ == "__main__":
     engine_ = create_engine(app.app.config['DATABASE_URI'], echo=True)
     Model.metadata.create_all(engine_)
+
     @app.route("/")
     def my_index():
         return render_template("index.html", flask_token="amplabs token")
@@ -40,4 +41,5 @@ if __name__ == "__main__":
     @app.route('/<path:path>')
     def index(path):
         return render_template('index.html')
+
     app.run(debug=True, host='0.0.0.0', port='4000')
