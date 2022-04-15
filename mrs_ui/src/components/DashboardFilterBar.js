@@ -216,8 +216,7 @@ const DashboardFilterBar = (props) => {
 		onChange: (selectedRowKeys, selectedRows) => {
 			setSelectedRowKeys(selectedRowKeys);
 			setSelectedRows(selectedRows);
-			// setCellIds(selectedRows);
-			console.log("selectedRows", selectedRows);
+			// props.onCellIdChange(selectedRows);
 		},
 	};
 
@@ -254,14 +253,6 @@ const DashboardFilterBar = (props) => {
 							/>
 						)}
 					</div>
-					{/* <Button
-						disabled={!cellIds.length}
-						danger
-						onClick={() => handleApplyFilter()}
-						className="mt-2"
-					>
-						Filter
-					</Button> */}
 					<button
 						disabled={!cellIds.length}
 						onClick={() => handleApplyFilter()}

@@ -3,16 +3,16 @@ info:
   version: 1.0.0
   title: Battery Archive API
 paths:
-  # /:
-  #   get:
-  #     summary: Test
-  #     x-openapi-router-controller: app.controllers.auth_controller
-  #     operationId: health_check
-  #     tags:
-  #       - Auth
-  #     responses:
-  #       "200":
-  #         description: Successfull response
+  /:
+    get:
+      summary: Test
+      x-openapi-router-controller: app.controllers.auth_controller
+      operationId: health_check
+      tags:
+        - Auth
+      responses:
+        "200":
+          description: Successfull response
   /login:
     post:
       summary: Login
