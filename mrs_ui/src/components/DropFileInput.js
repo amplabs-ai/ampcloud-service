@@ -3,157 +3,160 @@ import PropTypes from "prop-types";
 import blankFileImage from "../assets/file-blank-solid-240.png";
 import uploadImg from "../assets/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
-import { Progress, Typography, Alert, List, Avatar } from "antd";
+import { Progress, Typography, Alert, List, Avatar, Button } from "antd";
 import { FaTimes } from "react-icons/fa";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
 const { Text } = Typography;
 
 const DropFileInput = (props) => {
-	console.log("props.uploadProgress", props.uploadProgress);
-	const wrapperRef = useRef(null);
-	const [fileList, setFileList] = useState([]);
-	const [uploadBtnDisabled, setUploadBtnDisabled] = useState(false);
+  console.log("props.uploadProgress", props.uploadProgress);
+  const wrapperRef = useRef(null);
+  const [fileList, setFileList] = useState([]);
+  const [uploadBtnDisabled, setUploadBtnDisabled] = useState(false);
 
-	const onDragEnter = () => wrapperRef.current.classList.add("dragover");
-	const onDragLeave = () => wrapperRef.current.classList.remove("dragover");
-	const onDrop = () => wrapperRef.current.classList.remove("dragover");
+  const onDragEnter = () => wrapperRef.current.classList.add("dragover");
+  const onDragLeave = () => wrapperRef.current.classList.remove("dragover");
+  const onDrop = () => wrapperRef.current.classList.remove("dragover");
 
-	const onFileDrop = (e) => {
-		let updatedList = [] //props.reUpload ? [] : [...fileList];
-		setUploadBtnDisabled(false);
-		for (let i = 0; i < e.target.files.length; i++) {
-			let file = e.target.files[i];
-			if (file) {
-				updatedList.push(file);
-			}
-		}
-		props.onFileChange(updatedList);
-		setFileList(updatedList);
-	};
+  const onFileDrop = (e) => {
+    let updatedList = []; // props.reUpload ? [] : [...fileList];
+    setUploadBtnDisabled(false);
+    for (let i = 0; i < e.target.files.length; i++) {
+      let file = e.target.files[i];
+      if (file) {
+        updatedList.push(file);
+      }
+    }
+    props.onFileChange(updatedList);
+    setFileList(updatedList);
+  };
 
-	const fileRemove = (file) => {
-		const updatedList = [...fileList];
-		updatedList.splice(fileList.indexOf(file), 1);
-		props.onFileChange(updatedList);
-		setFileList(updatedList);
-	};
+  const fileRemove = (file) => {
+    const updatedList = [...fileList];
+    updatedList.splice(fileList.indexOf(file), 1);
+    props.onFileChange(updatedList);
+    setFileList(updatedList);
+  };
 
-	const bytesToSize = (bytes) => {
-		let sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-		if (bytes === 0) return "0 Byte";
-		let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-		return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
-	};
+  const bytesToSize = (bytes) => {
+    let sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    if (bytes === 0) return "0 Byte";
+    let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
+  };
 
-	const getProgress = (fileName) => {
-		if (Object.keys(props.uploadProgress).length) {
-			let progress = parseInt(props.uploadProgress[fileName]?.percentage || 0);
+  const getProgress = (fileName) => {
+    if (Object.keys(props.uploadProgress).length) {
+      let progress = parseInt(props.uploadProgress[fileName]?.percentage || 0);
 
-			return {
-				value: progress,
-				status: progress === 100 ? "" : progress === -1 ? "exception" : "active",
-				message: progress === -1 ? props.uploadProgress[fileName].detail : "",
-			};
-		} else {
-			return {
-				value: 0,
-				status: "",
-			};
-		}
-	};
+      return {
+        value: progress,
+        status:
+          progress === 100 ? "" : progress === -1 ? "exception" : "active",
+        message: progress === -1 ? props.uploadProgress[fileName].detail : "",
+      };
+    } else {
+      return {
+        value: 0,
+        status: "",
+      };
+    }
+  };
 
-	// const shallRedirectToDashBoard = () => {
-	// 	if (props.shallRedirectToDashBoard) {
-	// 		setTimeout(() => navigate("/dashboard"), 1000);
-	// 	}
-	// };
-	// shallRedirectToDashBoard();
+  // const shallRedirectToDashBoard = () => {
+  // 	if (props.shallRedirectToDashBoard) {
+  // 		setTimeout(() => navigate("/dashboard"), 1000);
+  // 	}
+  // };
+  // shallRedirectToDashBoard();
 
-	return (
-		<>
-			<div
-				ref={wrapperRef}
-				className="drop-file-input shadow-sm"
-				onDragEnter={onDragEnter}
-				onDragLeave={onDragLeave}
-				onDrop={onDrop}
-			>
-				<div className="drop-file-input__label">
-					<img src={uploadImg} alt="" />
-					<p>Click or drag file to this area to upload</p>
-				</div>
-				<input
-					type="file"
-					value=""
-					accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"
-					onChange={onFileDrop}
-					// multiple
-				/>
-			</div>
-			{fileList.length > 0 ? (
-				<div className="drop-file-preview">
-					<div className="mb-1">
-						<Text type="secondary">Ready to upload</Text>
-						<button
-							className="btn btn-sm btn-outline-dark"
-							style={{ float: "right" }}
-							onClick={(e) => {
-								// setUploadBtnDisabled(true);
-								props.fileUploadHandler(e);
-							}}
-							disabled={uploadBtnDisabled}
-						>
-							Upload <FaCloudUploadAlt />
-						</button>
-					</div>
-					<List
-						// footer={
-						// 	<button
-						// 		className="btn btn-sm btn-outline-dark"
-						// 		style={{ float: "right" }}
-						// 		onClick={(e) => {
-						// 			// setUploadBtnDisabled(true);
-						// 			props.fileUploadHandler(e);
-						// 		}}
-						// 		disabled={uploadBtnDisabled}
-						// 	>
-						// 		Upload <FaCloudUploadAlt />
-						// 	</button>
-						// }
-						dataSource={fileList}
-						renderItem={(item) => (
-							<List.Item
-								key={item.id}
-								extra={
-									!Object.keys(props.uploadProgress).length && (
-										<span style={{ cursor: "pointer" }} onClick={() => fileRemove(item)}>
-											<FaTimes />
-										</span>
-									)
-								}
-							>
-								<List.Item.Meta
-									avatar={<Avatar src={blankFileImage} />}
-									title={item.name}
-									description={
-										getProgress(item.name).value ? (
-											<>
-												{getProgress(item.name).message ? (
-													<Alert message={getProgress(item.name).message} type="error" showIcon />
-												) : (
-													<Progress percent={getProgress(item.name).value} status={getProgress(item.name).status} />
-												)}
-											</>
-										) : (
-											bytesToSize(item.size)
-										)
-									}
-								/>
-							</List.Item>
-						)}
-					/>
-					{/* {fileList.map((item, index) => (
+  return (
+    <>
+      {fileList.length < 1 && (
+        <div
+          ref={wrapperRef}
+          className="drop-file-input shadow-sm"
+          onDragEnter={onDragEnter}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+        >
+          <div className="drop-file-input__label">
+            <img src={uploadImg} alt="" />
+            <p>Click or drag file to this area to upload</p>
+          </div>
+          <input
+            type="file"
+            value=""
+            accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"
+            onChange={onFileDrop}
+            // multiple
+          />
+        </div>
+      )}
+      {fileList.length > 0 ? (
+        <div className="drop-file-preview">
+          <div className="mb-1 d-flex justify-content-between">
+            <Text type="secondary">Ready to upload</Text>
+            <Button
+              type="primary"
+              onClick={(e) => {
+                props.fileUploadHandler(e);
+              }}
+              icon={<FaCloudUploadAlt />}
+              size="large"
+              disabled={uploadBtnDisabled}
+              // loading={uploadBtnDisatrybled}
+            >
+              &nbsp;&nbsp;Upload
+            </Button>
+          </div>
+          <div>
+            <List
+              dataSource={fileList}
+              renderItem={(item) => (
+                <List.Item
+                  key={item.id}
+                  extra={
+                    !Object.keys(props.uploadProgress).length && (
+                      <span
+                        style={{ cursor: "pointer" }}
+                        onClick={() => fileRemove(item)}
+                      >
+                        <FaTimes />
+                      </span>
+                    )
+                  }
+                >
+                  <List.Item.Meta
+                    avatar={<Avatar src={blankFileImage} />}
+                    title={item.name}
+                    description={
+                      getProgress(item.name).value ? (
+                        <>
+                          {getProgress(item.name).message ? (
+                            <Alert
+                              message={getProgress(item.name).message}
+                              type="error"
+                              showIcon
+                            />
+                          ) : (
+                            <Progress
+                              percent={getProgress(item.name).value}
+                              status={getProgress(item.name).status}
+                            />
+                          )}
+                        </>
+                      ) : (
+                        bytesToSize(item.size)
+                      )
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          </div>
+          {/* {fileList.map((item, index) => (
 						<div key={index}>
 							<div className="drop-file-preview__item">
 								<img src={blankFileImage} alt="" />
@@ -182,7 +185,7 @@ const DropFileInput = (props) => {
 							) : null}
 						</div>
 					))} */}
-					{/* <div className="my-3 text-align-right btn-lg">
+          {/* <div className="my-3 text-align-right btn-lg">
 						<button
 							className="btn btn-outline-dark"
 							style={{ float: "right" }}
@@ -195,14 +198,14 @@ const DropFileInput = (props) => {
 							Upload <FaCloudUploadAlt />
 						</button>
 					</div> */}
-				</div>
-			) : null}
-		</>
-	);
+        </div>
+      ) : null}
+    </>
+  );
 };
 
 DropFileInput.propTypes = {
-	onFileChange: PropTypes.func,
+  onFileChange: PropTypes.func,
 };
 
 export default React.memo(DropFileInput);
