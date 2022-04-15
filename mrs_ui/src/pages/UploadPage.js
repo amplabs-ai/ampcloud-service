@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import pako from "pako";
 import { useTransition, animated } from "react-spring";
 import UploadPageForms from "../components/UploadPageForms";
+import ProcessUpload from "../components/ProcessUpload";
 
 const { Title } = Typography;
 
@@ -28,7 +29,7 @@ const UploadPage = () => {
 		message: "",
 		percentage: 0,
 	});
-	const [processingProgressMsg, setprocessingProgressMsg] = useState("Please Wait... We're processing your uploads.");
+	const [processingProgressMsg, setprocessingProgressMsg] = useState("Please wait while we process your uploads.");
 
 	const transition = useTransition(showProcessing, {
 		from: { x: -600, opacity: 0 },
@@ -283,7 +284,12 @@ const UploadPage = () => {
 						{transition((style, item) => {
 							return item ? (
 								<animated.div style={style}>
-									<div className={styles.processingStatusBar}>
+									<ProcessUpload
+										processingProgressMsg={processingProgressMsg}
+										processingProgress={processingProgress}
+										styles={styles}
+									/>
+									{/* <div className={styles.processingStatusBar}>
 										<Title className="py-4" level={2}>
 											{processingProgressMsg}
 										</Title>
@@ -294,7 +300,7 @@ const UploadPage = () => {
 											percent={Math.floor(processingProgress.percentage)}
 											format={(percent) => <div className="fs-4">{percent}%</div>}
 										/>
-									</div>
+									</div> */}
 								</animated.div>
 							) : (
 								<animated.div style={style}>
@@ -307,7 +313,7 @@ const UploadPage = () => {
 														<div className="para">
 															We provide support for generic csv files:
 															<br />
-															<p className="ms-2">
+															<p>
 																CSV with columns <b>(cycle, test_time, current, voltage)</b>
 																<br></br>
 																Units for columns ={" "}

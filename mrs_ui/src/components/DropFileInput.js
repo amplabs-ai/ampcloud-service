@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import blankFileImage from "../assets/file-blank-solid-240.png";
 import uploadImg from "../assets/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
-import { Progress, Typography, Alert, List, Avatar } from "antd";
+import { Progress, Typography, Alert, List, Avatar, Button } from "antd";
 import { FaTimes } from "react-icons/fa";
 import { FaCloudUploadAlt } from "react-icons/fa";
 
@@ -20,7 +20,7 @@ const DropFileInput = (props) => {
 	const onDrop = () => wrapperRef.current.classList.remove("dragover");
 
 	const onFileDrop = (e) => {
-		let updatedList = props.reUpload ? [] : [...fileList];
+		let updatedList = []; // props.reUpload ? [] : [...fileList];
 		setUploadBtnDisabled(false);
 		for (let i = 0; i < e.target.files.length; i++) {
 			let file = e.target.files[i];
@@ -72,87 +72,79 @@ const DropFileInput = (props) => {
 
 	return (
 		<>
-			<div
-				ref={wrapperRef}
-				className="drop-file-input shadow-sm"
-				onDragEnter={onDragEnter}
-				onDragLeave={onDragLeave}
-				onDrop={onDrop}
-			>
-				<div className="drop-file-input__label">
-					<img src={uploadImg} alt="" />
-					<p>Click or drag file to this area to upload</p>
+			{fileList.length < 1 && (
+				<div
+					ref={wrapperRef}
+					className="drop-file-input shadow-sm"
+					onDragEnter={onDragEnter}
+					onDragLeave={onDragLeave}
+					onDrop={onDrop}
+				>
+					<div className="drop-file-input__label">
+						<img src={uploadImg} alt="" />
+						<p>Click or drag file to this area to upload</p>
+					</div>
+					<input
+						type="file"
+						value=""
+						accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"
+						onChange={onFileDrop}
+						// multiple
+					/>
 				</div>
-				<input
-					type="file"
-					value=""
-					accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"
-					onChange={onFileDrop}
-					// multiple
-				/>
-			</div>
+			)}
 			{fileList.length > 0 ? (
 				<div className="drop-file-preview">
-					<div className="mb-1">
+					<div className="mb-1 d-flex justify-content-between">
 						<Text type="secondary">Ready to upload</Text>
-						<button
-							className="btn btn-sm btn-outline-dark"
-							style={{ float: "right" }}
+						<Button
+							type="primary"
 							onClick={(e) => {
-								// setUploadBtnDisabled(true);
 								props.fileUploadHandler(e);
 							}}
+							icon={<FaCloudUploadAlt />}
+							size="large"
 							disabled={uploadBtnDisabled}
+							// loading={uploadBtnDisatrybled}
 						>
-							Upload <FaCloudUploadAlt />
-						</button>
+							&nbsp;&nbsp;Upload
+						</Button>
 					</div>
-					<List
-						// footer={
-						// 	<button
-						// 		className="btn btn-sm btn-outline-dark"
-						// 		style={{ float: "right" }}
-						// 		onClick={(e) => {
-						// 			// setUploadBtnDisabled(true);
-						// 			props.fileUploadHandler(e);
-						// 		}}
-						// 		disabled={uploadBtnDisabled}
-						// 	>
-						// 		Upload <FaCloudUploadAlt />
-						// 	</button>
-						// }
-						dataSource={fileList}
-						renderItem={(item) => (
-							<List.Item
-								key={item.id}
-								extra={
-									!Object.keys(props.uploadProgress).length && (
-										<span style={{ cursor: "pointer" }} onClick={() => fileRemove(item)}>
-											<FaTimes />
-										</span>
-									)
-								}
-							>
-								<List.Item.Meta
-									avatar={<Avatar src={blankFileImage} />}
-									title={item.name}
-									description={
-										getProgress(item.name).value ? (
-											<>
-												{getProgress(item.name).message ? (
-													<Alert message={getProgress(item.name).message} type="error" showIcon />
-												) : (
-													<Progress percent={getProgress(item.name).value} status={getProgress(item.name).status} />
-												)}
-											</>
-										) : (
-											bytesToSize(item.size)
+					<div>
+						<List
+							dataSource={fileList}
+							renderItem={(item) => (
+								<List.Item
+									key={item.id}
+									extra={
+										!Object.keys(props.uploadProgress).length && (
+											<span style={{ cursor: "pointer" }} onClick={() => fileRemove(item)}>
+												<FaTimes />
+											</span>
 										)
 									}
-								/>
-							</List.Item>
-						)}
-					/>
+								>
+									<List.Item.Meta
+										avatar={<Avatar src={blankFileImage} />}
+										title={item.name}
+										description={
+											getProgress(item.name).value ? (
+												<>
+													{getProgress(item.name).message ? (
+														<Alert message={getProgress(item.name).message} type="error" showIcon />
+													) : (
+														<Progress percent={getProgress(item.name).value} status={getProgress(item.name).status} />
+													)}
+												</>
+											) : (
+												bytesToSize(item.size)
+											)
+										}
+									/>
+								</List.Item>
+							)}
+						/>
+					</div>
 					{/* {fileList.map((item, index) => (
 						<div key={index}>
 							<div className="drop-file-preview__item">

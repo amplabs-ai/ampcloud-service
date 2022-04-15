@@ -1,12 +1,5 @@
 const sourceCode = {
 	cycleIndexChart: `
-'''
-Install required dependencies
->>>pip3 install pandas
->>>pip3 install plotly
->>>pip3 install kaleido
-'''
-
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -43,13 +36,6 @@ if status:
     pio.write_image(fig, file='./cycleIndexChart.png', format="png", scale=1, width=1200, height=800)
     `,
 	timeSeriesChart: `
-'''
-Install required dependencies
->>>pip3 install pandas
->>>pip3 install plotly
->>>pip3 install kaleido
-'''
-
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -86,13 +72,6 @@ if status:
     pio.write_image(fig, file='./timeSeriesChart.png', format="png", scale=1, width=1200, height=800)
     `,
 	efficiencyChart: `
-'''
-Install required dependencies
->>>pip3 install pandas
->>>pip3 install plotly
->>>pip3 install kaleido
-'''
-
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -129,13 +108,6 @@ if status:
     pio.write_image(fig, file='./efficiencyChart.png', format="png", scale=1, width=1200, height=800)
     `,
 	cycleQtyByStepChart: `
-'''
-Install required dependencies
->>>pip3 install pandas
->>>pip3 install plotly
->>>pip3 install kaleido
-'''
-
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -171,13 +143,6 @@ if status:
     pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)
     `,
 	compareByCycleTimeChart: `
-'''
-Install required dependencies
->>>pip3 install pandas
->>>pip3 install plotly
->>>pip3 install kaleido
-'''
-
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings

@@ -25,6 +25,7 @@ const DashboardCycleTest = () => {
 		cycleQtyByStepChart: false,
 		// compareByCycleTimeChart: false,
 	});
+	const [chartData, setChartData] = useState({});
 
 	const [internalServerError, setInternalServerError] = useState("");
 
@@ -161,6 +162,11 @@ const DashboardCycleTest = () => {
 				if (result.status !== 200) {
 					console.log("result status", result.status);
 				}
+
+				setChartData((prev) => {
+					return { ...prev, [chartId]: result.data.records[0] };
+				});
+
 				ref.current.getEchartsInstance().dispatchAction({
 					type: "restore",
 				});
@@ -253,7 +259,6 @@ const DashboardCycleTest = () => {
 				},
 			});
 		});
-		console.log("_createChartDataSeries", x);
 		return x;
 	};
 
@@ -280,6 +285,48 @@ const DashboardCycleTest = () => {
 		};
 	};
 
+	// const _checkCellIdInSeries = (c, selectedCellIds) => {
+	// 	for (let i = 0; i < selectedCellIds.length; i++) {
+	// 		const cellId = selectedCellIds[i];
+	// 		return c.id.includes(cellId.cell_id);
+	// 	}
+	// 	// selectedCellIds.map((cellId) => {
+	// 	// 	// console.log(c.id, cellId.cell_id, c.id.includes(cellId.cell_id));
+	// 	// 	return c.id.includes(cellId.cell_id);
+	// 	// });
+	// };
+
+	// const handleCellIdChange = (selectedCellIds) => {
+	// 	console.log("selectedCellIds", selectedCellIds);
+	// 	console.log("chartData", chartData);
+	// 	let filteredChartData = {};
+	// 	for (const chartName in chartData) {
+	// 		if (Object.hasOwnProperty.call(chartData, chartName)) {
+	// 			let chart = chartData[chartName];
+	// 			// loop through chart and filter it
+	// 			let filteredChart = chart.filter((c) => {
+	// 				return _checkCellIdInSeries(c, selectedCellIds);
+	// 			});
+	// 			filteredChartData = { ...filteredChartData, [chartName]: filteredChart };
+	// 		}
+	// 	}
+	// 	console.log("filteredChartData", filteredChartData);
+	// 	// setChartData(filteredChartData);
+	// 	_renderChartsAfterFilter(filteredChartData);
+	// };
+
+	// const _renderChartsAfterFilter = (filteredChartData) => {
+	// 	cycleIndexChart.current.getEchartsInstance().dispatchAction({
+	// 		type: "restore",
+	// 	});
+
+	// 	cycleIndexChart.current.getEchartsInstance().setOption({
+	// 		dataset: filteredChartData.cycleIndex,
+	// 		series: _createChartDataSeries(filteredChartData.cycleIndex, "cycle_index", "value", "cycleIndex"),
+	// 		legend: _createChartLegend(filteredChartData.cycleIndex, "cycleIndex"),
+	// 	});
+	// };
+
 	return (
 		<div>
 			{noDataFound ? (
@@ -304,7 +351,11 @@ const DashboardCycleTest = () => {
 				/>
 			) : (
 				<div style={{ margin: "0.6rem" }}>
-					<DashboardFilterBar onFilterChange={handleFilterChange} internalServerErrorFound={internalServerErrorFound} />
+					<DashboardFilterBar
+						onFilterChange={handleFilterChange}
+						// onCellIdChange={handleCellIdChange}
+						internalServerErrorFound={internalServerErrorFound}
+					/>
 					<ViewCodeModal
 						code={codeContent}
 						modalVisible={modalVisible}

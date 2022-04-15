@@ -10,6 +10,7 @@ import UploadPage from "./pages/UploadPage";
 import PageNotFound from "./pages/PageNotFound";
 import DashboardAbuseTest from "./pages/DashboardAbuseTest";
 import DashboardCycleTest from "./pages/DashboardCycleTest";
+import ProcessUpload from "./components/ProcessUpload";
 
 function App() {
 	return (
@@ -72,14 +73,7 @@ function App() {
 							/>
 						</Route>
 
-						{/* <Route
-							path="/dashboard"
-							element={
-								<RequireAuth>
-									<DashboardPage />
-								</RequireAuth>
-							}
-						/> */}
+						{/* <Route path="/uploadProgress" element={<ProcessUpload />}></Route> */}
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>
 				</Router>

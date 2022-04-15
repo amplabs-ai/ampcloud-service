@@ -1,11 +1,4 @@
-const codeContent = `
-'''
-Install required dependencies
->>>pip3 install pandas
->>>pip3 install plotly
->>>pip3 install kaleido
-'''
-
+const codeContent = `  
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings

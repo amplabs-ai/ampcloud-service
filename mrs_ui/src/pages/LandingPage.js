@@ -150,7 +150,7 @@ const LandingPage = () => {
 								)}
 							</div>
 							<div className="text-center">
-								<button type="submit" className="shadow-sm btn btn-outline-dark">
+								{/* <button type="submit" className="shadow-sm btn btn-outline-dark">
 									{btnLoading ? (
 										<Spin size="small" />
 									) : (
@@ -158,7 +158,11 @@ const LandingPage = () => {
 											Continue <FaArrowRight />
 										</span>
 									)}
-								</button>
+								</button> */}
+
+								<Button htmlType="submit" type="primary" icon={<FaArrowRight />} size="large" loading={btnLoading}>
+									&nbsp;&nbsp;Continue
+								</Button>
 							</div>
 						</form>
 						<p className="py-2 fw-light mt-1 mb-0 text-muted" style={{ lineHeight: "1.6" }}>
