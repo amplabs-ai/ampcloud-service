@@ -285,47 +285,180 @@ const DashboardCycleTest = () => {
 		};
 	};
 
-	// const _checkCellIdInSeries = (c, selectedCellIds) => {
-	// 	for (let i = 0; i < selectedCellIds.length; i++) {
-	// 		const cellId = selectedCellIds[i];
-	// 		return c.id.includes(cellId.cell_id);
-	// 	}
-	// 	// selectedCellIds.map((cellId) => {
-	// 	// 	// console.log(c.id, cellId.cell_id, c.id.includes(cellId.cell_id));
-	// 	// 	return c.id.includes(cellId.cell_id);
-	// 	// });
-	// };
+	const handleCellIdChange = (selectedCellIds) => {
+		console.log("selectedCellIds", selectedCellIds);
+		console.log("chartData", chartData);
+		// let filteredChartData = {};
+		// for (const chartName in chartData) {
+		// 	if (Object.hasOwnProperty.call(chartData, chartName)) {
+		// 		let chart = chartData[chartName];
+		// 		// loop through chart and filter it
+		// 		let filteredChart = chart.filter((c) => {
+		// 			return _checkCellIdInSeries(c, selectedCellIds);
+		// 		});
+		// 		filteredChartData = { ...filteredChartData, [chartName]: filteredChart };
+		// 	}
+		// }
+		// console.log("filteredChartData", filteredChartData);
+		// // setChartData(filteredChartData);
+		// _renderChartsAfterFilter(filteredChartData, "cycleIndex");
+		// _renderChartsAfterFilter(filteredChartData, "timeSeries");
+		// _renderChartsAfterFilter(filteredChartData, "efficiency");
+		// _renderChartsAfterFilter(filteredChartData, "cycleQtyByStep");
+	};
 
-	// const handleCellIdChange = (selectedCellIds) => {
-	// 	console.log("selectedCellIds", selectedCellIds);
-	// 	console.log("chartData", chartData);
-	// 	let filteredChartData = {};
-	// 	for (const chartName in chartData) {
-	// 		if (Object.hasOwnProperty.call(chartData, chartName)) {
-	// 			let chart = chartData[chartName];
-	// 			// loop through chart and filter it
-	// 			let filteredChart = chart.filter((c) => {
-	// 				return _checkCellIdInSeries(c, selectedCellIds);
-	// 			});
-	// 			filteredChartData = { ...filteredChartData, [chartName]: filteredChart };
-	// 		}
-	// 	}
-	// 	console.log("filteredChartData", filteredChartData);
-	// 	// setChartData(filteredChartData);
-	// 	_renderChartsAfterFilter(filteredChartData);
-	// };
+	const _checkCellIdInSeries = (c, selectedCellIds) => {
+		let flag = false;
+		for (let i = 0; i < selectedCellIds.length; i++) {
+			flag = c.id.includes(selectedCellIds[i].cell_id);
+			if (flag) {
+				return true;
+			}
+			console.log(c.id, selectedCellIds[i].cell_id, c.id.includes(selectedCellIds[i].cell_id));
+		}
+		console.log("flag", flag);
+		return flag;
+	};
 
-	// const _renderChartsAfterFilter = (filteredChartData) => {
-	// 	cycleIndexChart.current.getEchartsInstance().dispatchAction({
-	// 		type: "restore",
-	// 	});
+	const _renderChartsAfterFilter = (filteredChartData, chartType) => {
+		let endpoint, ref, xAxis, yAxis, chartTitle, chartId, code;
+		switch (chartType) {
+			case "cycleIndex":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/energyAndCapacityDecay`,
+					cycleIndexChart,
+					{
+						mapToId: "cycle_index",
+						title: "Cycle Index",
+					},
+					{
+						mapToId: "value",
+						title: "Ah/Wh",
+					},
+					"Cycle Index Data - Energy and Capacity Decay",
+					"cycleIndex",
+					sourceCode.cycleIndexChart,
+				];
+				break;
+			case "timeSeries":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/energyAndCapacityDecay`,
+					timeSeriesChart,
+					{
+						mapToId: "test_time",
+						title: "Time (s)",
+					},
+					{
+						mapToId: "value",
+						title: "Wh/Ah",
+					},
+					"Time Series Data - Energy and Capacity Decay",
+					"timeSeries",
+					sourceCode.timeSeriesChart,
+				];
+				break;
+			case "efficiency":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/efficiency`,
+					efficiencyChart,
+					{
+						mapToId: "cycle_index",
+						title: "Cycle Index",
+					},
+					{
+						mapToId: "value",
+						title: "Enery and Coulombic Efficiencies",
+					},
+					"Efficiencies",
+					"efficiency",
+					sourceCode.efficiencyChart,
+				];
+				break;
+			case "cycleQtyByStep":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/cycleQuantitiesByStep`,
+					cycleQtyByStepChart,
+					{
+						mapToId: "cycle_time",
+						title: "Cycle Time (s)",
+					},
+					{
+						mapToId: "v",
+						title: "Volateg (V)",
+					},
+					"Cycle Quantities by Step",
+					"cycleQtyByStep",
+					sourceCode.cycleQtyByStepChart,
+				];
+				break;
+			default:
+				break;
+		}
+		// cycleIndexChart.current.getEchartsInstance().setOption({
+		// 	dataset: filteredChartData[chartId],
+		// 	series: _createChartDataSeries(filteredChartData[chartId], "cycle_index", "value", "cycleIndex"),
+		// 	legend: _createChartLegend(filteredChartData[chartId], "cycleIndex"),
+		// });
 
-	// 	cycleIndexChart.current.getEchartsInstance().setOption({
-	// 		dataset: filteredChartData.cycleIndex,
-	// 		series: _createChartDataSeries(filteredChartData.cycleIndex, "cycle_index", "value", "cycleIndex"),
-	// 		legend: _createChartLegend(filteredChartData.cycleIndex, "cycleIndex"),
-	// 	});
-	// };
+		ref.current.getEchartsInstance().dispatchAction({
+			type: "restore",
+		});
+		ref.current.getEchartsInstance().setOption({
+			title: {
+				show: true,
+				id: chartId,
+				text: chartTitle,
+				textStyle: {
+					fontSize: 14,
+					overflow: "breakAll",
+				},
+			},
+			dataset: filteredChartData[chartId],
+			series: _createChartDataSeries(
+				filteredChartData[chartId], // replace with actual data
+				xAxis.mapToId,
+				yAxis.mapToId,
+				chartId
+			),
+			xAxis: {
+				type: "value",
+				name: xAxis.title,
+				nameLocation: "middle",
+				nameGap: 25,
+				nameTextStyle: {
+					fontSize: 14,
+				},
+			},
+			yAxis: {
+				type: "value",
+				name: yAxis.title,
+				nameLocation: "middle",
+				nameGap: 25,
+				nameTextStyle: {
+					fontSize: 14,
+				},
+			},
+			legend: _createChartLegend(filteredChartData[chartId], chartId),
+			toolbox: {
+				feature: {
+					myTool: {
+						show: true,
+						title: "View Code",
+						icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
+						onclick: function () {
+							formatCode(code);
+						},
+					},
+					saveAsImage: {
+						show: "true",
+					},
+					dataZoom: {
+						yAxisIndex: "none",
+					},
+				},
+			},
+		});
+	};
 
 	return (
 		<div>
@@ -352,8 +485,9 @@ const DashboardCycleTest = () => {
 			) : (
 				<div style={{ margin: "0.6rem" }}>
 					<DashboardFilterBar
+						testType="cycleTest"
 						onFilterChange={handleFilterChange}
-						// onCellIdChange={handleCellIdChange}
+						onCellIdChange={handleCellIdChange}
 						internalServerErrorFound={internalServerErrorFound}
 					/>
 					<ViewCodeModal

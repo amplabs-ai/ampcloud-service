@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Space, Input, Table, Button, Typography, Popconfirm, message, Select } from "antd";
+import { Space, Input, Table, Button, Typography, Popconfirm, message, Select, Modal, Spin } from "antd";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import ViewCodeModal from "./ViewCodeModal";
 
@@ -21,6 +21,7 @@ const DashboardFilterBar = (props) => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [searchParams, setSearchParams] = useState("");
 	const [sample, setSample] = useState(localStorage.getItem("sample") ? localStorage.getItem("sample") : 10);
+	const [loading, setLoading] = useState(false);
 
 	console.log("localStorage", localStorage.getItem("sample"), localStorage.getItem("step"));
 
@@ -106,15 +107,21 @@ const DashboardFilterBar = (props) => {
 
 	const downloadCycleData = (k) => {
 		console.log("downloadCycleData", k);
-		axios.get(`/download/cells/cycle_data/${k}`).then(({ data }) => {
-			console.log("downloadcycledata", data);
-
-			var a = document.createElement("a");
-			var blob = new Blob([data], { type: "text/csv" });
-			a.href = window.URL.createObjectURL(blob);
-			a.download = k + " (Cycle Data)";
-			a.click();
-		});
+		setLoading(true);
+		axios
+			.get(`/download/cells/cycle_data/${k}`)
+			.then(({ data }) => {
+				console.log("downloadcycledata", data);
+				var a = document.createElement("a");
+				var blob = new Blob([data], { type: "text/csv" });
+				a.href = window.URL.createObjectURL(blob);
+				a.download = k + " (Cycle Data).csv";
+				a.click();
+				setLoading(false);
+			})
+			.catch((err) => {
+				setLoading(false);
+			});
 	};
 
 	const viewCycleDataCode = (k, type) => {
@@ -124,15 +131,21 @@ const DashboardFilterBar = (props) => {
 
 	const downloadTimeSeriesData = (k) => {
 		console.log("downloadTimeSeriesData", k);
-		axios.get(`/download/cells/cycle_timeseries/${k}`).then(({ data }) => {
-			console.log("downloadTimeSeriesData", data);
-
-			var a = document.createElement("a");
-			var blob = new Blob([data], { type: "text/csv" });
-			a.href = window.URL.createObjectURL(blob);
-			a.download = k + " (Time Series)";
-			a.click();
-		});
+		setLoading(true);
+		axios
+			.get(`/download/cells/cycle_timeseries/${k}`)
+			.then(({ data }) => {
+				console.log("downloadTimeSeriesData", data);
+				var a = document.createElement("a");
+				var blob = new Blob([data], { type: "text/csv" });
+				a.href = window.URL.createObjectURL(blob);
+				a.download = k + " (Time Series).csv";
+				a.click();
+				setLoading(false);
+			})
+			.catch((err) => {
+				setLoading(false);
+			});
 	};
 
 	const columns = [
@@ -216,12 +229,15 @@ const DashboardFilterBar = (props) => {
 		onChange: (selectedRowKeys, selectedRows) => {
 			setSelectedRowKeys(selectedRowKeys);
 			setSelectedRows(selectedRows);
-			// props.onCellIdChange(selectedRows);
+			props.onCellIdChange(selectedRows);
 		},
 	};
 
 	return (
 		<div>
+			<Modal centered width="auto" visible={loading} closable={false} footer={null} maskClosable={false}>
+				<Spin size="large" />
+			</Modal>
 			<div className="card shadow-sm">
 				<div className="card-body filterBar">
 					<div style={{ display: "inline-block" }} className="pe-2">

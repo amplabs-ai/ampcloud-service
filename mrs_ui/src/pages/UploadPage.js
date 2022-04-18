@@ -257,7 +257,7 @@ const UploadPage = () => {
 							setTimeout(() => navigate(navigateTo), 1000);
 							clearInterval(intervalId);
 						} else if (parseInt(res.data.records.percentage) === -1) {
-							setprocessingProgressMsg("Oops! Error occured while processing uploads...");
+							setprocessingProgressMsg(res.data.records.message || "Oops! Error occured while processing uploads...");
 							clearInterval(intervalId);
 						}
 						setProcessingProgress({ ...res.data.records });
@@ -366,6 +366,7 @@ const UploadPage = () => {
 											uploadProgress={uploadProgress}
 											shallRedirectToDashBoard={shallRedirectToDashBoard}
 											reUpload={reUpload}
+											pageType={pageType}
 										/>
 									</div>
 								</animated.div>

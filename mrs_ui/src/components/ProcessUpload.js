@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Progress, Steps, Typography } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 import { FaTimes, FaRedoAlt } from "react-icons/fa";
 
 const { Title } = Typography;
@@ -11,23 +12,35 @@ const { Step } = Steps;
 // };
 
 const ProcessUpload = ({ processingProgressMsg, processingProgress }) => {
-	//
+	//  { processingProgressMsg, processingProgress }
 
 	const status = Math.floor(parseInt(processingProgress.percentage)) === -1 ? "exception" : "active";
+	const [steps, setSteps] = useState({
+		"Calculate Statistics": true,
+		"Writing to DB": false,
+		"Finishing-process": true,
+		"Finishing-process1": false,
+		"Finishing-process2": false,
+		"Finishing-process3": false,
+	});
 
 	return (
 		<div className="processingStatusBar">
 			{/* {styles.processingStatusBar} */}
 
-			{/* <div className="mb-5 container w-100" style={{ paddingTop: "75px" }}>
-				<Steps current={1} status={status === "exception" ? "error" : "process"}>
-					<Step title="Calculate Statistics" description="This is a description." />
-					<Step title="Writing to DB" description="This is a description." />
-					<Step title="Finishing" description="This is a description." />
-					<Step title="Finishing" description="This is a description." />
-					<Step title="Finishing" description="This is a description." />
-				</Steps>
-			</div> */}
+			{/* {Object.keys(steps).length && (
+				<div className="mb-5 container w-100" style={{ paddingTop: "75px" }}>
+					<Steps current={1} status={status === "exception" ? "error" : "process"}>
+						{Object.keys(steps).map((s, i) => (
+							<Step
+								title={s}
+								key={s}
+								// icon={steps[s] ? "" : steps[s] ? <LoadingOutlined /> : ""}
+							/>
+						))}
+					</Steps>
+				</div>
+			)} */}
 
 			<Progress
 				type="circle"
