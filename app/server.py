@@ -18,7 +18,7 @@ logging.basicConfig(filename="logs/audit.log",
 
 app = connexion.FlaskApp(__name__)
 app.add_api('../api/api.yaml') 
-app.app.config['DATABASE_URI'] = "postgresql://mrs_test:App4ever#@ds-postgres.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_test"
+app.app.config['DATABASE_URI'] = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
 # READ CONFIG from env file
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)
