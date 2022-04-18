@@ -229,6 +229,10 @@ const DashboardAbuseTest = () => {
 			});
 	};
 
+	const handleCellIdChange = (data) => {
+		console.log(data);
+	};
+
 	return (
 		<div>
 			{noDataFound ? (
@@ -254,6 +258,7 @@ const DashboardAbuseTest = () => {
 			) : (
 				<div style={{ margin: "0.6rem" }}>
 					<DashboardFilterBar
+						onCellIdChange={handleCellIdChange}
 						testType="abuseTest"
 						onFilterChange={handleFilterChange}
 						internalServerErrorFound={internalServerErrorFound}

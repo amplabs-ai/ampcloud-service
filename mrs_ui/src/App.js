@@ -15,7 +15,6 @@ import ProcessUpload from "./components/ProcessUpload";
 function App() {
 	return (
 		<>
-			<p>My Token = {window.token}</p>
 			<AuthProvider>
 				<Router>
 					<BackTop />
@@ -74,7 +73,7 @@ function App() {
 							/>
 						</Route>
 
-						{/* <Route path="/uploadProgress" element={<ProcessUpload />}></Route> */}
+						<Route path="/uploadProgress" element={<ProcessUpload />}></Route>
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>
 				</Router>

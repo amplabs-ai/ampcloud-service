@@ -1,19 +1,31 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import blankFileImage from "../assets/file-blank-solid-240.png";
 import uploadImg from "../assets/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
 import { Progress, Typography, Alert, List, Avatar, Button } from "antd";
 import { FaTimes } from "react-icons/fa";
-import { FaCloudUploadAlt } from "react-icons/fa";
+import { FaCloudUploadAlt, FaExclamationCircle } from "react-icons/fa";
+import Papa from "papaparse";
 
 const { Text } = Typography;
+
+const REQUIRED_HEADERS = ["test_time", "cycle", "current", "voltage"];
 
 const DropFileInput = (props) => {
   console.log("props.uploadProgress", props.uploadProgress);
   const wrapperRef = useRef(null);
   const [fileList, setFileList] = useState([]);
   const [uploadBtnDisabled, setUploadBtnDisabled] = useState(false);
+  const [fileValidationErrs, setFileValidationErrs] = useState([]);
+
+  useEffect(() => {
+    if (fileValidationErrs.length) {
+      setUploadBtnDisabled(true);
+    } else {
+      setUploadBtnDisabled(false);
+    }
+  }, [fileValidationErrs]);
 
   const onDragEnter = () => wrapperRef.current.classList.add("dragover");
   const onDragLeave = () => wrapperRef.current.classList.remove("dragover");
@@ -30,6 +42,89 @@ const DropFileInput = (props) => {
     }
     props.onFileChange(updatedList);
     setFileList(updatedList);
+
+    // Passing file data (event.target.files[0]) to parse using Papa.parse
+    Papa.parse(e.target.files[0], {
+      header: true,
+      skipEmptyLines: true,
+      complete: function (results) {
+        if (results.data.length) {
+          console.log("papaparse", results.data);
+          if (props.pageType === "cycle-test") {
+            _validateCycleTestCsv(results.data);
+          }
+        } else {
+          console.log("file is empty!");
+        }
+      },
+    });
+  };
+
+  const _validateCycleTestCsv = (data) => {
+    setFileValidationErrs([]); // reset err, file_preview_icon
+    setUploadBtnDisabled(true); // disable button
+    _checkHeaders(data);
+    _checkCycleIndex(data);
+    _checkTestTime(data);
+  };
+
+  const _checkHeaders = (data) => {
+    let headers = Object.keys(data[0]).map((h) => h.toLowerCase());
+    let missingHeaders = [];
+    // check missing headers
+    missingHeaders = REQUIRED_HEADERS.filter(function (v) {
+      // allowed headers for cycle index
+      if (
+        [
+          "cycle",
+          "cycle_index",
+          "cycle_id",
+          "cycle_number",
+          "cycle_count",
+        ].includes(v)
+      ) {
+        return false;
+      } else {
+        return headers.indexOf(v) == -1;
+      }
+    });
+    console.log("Missing Headers: ", missingHeaders);
+    if (missingHeaders.length)
+      setFileValidationErrs((prev) => [
+        ...prev,
+        `Missing column headers: ${missingHeaders
+          .map((h) => h)
+          .join(", ")} [Required Headers: cycle, test_time, current, voltage]`,
+      ]);
+  };
+
+  const _checkCycleIndex = (data) => {
+    let x = data.every(function (e, i, a) {
+      if (i)
+        return (
+          e["cycle"] >= a[i - 1]["cycle"] && e["cycle"] - a[i - 1]["cycle"] <= 1
+        );
+      else return true;
+    });
+    if (!x) {
+      setFileValidationErrs((prev) => [
+        ...prev,
+        "Cycle Index should be monotonically increasing at most by factor of one.",
+      ]);
+    }
+  };
+
+  const _checkTestTime = (data) => {
+    let x = data.every(function (e, i, a) {
+      if (i) return e["test_time"] >= a[i - 1]["test_time"];
+      else return true;
+    });
+    if (!x) {
+      setFileValidationErrs((prev) => [
+        ...prev,
+        "Time Series should be monotonically increasing.",
+      ]);
+    }
   };
 
   const fileRemove = (file) => {
@@ -111,7 +206,7 @@ const DropFileInput = (props) => {
               &nbsp;&nbsp;Upload
             </Button>
           </div>
-          <div>
+          <div className="mb-4">
             <List
               dataSource={fileList}
               renderItem={(item) => (
@@ -120,6 +215,7 @@ const DropFileInput = (props) => {
                   extra={
                     !Object.keys(props.uploadProgress).length && (
                       <span
+                        title="Remove File"
                         style={{ cursor: "pointer" }}
                         onClick={() => fileRemove(item)}
                       >
@@ -129,7 +225,13 @@ const DropFileInput = (props) => {
                   }
                 >
                   <List.Item.Meta
-                    avatar={<Avatar src={blankFileImage} />}
+                    avatar={
+                      fileValidationErrs.length ? (
+                        <FaExclamationCircle color="red" size="30px" />
+                      ) : (
+                        <Avatar src={blankFileImage} />
+                      )
+                    }
                     title={item.name}
                     description={
                       getProgress(item.name).value ? (
@@ -152,52 +254,24 @@ const DropFileInput = (props) => {
                       )
                     }
                   />
+                  <br />
+                  {fileValidationErrs.length ? (
+                    <div
+                      style={{ position: "absolute", top: "90%", color: "red" }}
+                    >
+                      <ul>
+                        {fileValidationErrs.map((err) => (
+                          <li key={err}>{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div></div>
+                  )}
                 </List.Item>
               )}
             />
           </div>
-          {/* {fileList.map((item, index) => (
-						<div key={index}>
-							<div className="drop-file-preview__item">
-								<img src={blankFileImage} alt="" />
-								<div className="drop-file-preview__item__info">
-									<p>{item.name}</p>
-									<p>{bytesToSize(item.size)}</p>
-								</div>
-								{!Object.keys(props.uploadProgress).length && (
-									<span
-										className="drop-file-preview__item__del"
-										style={{ cursor: "pointer" }}
-										onClick={() => fileRemove(item)}
-									>
-										<FaTimes />
-									</span>
-								)}
-							</div>
-							{getProgress(item.name).value ? (
-								<>
-									{getProgress(item.name).message ? (
-										<Alert message={getProgress(item.name).message} type="error" showIcon />
-									) : (
-										<Progress percent={getProgress(item.name).value} status={getProgress(item.name).status} />
-									)}
-								</>
-							) : null}
-						</div>
-					))} */}
-          {/* <div className="my-3 text-align-right btn-lg">
-						<button
-							className="btn btn-outline-dark"
-							style={{ float: "right" }}
-							onClick={(e) => {
-								// setUploadBtnDisabled(true);
-								props.fileUploadHandler(e);
-							}}
-							disabled={uploadBtnDisabled}
-						>
-							Upload <FaCloudUploadAlt />
-						</button>
-					</div> */}
         </div>
       ) : null}
     </>
