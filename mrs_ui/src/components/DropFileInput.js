@@ -63,9 +63,10 @@ const DropFileInput = (props) => {
 	const _validateCycleTestCsv = (data) => {
 		setFileValidationErrs([]); // reset err, file_preview_icon
 		setUploadBtnDisabled(true); // disable button
-		_checkHeaders(data);
-		_checkCycleIndex(data);
-		_checkTestTime(data);
+		if (_checkHeaders(data)) {
+			_checkCycleIndex(data);
+			_checkTestTime(data);
+		}
 	};
 
 	const _checkHeaders = (data) => {
@@ -74,25 +75,32 @@ const DropFileInput = (props) => {
 		// check missing headers
 		missingHeaders = REQUIRED_HEADERS.filter(function (v) {
 			// allowed headers for cycle index
-			if (["cycle", "cycle_index", "cycle_id", "cycle_number", "cycle_count"].includes(v)) {
-				return false;
-			} else {
-				return headers.indexOf(v) == -1;
-			}
+			// if (["cycle", "cycle_index", "cycle_id", "cycle_number", "cycle_count"].includes(v)) {
+			// 	return false;
+			// } else {
+			// }
+			return headers.indexOf(v) == -1;
 		});
 		console.log("Missing Headers: ", missingHeaders);
-		if (missingHeaders.length)
+		if (missingHeaders.length) {
 			setFileValidationErrs((prev) => [
 				...prev,
 				`Missing column headers: ${missingHeaders
 					.map((h) => h)
 					.join(", ")} [Required Headers: cycle, test_time, current, voltage]`,
 			]);
+			return false;
+		} else {
+			return true;
+		}
 	};
 
 	const _checkCycleIndex = (data) => {
 		let x = data.every(function (e, i, a) {
-			if (i) return e["cycle"] >= a[i - 1]["cycle"] && e["cycle"] - a[i - 1]["cycle"] <= 1;
+			if (i)
+				return (
+					parseInt(e["cycle"]) >= parseInt(a[i - 1]["cycle"]) && parseInt(e["cycle"]) - parseInt(a[i - 1]["cycle"]) <= 1
+				);
 			else return true;
 		});
 		if (!x) {
@@ -105,11 +113,11 @@ const DropFileInput = (props) => {
 
 	const _checkTestTime = (data) => {
 		let x = data.every(function (e, i, a) {
-			if (i) return e["test_time"] >= a[i - 1]["test_time"];
+			if (i) return parseInt(e["test_time"]) >= parseInt(a[i - 1]["test_time"]);
 			else return true;
 		});
 		if (!x) {
-			setFileValidationErrs((prev) => [...prev, "Time Series should be monotonically increasing."]);
+			setFileValidationErrs((prev) => [...prev, "test_time should be monotonically increasing."]);
 		}
 	};
 

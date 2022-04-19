@@ -7,19 +7,19 @@ from app.utilities.utils import calc_abuse_stats, status, calc_cycle_stats, sort
 
 def init_file_upload_service(email, data):
     cell_id = data.get('cell_id')
-    try:
-        ao = ArchiveOperator()
-        ao.set_session()
-        if ao.get_all_cell_meta_with_id(cell_id, email, data.get('test_type')):
-            return 400, RESPONSE_MESSAGE['CELL_ID_EXISTS'].format(cell_id)
-    except ValueError as err:
-        print(err)
-        return 400, "Unsupported value"
-    except Exception as err:
-        print(err)
-        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
-    finally:
-        ao.release_session()
+    # try:
+    #     ao = ArchiveOperator()
+    #     ao.set_session()
+    #     if ao.get_all_cell_meta_with_id(cell_id, email, data.get('test_type')):
+    #         return 400, RESPONSE_MESSAGE['CELL_ID_EXISTS'].format(cell_id)
+    # except ValueError as err:
+    #     print(err)
+    #     return 400, "Unsupported value"
+    # except Exception as err:
+    #     print(err)
+    #     return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    # finally:
+    #     ao.release_session()
     test_type = data.get('test_type')
     cell_metadata = pd.DataFrame([{
             "cell_id": data.get('cell_id'),

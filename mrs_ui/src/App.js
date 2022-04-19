@@ -15,6 +15,7 @@ import ProcessUpload from "./components/ProcessUpload";
 function App() {
 	return (
 		<>
+		<p>My Token = {window.token}</p>
 			<AuthProvider>
 				<Router>
 					<BackTop />
