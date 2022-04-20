@@ -36,11 +36,11 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
     df_ts['e_c'] = 0
     df_ts['ah_d'] = 0
     df_ts['e_d'] = 0
-    df_ts['cycle_index_file'] = df_ts[
-        'cycle'].apply(pd.to_numeric)
+    # df_ts['cycle_index_file'] = df_ts[
+    #     'cycle'].apply(pd.to_numeric)
     df_ts['cycle_time'] = 0
-    df_ts['cycle_index'] = 0
-    df_ts['filename'] = file.filename
+    df_ts['cycle_index'] = df_ts['cycle'].apply(pd.to_numeric)
+    # df_ts['filename'] = file.filename
 
     if df_tmerge.empty:
         df_tmerge = df_ts[df_ts['test_time'] > 0]
