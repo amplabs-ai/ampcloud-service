@@ -17,7 +17,7 @@ const DashboardPage = () => {
 	}, [location.pathname]);
 
 	return (
-		<div style={{ paddingTop: "75px" }}>
+		<div style={{ paddingTop: "4rem" }}>
 			{pageType === "cycle-test" ? <DashboardCycleTest /> : <DashboardAbuseTest />}
 		</div>
 	);

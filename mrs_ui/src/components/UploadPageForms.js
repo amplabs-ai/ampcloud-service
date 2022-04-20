@@ -66,19 +66,19 @@ const UploadPageForms = ({ pageType }, ref) => {
 								<Input allowClear />
 							</Form.Item>
 							<Form.Item label="Anode" name="anode">
-								<Input type="number" allowClear />
+								<Input allowClear />
 							</Form.Item>
 							<Form.Item label="Cathode" name="cathode">
-								<Input type="number" allowClear />
+								<Input allowClear />
 							</Form.Item>
 							<Form.Item label="Source" name="source">
-								<Input type="number" allowClear />
+								<Input allowClear />
 							</Form.Item>
 							<Form.Item label="Ah" name="ah">
 								<Input type="number" allowClear />
 							</Form.Item>
 							<Form.Item label="Form Factor" name="form_factor">
-								<Input type="number" allowClear />
+								<Input allowClear />
 							</Form.Item>
 						</Form>
 					</Panel>
@@ -103,19 +103,19 @@ const UploadPageForms = ({ pageType }, ref) => {
 									}}
 								>
 									<Form.Item label="Temperature (C)" name="temperature">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="Max SOC" name="soc_max">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="Min SOC" name="soc_min">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="Chart Rate (C)" name="crate_c">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="Discharge Rate (C)" name="crate_d">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 								</Form>
 							</Panel>
@@ -140,19 +140,19 @@ const UploadPageForms = ({ pageType }, ref) => {
 									}}
 								>
 									<Form.Item label="Temperature (C)" name="temperature">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="Thickness (in)" name="thickness">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="V t=0 (V)" name="v_init">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="Indentor" name="indentor">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 									<Form.Item label="Nail Speed" name="nail_speed">
-										<Input allowClear />
+										<Input type="number" allowClear />
 									</Form.Item>
 								</Form>
 							</Panel>

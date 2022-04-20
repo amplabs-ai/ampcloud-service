@@ -12,7 +12,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "/echarts/energyAndCapacityDecay?{0}"
+url = "http://www.amplabs.ai:81/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -48,7 +48,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "/energyAndCapacityDecay?{0}"
+url = "http://www.amplabs.ai:81/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -84,7 +84,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "/echarts/efficiency?{0}"
+url = "http://www.amplabs.ai:81/echarts/efficiency?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -120,7 +120,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "/echarts/cycleQuantitiesByStep?{0}"
+url = "http://www.amplabs.ai:81/echarts/cycleQuantitiesByStep?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -155,7 +155,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "/echarts/compareByCycleTime?{0}"
+url = "http://www.amplabs.ai:81/echarts/compareByCycleTime?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -178,9 +178,115 @@ if status:
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./compareByCycleTimeChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	forceAndDisplacementChart: ``,
-	testTempraturesChart: ``,
-	voltageChart: ``,
+	forceAndDisplacementChart: `
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
+
+import json
+import urllib.error
+import urllib.request
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+url = "http://www.amplabs.ai/echarts/forceAndDisplacement?{0}"
+httprequest = urllib.request.Request(
+        url, method="GET"
+    )
+httprequest.add_header("Cookie", "userId={1}")
+status = 0
+try:
+    with urllib.request.urlopen(httprequest) as httpresponse:
+        response = json.loads(httpresponse.read())
+        status = 1
+except urllib.error.HTTPError as e:
+    print(e)
+
+df = pd.DataFrame()
+
+if status and response['records'][0]:
+    for item in response['records'][0]:
+        df = df.append(pd.DataFrame.from_records(item['source']))
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+    fig = px.scatter(df, x="test_time", y="value", color="series", labels={"test_time":"Time (s)", "value":"Force (N) / Displacement"}, title = "Force and Displacement - Abuse Force and Displacement")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./abuseForceDisplacementChart.png', format="png", scale=1, width=1200, height=800)
+    `,
+	testTempraturesChart: `
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
+
+import json
+import urllib.error
+import urllib.request
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+url = "http://www.amplabs.ai/echarts/testTempratures?{0}"
+httprequest = urllib.request.Request(
+        url, method="GET"
+    )
+httprequest.add_header("Cookie", "userId={1}")
+status = 0
+try:
+    with urllib.request.urlopen(httprequest) as httpresponse:
+        response = json.loads(httpresponse.read())
+        status = 1
+except urllib.error.HTTPError as e:
+    print(e)
+
+df = pd.DataFrame()
+if status and response['records'][0]:
+    for item in response['records'][0]:
+        df = df.append(pd.DataFrame.from_records(item['source']))
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+    fig = px.line(df, x="test_time", y="value", color="series_1", labels={"test_time":"Time (s)", "value":"Temperature (T)"}, title = "Abuse Test Temperature")
+    fig.update_traces(mode="lines", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./abuseTestTemperatureChart.png', format="png", scale=1, width=1200, height=800)
+    `,
+	voltageChart: `
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+import warnings
+warnings.filterwarnings('ignore')
+
+import json
+import urllib.error
+import urllib.request
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+url = "http://www.amplabs.ai/echarts/voltage?{0}"
+httprequest = urllib.request.Request(
+        url, method="GET"
+    )
+httprequest.add_header("Cookie", "userId={1}")
+status = 0
+try:
+    with urllib.request.urlopen(httprequest) as httpresponse:
+        response = json.loads(httpresponse.read())
+        status = 1
+except urllib.error.HTTPError as e:
+    print(e)
+
+df = pd.DataFrame()
+if status and response['records'][0]:
+    for item in response['records'][0]:
+        df = df.append(pd.DataFrame.from_records(item['source']))
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+    fig = px.scatter(df, x="test_time", y="value", color="series", labels={"test_time":"Time (s)", "value":"Voltage (V)"}, title = "Voltage - Abuse Voltage")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./abuseVoltageChart.png', format="png", scale=1, width=1200, height=800)
+    `,
 };
 
 export default sourceCode;
