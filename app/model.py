@@ -274,7 +274,7 @@ class ArchiveOperator:
             CycleTimeSeries.env_temperature.label(OUTPUT_LABELS.ENV_TEMPERATURE.value),
             CycleTimeSeries.cell_temperature.label(
                 OUTPUT_LABELS.CELL_TEMPERATURE.value)).filter(
-                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).statement
+                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).order_by('date_time').statement
         return pd.read_sql(sql, self.session.bind).round(DEGREE)
     
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
@@ -389,7 +389,7 @@ class ArchiveOperator:
     def select_table_with_id(self, table, cell_id, email, test):
         return self.session.query(table).filter(table.cell_id == cell_id, table.email == email, table.test == test)
         
-    def select_data_from_table(self, table, email):
-        return self.session.query(table).filter(table.email == email).first()
+    def select_data_from_table(self, table, email, test):
+        return self.session.query(table).filter(table.email == email, table.test == test).first()
         
 

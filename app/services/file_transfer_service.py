@@ -4,6 +4,7 @@ from app.archive_constants import OUTPUT_LABELS, RESPONSE_MESSAGE, TEST_TYPE, TE
 from app.model import AbuseMeta, AbuseTimeSeries, CellMeta, CycleMeta, ArchiveOperator, CycleStats, CycleTimeSeries
 from app.utilities.file_reader import read_generic, read_maccor, read_arbin, read_ornlabuse, read_snlabuse
 from app.utilities.utils import calc_abuse_stats, status, calc_cycle_stats, sort_timeseries
+from collections import OrderedDict
 
 def init_file_upload_service(email, data):
     cell_id = data.get('cell_id')
@@ -54,7 +55,11 @@ def init_file_upload_service(email, data):
 
     status[f"{email}|{data.get('cell_id')}"] = {
         "dataframes":[],
-        "progress": {'percentage':0, 'message': "IN PROGRESS"},
+        "progress": {'percentage':0, 'message': "IN PROGRESS", "steps":OrderedDict([
+            ("READ FILE", False),
+            ("STATS CALCULATION", False),
+            ("WRITING TO DATABASE", False)
+        ])},
         "file_count":int(data.get('file_count')),
         "test_type": data.get('test_type'),
         "cell_metadata": cell_metadata,
@@ -90,9 +95,10 @@ def file_data_process_service(cell_id, email):
         ao.add_all(cell_metadata, CellMeta)
 
         if status[f"{email}|{cell_id}"]['test_type'] == TEST_TYPE.CYCLE.value:
-            df_tmerge_sorted = sort_timeseries(df_tmerge)
-            status[f"{email}|{cell_id}"]['progress']['percentage'] = 25
-            stat_df, final_df = calc_cycle_stats(df_tmerge_sorted, cell_id, email)
+            # df_tmerge_sorted = sort_timeseries(df_tmerge)
+            # status[f"{email}|{cell_id}"]['progress']['percentage'] = 25
+            stat_df, final_df = calc_cycle_stats(df_tmerge, cell_id, email)
+            status[f"{email}|{cell_id}"]['progress']['steps']["STATS CALCULATION"] = True
             stat_df['cell_id'] = cell_id
             stat_df['email'] = email
             final_df['cell_id'] = cell_id
@@ -104,6 +110,7 @@ def file_data_process_service(cell_id, email):
             ao.add_all(final_df, CycleTimeSeries)
         else:
             final_df = calc_abuse_stats(df_tmerge, test_metadata, cell_id, email)
+            status[f"{email}|{cell_id}"]['progress']['steps']["STATS CALCULATION"] = True
             final_df['cell_id'] = cell_id
             final_df['email'] = email
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 66
@@ -111,13 +118,18 @@ def file_data_process_service(cell_id, email):
             ao.add_all(final_df, AbuseTimeSeries)
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 78
         ao.commit()
+        status[f"{email}|{cell_id}"]["steps"]["WRITING TO DATABASE"] = True
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 100
         status[f"{email}|{cell_id}"]['progress']['message'] = "COMPLETED"
 
     except Exception as err:
         print(err)
         status[f"{email}|{cell_id}"]['progress']['percentage'] = -1
-        status[f"{email}|{cell_id}"]['progress']['message'] = "FAILED"
+        for key, value in status[f"{email}|{cell_id}"]['progress']['steps'].items():
+            if not value:
+                status[f"{email}|{cell_id}"]['progress']['message'] = f"{key} FAILED"
+                break
+        # status[f"{email}|{cell_id}"]['progress']['message'] = "FAILED"
     finally:
         ao.release_session()
 

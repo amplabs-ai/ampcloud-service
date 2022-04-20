@@ -120,7 +120,7 @@ def calc_cycle_stats(df_t, cell_id, email):
     df_c[LABEL.TEST_TIME.value] = 0
     df_c[LABEL.AH_EFF.value] = 0
     df_c[LABEL.E_EFF.value] = 0
-    step = 37/len(df_c.index)
+    step = 60/len(df_c.index)
 
     for c_ind in df_c.index:
         status[f"{email}|{cell_id}"]['progress']['percentage'] += step

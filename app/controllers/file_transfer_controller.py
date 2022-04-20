@@ -34,6 +34,7 @@ def upload_file(tester):
             status[f"{email}|{data['cell_id']}"]['dataframes'].append(df)
             status[f"{email}|{data['cell_id']}"]['file_count'] -= 1
         if not status[f"{email}|{data['cell_id']}"]['file_count']:
+            status[f"{email}|{data['cell_id']}"]['progress']['steps']['READ FILE'] = True         
             threading.Thread(target = file_data_process_service, args = (data['cell_id'], email)).start()
         
         end_time = datetime.datetime.now()
@@ -43,15 +44,15 @@ def upload_file(tester):
         logging.info("User {email} Action UPLOAD_FILE file {file_name} size {size} read_time {read_time} processing_time {proc_time} upload_time {upload_time}".format(
             email = email, file_name=file.filename, size=size, read_time=read_time, proc_time=processing_time, upload_time=upload_time
         ))
-        return Response(200, "Success").to_dict(), 200
+        return Response(200, "SUCCESS").to_dict(), 200
     except KeyError as err:
         logging.error("User {email} Action UPLOAD_FILE error KEY_ERROR".format(email = email))
-        return Response(500, "Failed").to_dict(), 500
+        return Response(500, "INTERNAL SERVER ERROR").to_dict(), 500
     except Exception as err:
         status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
-        status[f"{email}|{data['cell_id']}"]['progress']['message'] = "FAILED"
+        status[f"{email}|{data['cell_id']}"]['progress']['message'] = "READ FILE FAILED"
         logging.error("User {email} Action UPLOAD_FILE error UNKNOWN".format(email = email))
-        return Response(500, "Failed").to_dict(), 500
+        return Response(500, "READ FILE FAILED").to_dict(), 500
 
 
 def download_cycle_timeseries(cell_id):
