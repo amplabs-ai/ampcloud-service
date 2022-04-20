@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import blankFileImage from "../assets/file-blank-solid-240.png";
 import uploadImg from "../assets/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
-import { Progress, Typography, Alert, List, Avatar, Button } from "antd";
+import { Progress, Typography, Alert, List, Avatar, Button, Modal, Spin, message } from "antd";
 import { FaTimes } from "react-icons/fa";
 import { FaCloudUploadAlt, FaExclamationCircle } from "react-icons/fa";
 import Papa from "papaparse";
@@ -16,42 +16,58 @@ const DropFileInput = (props) => {
 	console.log("props.uploadProgress", props.uploadProgress);
 	const wrapperRef = useRef(null);
 	const [fileList, setFileList] = useState([]);
-	const [uploadBtnDisabled, setUploadBtnDisabled] = useState(false);
 	const [fileValidationErrs, setFileValidationErrs] = useState([]);
-
-	useEffect(() => {
-		if (fileValidationErrs.length) {
-			setUploadBtnDisabled(true);
-		} else {
-			setUploadBtnDisabled(false);
-		}
-	}, [fileValidationErrs]);
+	const [shallShowFileValModal, setShallShowFileValModal] = useState(false);
 
 	const onDragEnter = () => wrapperRef.current.classList.add("dragover");
 	const onDragLeave = () => wrapperRef.current.classList.remove("dragover");
 	const onDrop = () => wrapperRef.current.classList.remove("dragover");
 
-	const onFileDrop = (e) => {
-		let updatedList = []; // props.reUpload ? [] : [...fileList];
-		setUploadBtnDisabled(false);
-		for (let i = 0; i < e.target.files.length; i++) {
-			let file = e.target.files[i];
-			if (file) {
-				updatedList.push(file);
-			}
-		}
-		props.onFileChange(updatedList);
-		setFileList(updatedList);
+	const [fileName, setFileName] = useState("data.csv");
 
-		// Passing file data (event.target.files[0]) to parse using Papa.parse
+	const onFileDrop = (e) => {
+		let fileName = e.target.files[0].name;
+		setShallShowFileValModal(true);
+		// Parsing file data
+		let data = [];
+		let newFile = null;
 		Papa.parse(e.target.files[0], {
 			header: true,
 			skipEmptyLines: true,
+			fastMode: true,
+			transformHeader: function (h, i) {
+				// fix cycle column header
+				console.log("transformHeader", h, i);
+				if (h.toLowerCase().includes("cycle")) return "cycle";
+				if (h.toLowerCase().includes("time")) return "test_time";
+				if (h.toLowerCase().includes("voltage")) return "voltage";
+				if (h.toLowerCase().includes("current")) return "current";
+				return h;
+			},
+			dynamicTyping: true,
+			step: function (results, parser) {
+				if (results.errors.length) {
+					parser.abort();
+					message.error("Error Parsing File");
+					message.error("Error Parsing File");
+					return;
+				} else {
+					data.push(results.data);
+				}
+			},
 			complete: function (results) {
-				if (results.data.length) {
-					console.log("papaparse", results.data);
+				if (data.length) {
+					console.log("papaparse", data);
 					if (props.pageType === "cycle-test") {
-						_validateCycleTestCsv(results.data);
+						newFile = _checkCycleTestCsv(data, fileName);
+						if (newFile) {
+							setShallShowFileValModal(false);
+							props.onFileChange([newFile]);
+							console.log("[newFile]", [newFile]);
+							setFileList([newFile]);
+						}
+					} else if (props.pageType === "abuse-test") {
+						// _validateAbuseTestCsv(data);
 					}
 				} else {
 					console.log("file is empty!");
@@ -60,28 +76,23 @@ const DropFileInput = (props) => {
 		});
 	};
 
-	const _validateCycleTestCsv = (data) => {
+	const _checkCycleTestCsv = (data, fileName) => {
 		setFileValidationErrs([]); // reset err, file_preview_icon
-		setUploadBtnDisabled(true); // disable button
 		if (_checkHeaders(data)) {
-			_checkCycleIndex(data);
-			_checkTestTime(data);
+			return _fixCycleIndex(_sortTestTime(data), fileName);
+		} else {
+			return false;
 		}
 	};
 
 	const _checkHeaders = (data) => {
 		let headers = Object.keys(data[0]).map((h) => h.toLowerCase());
+		console.log("h", headers);
 		let missingHeaders = [];
-		// check missing headers
 		missingHeaders = REQUIRED_HEADERS.filter(function (v) {
-			// allowed headers for cycle index
-			// if (["cycle", "cycle_index", "cycle_id", "cycle_number", "cycle_count"].includes(v)) {
-			// 	return false;
-			// } else {
-			// }
 			return headers.indexOf(v) == -1;
 		});
-		console.log("Missing Headers: ", missingHeaders);
+		console.log("missing", missingHeaders);
 		if (missingHeaders.length) {
 			setFileValidationErrs((prev) => [
 				...prev,
@@ -89,35 +100,66 @@ const DropFileInput = (props) => {
 					.map((h) => h)
 					.join(", ")} [Required Headers: cycle, test_time, current, voltage]`,
 			]);
+			// find duplicate headers
+			// let duplicates = [];
+			// const tempArray = [...headers].sort();
+			// for (let i = 0; i < tempArray.length; i++) {
+			// 	if (tempArray[i + 1] === tempArray[i]) {
+			// 		duplicates.push(tempArray[i]);
+			// 	}
+			// }
+			// console.log("duplicates", duplicates);
 			return false;
 		} else {
 			return true;
 		}
 	};
 
-	const _checkCycleIndex = (data) => {
-		let x = data.every(function (e, i, a) {
-			if (i)
-				return (
-					parseInt(e["cycle"]) >= parseInt(a[i - 1]["cycle"]) && parseInt(e["cycle"]) - parseInt(a[i - 1]["cycle"]) <= 1
-				);
-			else return true;
+	const _sortTestTime = (data) => {
+		let dataAfterTimeSort = data.sort(function (a, b) {
+			return a["test_time"] - b["test_time"];
 		});
-		if (!x) {
-			setFileValidationErrs((prev) => [
-				...prev,
-				"Cycle Index should be monotonically increasing at most by factor of one.",
-			]);
-		}
+		return dataAfterTimeSort;
 	};
 
-	const _checkTestTime = (data) => {
-		let x = data.every(function (e, i, a) {
-			if (i) return parseInt(e["test_time"]) >= parseInt(a[i - 1]["test_time"]);
-			else return true;
+	const _fixCycleIndex = (data, fileName) => {
+		let x = data.map((d, i, arr) => {
+			if (i !== 0) {
+				if (arr[i]["cycle"] < arr[i - 1]["cycle"]) {
+					return {
+						...d,
+						cycle: arr[i - 1]["cycle"],
+					};
+				}
+			}
+			return d;
 		});
-		if (!x) {
-			setFileValidationErrs((prev) => [...prev, "test_time should be monotonically increasing."]);
+		console.log("fixCycleIndexData", x);
+		console.log("fixCycleIndexData csv", Papa.unparse(x));
+
+		let parts = [new Blob([Papa.unparse(x)], { type: "text/plain" })];
+
+		// Construct a file
+		let file = new File(parts, fileName, {
+			lastModified: new Date(0), // optional - default = now
+			type: "text/csv", // optional - default = ''
+		});
+
+		Papa.parse(file, {
+			header: true,
+			skipEmptyLines: true,
+			complete: function (results) {
+				console.log("re-parse", results.data);
+			},
+		});
+
+		if (file.size) {
+			return file;
+		} else {
+			setShallShowFileValModal(false);
+			message.error("Error Parsing File");
+			message.error("Error Parsing File");
+			return null;
 		}
 	};
 
@@ -161,6 +203,33 @@ const DropFileInput = (props) => {
 
 	return (
 		<>
+			{shallShowFileValModal && (
+				<Modal
+					centered
+					visible={true}
+					closable={fileValidationErrs.length}
+					onCancel={() => setShallShowFileValModal(false)}
+					footer={null}
+					bodyStyle={{ padding: 10 }}
+				>
+					{fileValidationErrs.length ? (
+						<div style={{ color: "red" }}>
+							<ul>
+								{fileValidationErrs.map((err) => (
+									<li key={err}>{err}</li>
+								))}
+							</ul>
+						</div>
+					) : (
+						<>
+							<div className="text-center">
+								<h5>Parsing File...</h5>
+								<Spin size="large" />
+							</div>
+						</>
+					)}
+				</Modal>
+			)}
 			{fileList.length < 1 && (
 				<div
 					ref={wrapperRef}
@@ -193,7 +262,6 @@ const DropFileInput = (props) => {
 							}}
 							icon={<FaCloudUploadAlt />}
 							size="large"
-							disabled={uploadBtnDisabled}
 							// loading={uploadBtnDisatrybled}
 						>
 							&nbsp;&nbsp;Upload
@@ -214,13 +282,7 @@ const DropFileInput = (props) => {
 									}
 								>
 									<List.Item.Meta
-										avatar={
-											fileValidationErrs.length ? (
-												<FaExclamationCircle color="red" size="30px" />
-											) : (
-												<Avatar src={blankFileImage} />
-											)
-										}
+										avatar={<Avatar src={blankFileImage} />}
 										title={item.name}
 										description={
 											getProgress(item.name).value ? (
@@ -236,7 +298,7 @@ const DropFileInput = (props) => {
 											)
 										}
 									/>
-									<br />
+									{/* <br />
 									{fileValidationErrs.length ? (
 										<div style={{ position: "absolute", top: "90%", color: "red" }}>
 											<ul>
@@ -247,7 +309,7 @@ const DropFileInput = (props) => {
 										</div>
 									) : (
 										<div></div>
-									)}
+									)} */}
 								</List.Item>
 							)}
 						/>

@@ -5,7 +5,7 @@ import DashboardFilterBar from "../components/DashboardFilterBar";
 import ViewCodeModal from "../components/ViewCodeModal";
 import initialChartOptions from "../chartConfig/initialConfigs";
 import sourceCode from "../chartConfig/chartSourceCode";
-import { Result, Button, Alert } from "antd";
+import { Result, Button, Alert, Typography } from "antd";
 
 const DashboardCycleTest = () => {
 	const cycleIndexChart = useRef();
@@ -26,6 +26,8 @@ const DashboardCycleTest = () => {
 		// compareByCycleTimeChart: false,
 	});
 	const [chartData, setChartData] = useState({});
+
+	const { Title } = Typography;
 
 	const [internalServerError, setInternalServerError] = useState("");
 
@@ -159,12 +161,18 @@ const DashboardCycleTest = () => {
 		axios
 			.get(endpoint, request)
 			.then((result) => {
+				if (typeof result.data == "string") {
+					result = JSON.parse(result.data.replace(/\bNaN\b/g, "null"));
+				} else {
+					result = result.data;
+				}
+
 				if (result.status !== 200) {
 					console.log("result status", result.status);
 				}
 
 				setChartData((prev) => {
-					return { ...prev, [chartId]: result.data.records[0] };
+					return { ...prev, [chartId]: result.records[0] };
 				});
 
 				ref.current.getEchartsInstance().dispatchAction({
@@ -180,9 +188,9 @@ const DashboardCycleTest = () => {
 							overflow: "breakAll",
 						},
 					},
-					dataset: result.data.records[0],
+					dataset: result.records[0],
 					series: _createChartDataSeries(
-						result.data.records[0], // replace with actual data
+						result.records[0], // replace with actual data
 						xAxis.mapToId,
 						yAxis.mapToId,
 						chartId
@@ -205,7 +213,7 @@ const DashboardCycleTest = () => {
 							fontSize: 14,
 						},
 					},
-					legend: _createChartLegend(result.data.records[0], chartId),
+					legend: _createChartLegend(result.records[0], chartId),
 					toolbox: {
 						feature: {
 							myTool: {
@@ -484,6 +492,7 @@ const DashboardCycleTest = () => {
 				/>
 			) : (
 				<div style={{ margin: "0.6rem" }}>
+					<Title level={3}>Cycle Test Dashboard</Title>
 					<DashboardFilterBar
 						testType="cycleTest"
 						onFilterChange={handleFilterChange}

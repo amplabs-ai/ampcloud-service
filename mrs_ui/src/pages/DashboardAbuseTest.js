@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
-import { Result, Button, Alert } from "antd";
+import { Result, Button, Alert, Typography, Badge } from "antd";
 import sourceCode from "../chartConfig/chartSourceCode";
 import axios from "axios";
 import ViewCodeModal from "../components/ViewCodeModal";
@@ -22,6 +22,8 @@ const DashboardAbuseTest = () => {
 	const forceAndDisplacementChart = useRef();
 	const testTempraturesChart = useRef();
 	const voltageChart = useRef();
+
+	const { Title } = Typography;
 
 	const internalServerErrorFound = (errStatus) => {
 		setInternalServerError(errStatus);
@@ -165,6 +167,11 @@ const DashboardAbuseTest = () => {
 		axios
 			.get(endpoint, request)
 			.then((result) => {
+				if (typeof result.data == "string") {
+					result = JSON.parse(result.data.replace(/\bNaN\b/g, "null"));
+				} else {
+					result = result.data;
+				}
 				if (result.status !== 200) {
 					console.log("result status", result.status);
 				}
@@ -181,9 +188,9 @@ const DashboardAbuseTest = () => {
 							overflow: "breakAll",
 						},
 					},
-					dataset: result.data.records[0],
+					dataset: result.records[0],
 					series: _createChartDataSeries(
-						result.data.records[0], // replace with actual data
+						result.records[0], // replace with actual data
 						xAxis.mapToId,
 						yAxis.mapToId,
 						chartId
@@ -200,7 +207,7 @@ const DashboardAbuseTest = () => {
 						nameLocation: "middle",
 						nameGap: 30,
 					},
-					legend: _createChartLegend(result.data.records[0], chartId),
+					legend: _createChartLegend(result.records[0], chartId),
 					toolbox: {
 						feature: {
 							myTool: {
@@ -257,6 +264,7 @@ const DashboardAbuseTest = () => {
 				/>
 			) : (
 				<div style={{ margin: "0.6rem" }}>
+					<Title level={3}>Abuse Test Dashboard</Title>
 					<DashboardFilterBar
 						onCellIdChange={handleCellIdChange}
 						testType="abuseTest"

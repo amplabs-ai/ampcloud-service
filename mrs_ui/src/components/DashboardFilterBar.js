@@ -4,7 +4,7 @@ import { Space, Input, Table, Button, Typography, Popconfirm, message, Select, M
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import ViewCodeModal from "./ViewCodeModal";
 
-import codeContent from "../chartConfig/cellIdViewCode";
+import { cycleDataCodeContent, timeSeriesDataCodeContent } from "../chartConfig/cellIdViewCode";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -22,6 +22,7 @@ const DashboardFilterBar = (props) => {
 	const [searchParams, setSearchParams] = useState("");
 	const [sample, setSample] = useState(localStorage.getItem("sample") ? localStorage.getItem("sample") : 10);
 	const [loading, setLoading] = useState(false);
+	const [codeContent, setCodeContent] = useState("");
 
 	console.log("localStorage", localStorage.getItem("sample"), localStorage.getItem("step"));
 
@@ -124,8 +125,15 @@ const DashboardFilterBar = (props) => {
 			});
 	};
 
-	const viewCycleDataCode = (k, type) => {
-		setSearchParams(k);
+	const viewCycleDataCode = (k) => {
+		setSearchParams(encodeURIComponent(k.trim()));
+		setCodeContent(cycleDataCodeContent);
+		setModalVisible(true);
+	};
+
+	const viewTimeSeriesDataCode = (k) => {
+		setSearchParams(encodeURIComponent(k.trim()));
+		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
 	};
 
@@ -177,7 +185,7 @@ const DashboardFilterBar = (props) => {
 					<Button type="link" onClick={() => downloadTimeSeriesData(record.cell_id)}>
 						Download
 					</Button>
-					<Button type="link" title="View Code" onClick={() => viewCycleDataCode(record.cell_id, "timeSeries")}>
+					<Button type="link" title="View Code" onClick={(e) => viewTimeSeriesDataCode(record.cell_id)}>
 						<FaCode />
 					</Button>
 				</Space>
