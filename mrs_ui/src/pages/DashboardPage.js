@@ -14,11 +14,11 @@ const DashboardPage = () => {
 		} else if (location.pathname === "/dashboard/cycle-test" || location.pathname === "/dashboard") {
 			setPageType("cycle-test");
 		}
-	}, [location.pathname]);
+	}, [location]);
 
 	return (
-		<div style={{ paddingTop: "4rem" }}>
-			{pageType === "cycle-test" ? <DashboardCycleTest /> : <DashboardAbuseTest />}
+		<div style={{ paddingTop: "1rem" }}>
+			{pageType === "cycle-test" ? <DashboardCycleTest /> : pageType === "abuse-test" ? <DashboardAbuseTest /> : ""}
 		</div>
 	);
 };

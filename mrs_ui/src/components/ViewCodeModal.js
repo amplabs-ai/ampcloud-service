@@ -10,8 +10,6 @@ import Cookies from "js-cookie";
 const { Text } = Typography;
 
 const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) => {
-	console.log("searchParams", searchParams);
-
 	const codeString = code;
 
 	const formatCode = (code, ...args) => {
@@ -55,7 +53,6 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 			>
 				<SyntaxHighlighter
 					onClick={() => {
-						console.log("copied!");
 						message.success("Copied to clipboard!");
 						message.success("Copied to clipboard!");
 						copyToClipboard(formatCode(codeString, searchParams, Cookies.get("userId")));
@@ -78,7 +75,6 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 							// );
 							message.success("Copied to clipboard!");
 							message.success("Copied to clipboard!");
-							console.log("copied!");
 						}}
 						code={true}
 						style={{ cursor: "pointer" }}

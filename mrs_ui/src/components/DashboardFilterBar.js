@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Space, Input, Table, Button, Typography, Popconfirm, message, Select, Modal, Spin } from "antd";
+import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography } from "antd";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import ViewCodeModal from "./ViewCodeModal";
-
 import { cycleDataCodeContent, timeSeriesDataCodeContent } from "../chartConfig/cellIdViewCode";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 const SAMPLE_OPTIONS = [5].concat(Array.from({ length: 10 }, (_, index) => (index + 1) * 10));
 
@@ -24,12 +23,9 @@ const DashboardFilterBar = (props) => {
 	const [loading, setLoading] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
 
-	console.log("localStorage", localStorage.getItem("sample"), localStorage.getItem("step"));
-
-	console.log("testType", props.testType);
-
 	useEffect(() => {
 		let endpoint = props.testType === "abuseTest" ? "/cells/abuse/meta" : "/cells/cycle/meta";
+		console.log("endpointt", endpoint);
 		axios
 			.get(endpoint)
 			.then((response) => {
@@ -72,7 +68,9 @@ const DashboardFilterBar = (props) => {
 			.delete(`/cells/${record.cell_id}`)
 			.then(() => {
 				setCellIds(cellIds.filter((item) => item.key !== record.key));
-				handleApplyFilter();
+				setSelectedRows(selectedRows.filter((item) => item.key !== record.key));
+				setSelectedRowKeys(selectedRowKeys.filter((item) => item !== record.key));
+				props.onCellIdChange(selectedRows.filter((item) => item.key !== record.key));
 				message.success("Cell Id Deleted!");
 				message.success("Cell Id Deleted!");
 			})
@@ -97,6 +95,7 @@ const DashboardFilterBar = (props) => {
 		localStorage.setItem("sample", sample);
 		localStorage.setItem("step", step);
 		let result = props.onFilterChange(selectedRows, props.testType === "abuseTest" ? sample : step);
+		console.log("selectedRows after delete", selectedRows);
 		if (result) {
 			message.success("Filter Applied!"); // potential bug in antd need to call msg twice
 			message.success("Filter Applied!");
@@ -200,7 +199,8 @@ const DashboardFilterBar = (props) => {
 					<div className="filter-bar-delete-column">
 						<Popconfirm title="Sure to delete?" onConfirm={() => handleCellDelete(record)}>
 							<Space size="middle">
-								<FaRegTrashAlt style={{ cursor: "pointer" }} />
+								<Button icon={<FaRegTrashAlt />} type="text" disabled={props.disableSelection}></Button>
+								{/* <FaRegTrashAlt style={{ cursor: "pointer" }} /> */}
 							</Space>
 						</Popconfirm>
 					</div>
@@ -239,6 +239,10 @@ const DashboardFilterBar = (props) => {
 			setSelectedRows(selectedRows);
 			props.onCellIdChange(selectedRows);
 		},
+		getCheckboxProps: (record) => ({
+			disabled: props.disableSelection,
+			// Column configuration not to be checked
+		}),
 	};
 
 	return (
@@ -249,7 +253,6 @@ const DashboardFilterBar = (props) => {
 			<div className="card shadow-sm">
 				<div className="card-body filterBar">
 					<div style={{ display: "inline-block" }} className="pe-2">
-						{/* <Title level={5}>Step</Title> */}
 						{props.testType === "abuseTest" ? (
 							<>
 								<span style={{ fontSize: "0.7rem" }}>Sample % : </span>
@@ -282,7 +285,7 @@ const DashboardFilterBar = (props) => {
 						onClick={() => handleApplyFilter()}
 						className=" btn btn-outline-dark btn-sm"
 					>
-						Apply Filter
+						{props.testType === "abuseTest" ? "Apply Sample" : "Apply Step"}
 					</button>
 					{/* view code modal */}
 					<ViewCodeModal
@@ -291,6 +294,7 @@ const DashboardFilterBar = (props) => {
 						setModalVisible={setModalVisible}
 						searchParams={searchParams}
 					/>
+					<br />
 					<Table
 						sticky={true}
 						loading={tableLoading}

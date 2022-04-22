@@ -8,6 +8,7 @@ import pako from "pako";
 import { useTransition, animated } from "react-spring";
 import UploadPageForms from "../components/UploadPageForms";
 import ProcessUpload from "../components/ProcessUpload";
+import { FaCloudUploadAlt } from "react-icons/fa";
 
 const { Title } = Typography;
 
@@ -281,6 +282,9 @@ const UploadPage = () => {
 			<div className="row">
 				<div className="col-md-12 pb-5">
 					<div>
+						<Title level={3} style={{ paddingTop: "1rem" }}>
+							Upload {pageType === "cycle-test" ? "Cycle-Test" : "Abuse Test"}
+						</Title>
 						{transition((style, item) => {
 							return item ? (
 								<animated.div style={style}>

@@ -1,35 +1,52 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import ReactEcharts from "echarts-for-react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import ViewCodeModal from "../components/ViewCodeModal";
 import initialChartOptions from "../chartConfig/initialConfigs";
 import sourceCode from "../chartConfig/chartSourceCode";
-import { Result, Button, Alert, Typography } from "antd";
+import { Result, Button, Alert, Typography, Modal, Spin } from "antd";
+
+import WorkerBuilder from "../worker/woker-builder";
+import Worker from "../worker/fibo.worker";
+const instance = new WorkerBuilder(Worker);
+
+const { Title } = Typography;
 
 const DashboardCycleTest = () => {
+	useEffect(() => {
+		instance.onmessage = (message) => {
+			if (message) {
+				console.log("Message from worker", message.data);
+			}
+		};
+
+		window.addEventListener("resize", function () {
+			cycleIndexChart.current.resize();
+			timeSeriesChart.current.resize();
+			efficiencyChart.current.resize();
+			cycleQtyByStepChart.current.resize();
+		});
+	}, []);
+
 	const cycleIndexChart = useRef();
 	const timeSeriesChart = useRef();
 	const efficiencyChart = useRef();
 	const cycleQtyByStepChart = useRef();
-	// const compareByCycleTimeChart = useRef();
 
 	const [searchParams, setSearchParams] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
 	const [noDataFound, setNoDataFound] = useState(false);
 	const [chartLoadingError, setChartLoadingError] = useState({
-		cycleIndexChart: false,
-		timeSeriesChart: false,
-		efficiencyChart: false,
-		cycleQtyByStepChart: false,
-		// compareByCycleTimeChart: false,
+		cycleIndex: false,
+		timeSeries: false,
+		efficiency: false,
+		cycleQtyByStep: false,
 	});
 	const [chartData, setChartData] = useState({});
-
-	const { Title } = Typography;
-
 	const [internalServerError, setInternalServerError] = useState("");
+	const [disableSelection, setDisableSelection] = useState(true);
 
 	const internalServerErrorFound = (errStatus) => {
 		setInternalServerError(errStatus);
@@ -41,27 +58,21 @@ const DashboardCycleTest = () => {
 			setNoDataFound(true);
 			return;
 		}
-
 		console.log("cellIds", cellIds);
-
 		let params = new URLSearchParams();
 		cellIds.forEach((cellId) => {
 			params.append("cell_id", cellId.cell_id);
 		});
 		params.append("step", step);
 		console.log("params", params);
-
 		let request = {
 			params: params,
 		};
-
 		setSearchParams(params.toString());
-
 		fetchData(request, "cycleIndex");
 		fetchData(request, "timeSeries");
 		fetchData(request, "efficiency");
 		fetchData(request, "cycleQtyByStep");
-		// fetchData(request, "compareByCycleTime");
 		return true;
 	};
 
@@ -136,45 +147,25 @@ const DashboardCycleTest = () => {
 					sourceCode.cycleQtyByStepChart,
 				];
 				break;
-			// case "compareByCycleTime":
-			// 	[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
-			// 		`/echarts/compareByCycleTime`,
-			// 		compareByCycleTimeChart,
-			// 		{
-			// 			mapToId: "cycle_time",
-			// 			title: "Cycle time (s)",
-			// 		},
-			// 		{
-			// 			mapToId: "value",
-			// 			title: "Voltage (V)/Current (A)",
-			// 		},
-			// 		"Compare by Cycle Time - Compare Cycle Voltage and Current",
-			// 		"compareByCycleTime",
-			// 		sourceCode.compareByCycleTimeChart,
-			// 	];
-			// 	break;
 			default:
 				break;
 		}
-		showChartLoadingError(ref.current.ele, false); // remove previous error
+		showChartLoadingError(chartType, false); // removes previous error
 		ref.current.getEchartsInstance().showLoading();
 		axios
-			.get(endpoint, request)
+			.get("endpoint", request)
 			.then((result) => {
+				if (chartType === "cycleQtyByStep") {
+					setDisableSelection(false);
+				}
 				if (typeof result.data == "string") {
 					result = JSON.parse(result.data.replace(/\bNaN\b/g, "null"));
 				} else {
 					result = result.data;
 				}
-
-				if (result.status !== 200) {
-					console.log("result status", result.status);
-				}
-
 				setChartData((prev) => {
 					return { ...prev, [chartId]: result.records[0] };
 				});
-
 				ref.current.getEchartsInstance().dispatchAction({
 					type: "restore",
 				});
@@ -237,8 +228,8 @@ const DashboardCycleTest = () => {
 			})
 			.catch((err) => {
 				console.log("err", err);
-				ref.current.getEchartsInstance().showLoading();
-				showChartLoadingError(ref.current.ele, true);
+				ref.current.getEchartsInstance().hideLoading();
+				showChartLoadingError(chartType, true);
 			});
 	};
 
@@ -247,9 +238,10 @@ const DashboardCycleTest = () => {
 		setModalVisible(true);
 	};
 
-	const showChartLoadingError = (chartRef, show) => {
-		setChartLoadingError((prevState) => {
-			return { ...prevState, [chartRef]: show };
+	const showChartLoadingError = (chartType, show) => {
+		console.log("chartType", chartType);
+		setChartLoadingError((prev) => {
+			return { ...prev, [chartType]: show };
 		});
 	};
 
@@ -276,7 +268,7 @@ const DashboardCycleTest = () => {
 			x.push(d.id);
 		});
 		return {
-			data: x, //["MACCOR_example copy 2 c: 1", "Arbin_example c: 2"], // ["cell id 1", "cell id 2"],
+			data: x,
 			type: "scroll",
 			orient: "horizontal",
 			left: "0",
@@ -285,7 +277,6 @@ const DashboardCycleTest = () => {
 				chartId === "timeSeries"
 					? "pin"
 					: "path://M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z",
-			// top: "center",
 			pageTextStyle: {
 				overflow: "truncate",
 			},
@@ -293,26 +284,42 @@ const DashboardCycleTest = () => {
 		};
 	};
 
-	const handleCellIdChange = (selectedCellIds) => {
+	const handleCellIdChange = async (selectedCellIds) => {
+		// instance.postMessage({
+		// 	chartData,
+		// 	selectedCellIds,
+		// });
+		// console.log("navigator.hardwareConcurrency", navigator.hardwareConcurrency);
+
+		setDisableSelection(true);
 		console.log("selectedCellIds", selectedCellIds);
 		console.log("chartData", chartData);
-		// let filteredChartData = {};
-		// for (const chartName in chartData) {
-		// 	if (Object.hasOwnProperty.call(chartData, chartName)) {
-		// 		let chart = chartData[chartName];
-		// 		// loop through chart and filter it
-		// 		let filteredChart = chart.filter((c) => {
-		// 			return _checkCellIdInSeries(c, selectedCellIds);
-		// 		});
-		// 		filteredChartData = { ...filteredChartData, [chartName]: filteredChart };
-		// 	}
-		// }
-		// console.log("filteredChartData", filteredChartData);
-		// // setChartData(filteredChartData);
+
+		let filteredChartData = {};
+		for (const chartName in chartData) {
+			if (Object.hasOwnProperty.call(chartData, chartName)) {
+				let chart = chartData[chartName];
+				let filteredChart = chart.filter((c) => {
+					return _checkCellIdInSeries(c, selectedCellIds);
+				});
+				filteredChartData = { ...filteredChartData, [chartName]: filteredChart };
+			}
+		}
+
+		console.log("filteredChartData", filteredChartData);
+		let promise1 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "cycleIndex")));
+		let promise2 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "timeSeries")));
+		let promise3 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "efficiency")));
+		let promise4 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "cycleQtyByStep")));
+		let responses = await Promise.all([promise1, promise2, promise3, promise4]);
+		for (let response of responses) {
+			console.log("promise all", response);
+			setDisableSelection(false);
+		}
+		// _renderChartsAfterFilter(filteredChartData, "cycleQtyByStep");
 		// _renderChartsAfterFilter(filteredChartData, "cycleIndex");
 		// _renderChartsAfterFilter(filteredChartData, "timeSeries");
 		// _renderChartsAfterFilter(filteredChartData, "efficiency");
-		// _renderChartsAfterFilter(filteredChartData, "cycleQtyByStep");
 	};
 
 	const _checkCellIdInSeries = (c, selectedCellIds) => {
@@ -322,9 +329,7 @@ const DashboardCycleTest = () => {
 			if (flag) {
 				return true;
 			}
-			console.log(c.id, selectedCellIds[i].cell_id, c.id.includes(selectedCellIds[i].cell_id));
 		}
-		console.log("flag", flag);
 		return flag;
 	};
 
@@ -402,12 +407,6 @@ const DashboardCycleTest = () => {
 			default:
 				break;
 		}
-		// cycleIndexChart.current.getEchartsInstance().setOption({
-		// 	dataset: filteredChartData[chartId],
-		// 	series: _createChartDataSeries(filteredChartData[chartId], "cycle_index", "value", "cycleIndex"),
-		// 	legend: _createChartLegend(filteredChartData[chartId], "cycleIndex"),
-		// });
-
 		ref.current.getEchartsInstance().dispatchAction({
 			type: "restore",
 		});
@@ -421,6 +420,7 @@ const DashboardCycleTest = () => {
 					overflow: "breakAll",
 				},
 			},
+			animation: false,
 			dataset: filteredChartData[chartId],
 			series: _createChartDataSeries(
 				filteredChartData[chartId], // replace with actual data
@@ -498,6 +498,7 @@ const DashboardCycleTest = () => {
 						onFilterChange={handleFilterChange}
 						onCellIdChange={handleCellIdChange}
 						internalServerErrorFound={internalServerErrorFound}
+						disableSelection={disableSelection}
 					/>
 					<ViewCodeModal
 						code={codeContent}
@@ -510,7 +511,7 @@ const DashboardCycleTest = () => {
 							<div className="card shadow-sm">
 								<div className="card-body">
 									{chartLoadingError.cycleIndexChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={cycleIndexChart} option={initialChartOptions} />
+									<ReactEcharts lazyUpdate={true} showLoading ref={cycleIndexChart} option={initialChartOptions} />
 								</div>
 							</div>
 						</div>
@@ -518,7 +519,7 @@ const DashboardCycleTest = () => {
 							<div className="card shadow-sm">
 								<div className="card-body">
 									{chartLoadingError.efficiencyChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={efficiencyChart} option={initialChartOptions} />
+									<ReactEcharts lazyUpdate={true} showLoading ref={efficiencyChart} option={initialChartOptions} />
 								</div>
 							</div>
 						</div>
@@ -526,7 +527,7 @@ const DashboardCycleTest = () => {
 							<div className="card shadow-sm">
 								<div className="card-body">
 									{chartLoadingError.timeSeriesChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={timeSeriesChart} option={initialChartOptions} />
+									<ReactEcharts lazyUpdate={true} showLoading ref={timeSeriesChart} option={initialChartOptions} />
 								</div>
 							</div>
 						</div>
@@ -534,18 +535,10 @@ const DashboardCycleTest = () => {
 							<div className="card shadow-sm">
 								<div className="card-body">
 									{chartLoadingError.cycleQtyByStepChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={cycleQtyByStepChart} option={initialChartOptions} />
+									<ReactEcharts lazyUpdate={true} showLoading ref={cycleQtyByStepChart} option={initialChartOptions} />
 								</div>
 							</div>
 						</div>
-						{/* <div className="col-md-12 mt-2">
-							<div className="card shadow-sm">
-								<div className="card-body">
-									{chartLoadingError.compareByCycleTimeChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={compareByCycleTimeChart} option={initialChartOptions} />
-								</div>
-							</div>
-						</div> */}
 					</div>
 				</div>
 			)}

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import styles from "./LandingPage.module.css";
-import { FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaHandsHelping, FaLongArrowAltRight, FaNewspaper, FaSearch } from "react-icons/fa";
 import { useSpring, animated } from "react-spring";
 import Typewriter from "typewriter-effect";
 
@@ -119,12 +119,30 @@ const LandingPage = () => {
 				<div className="row">
 					<animated.div className="col-md-8 p-2" style={aboutAnim}>
 						<h1 className="display-4 text-center mb-3">About</h1>
-						<div className="">
-							<p className="para" style={{ lineHeight: "1.6" }}>
-								Tools for scientist, researchers, and engineers to analyze, publish, and collaborate in order to
-								reinvent our energy systems.
+						<p className="para" style={{ lineHeight: "1.6" }}>
+							Tools for scientists, researchers, and engineers to analyze, publish, and collaborate in order to reinvent
+							our energy systems.
+						</p>
+						{/* <div className="fs-2 fw-light">
+							<p className="fs-4">
+								Tools for <b>Scientists, Researchers, and Engineers</b> to
 							</p>
-						</div>
+							<b>
+								<span className="pe-4">
+									<FaSearch />
+									Analyze
+								</span>
+								<span className="pe-4">
+									<FaNewspaper />
+									Publish
+								</span>
+								<span className="pe-4">
+									<FaHandsHelping />
+									Collaborate
+								</span>
+							</b>
+							<p className="fs-4 mt-3">in order to reinvent our energy systems.</p>
+						</div> */}
 					</animated.div>
 					<animated.div style={formAnim} className={`col-md-4 p-4 shadow-sm ${styles.formSection}`}>
 						<form onSubmit={(e) => handleEmailSubmit(e)}>
