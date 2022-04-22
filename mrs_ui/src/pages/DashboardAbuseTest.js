@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import { Result, Button, Alert, Typography, Badge } from "antd";
 import sourceCode from "../chartConfig/chartSourceCode";
@@ -6,6 +6,7 @@ import axios from "axios";
 import ViewCodeModal from "../components/ViewCodeModal";
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../chartConfig/initialConfigs";
+import { FaCloudUploadAlt } from "react-icons/fa";
 
 const DashboardAbuseTest = () => {
 	const [noDataFound, setNoDataFound] = useState(false);
@@ -18,12 +19,22 @@ const DashboardAbuseTest = () => {
 		testTempraturesChart: false,
 		voltageChart: false,
 	});
+	const [disableSelection, setDisableSelection] = useState(true);
+	const [chartData, setChartData] = useState({});
 
 	const forceAndDisplacementChart = useRef();
 	const testTempraturesChart = useRef();
 	const voltageChart = useRef();
 
 	const { Title } = Typography;
+
+	useEffect(() => {
+		window.addEventListener("resize", function () {
+			forceAndDisplacementChart.current.resize();
+			testTempraturesChart.current.resize();
+			voltageChart.current.resize();
+		});
+	}, []);
 
 	const internalServerErrorFound = (errStatus) => {
 		setInternalServerError(errStatus);
@@ -104,7 +115,6 @@ const DashboardAbuseTest = () => {
 		setCodeContent(code);
 		setModalVisible(true);
 	};
-
 	const fetchData = (request, chartType) => {
 		let endpoint, ref, xAxis, yAxis, chartTitle, chartId, code;
 		switch (chartType) {
@@ -167,14 +177,15 @@ const DashboardAbuseTest = () => {
 		axios
 			.get(endpoint, request)
 			.then((result) => {
+				setDisableSelection(false);
 				if (typeof result.data == "string") {
 					result = JSON.parse(result.data.replace(/\bNaN\b/g, "null"));
 				} else {
 					result = result.data;
 				}
-				if (result.status !== 200) {
-					console.log("result status", result.status);
-				}
+				setChartData((prev) => {
+					return { ...prev, [chartId]: result.records[0] };
+				});
 				ref.current.getEchartsInstance().dispatchAction({
 					type: "restore",
 				});
@@ -231,13 +242,168 @@ const DashboardAbuseTest = () => {
 			})
 			.catch((err) => {
 				console.log("err", err);
+				setDisableSelection(false);
 				ref.current.getEchartsInstance().showLoading();
 				showChartLoadingError(ref.current.ele, true);
 			});
 	};
 
-	const handleCellIdChange = (data) => {
-		console.log(data);
+	const handleCellIdChange = async (selectedCellIds) => {
+		setDisableSelection(true);
+		console.log("selectedCellIds", selectedCellIds);
+		console.log("chartData", chartData);
+
+		let filteredChartData = {};
+		for (const chartName in chartData) {
+			if (Object.hasOwnProperty.call(chartData, chartName)) {
+				let chart = chartData[chartName];
+				let filteredChart = chart.filter((c) => {
+					return _checkCellIdInSeries(c, selectedCellIds);
+				});
+				filteredChartData = { ...filteredChartData, [chartName]: filteredChart };
+			}
+		}
+
+		console.log("filteredChartData", filteredChartData);
+		let promise1 = new Promise((resolve) =>
+			resolve(_renderChartsAfterFilter(filteredChartData, "forceAndDisplacement"))
+		);
+		let promise2 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "testTempratures")));
+		let promise3 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "voltage")));
+		let responses = await Promise.all([promise1, promise2, promise3]);
+		for (let response of responses) {
+			console.log("promise all", response);
+			setDisableSelection(false);
+		}
+	};
+
+	const _checkCellIdInSeries = (c, selectedCellIds) => {
+		let flag = false;
+		for (let i = 0; i < selectedCellIds.length; i++) {
+			flag = c.id.includes(selectedCellIds[i].cell_id);
+			if (flag) {
+				return true;
+			}
+		}
+		return flag;
+	};
+
+	const _renderChartsAfterFilter = (filteredChartData, chartType) => {
+		let endpoint, ref, xAxis, yAxis, chartTitle, chartId, code;
+		switch (chartType) {
+			case "forceAndDisplacement":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/forceAndDisplacement`,
+					forceAndDisplacementChart,
+					{
+						mapToId: "test_time",
+						title: "Time (s)",
+					},
+					{
+						mapToId: "value",
+						title: "Force (N) / Displacement",
+					},
+					"Force and Displacement - Abuse Force and Displacement",
+					"forceAndDisplacement",
+					sourceCode.forceAndDisplacementChart,
+				];
+				break;
+			case "testTempratures":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/testTempratures`,
+					testTempraturesChart,
+					{
+						mapToId: "test_time",
+						title: "Time (s)",
+					},
+					{
+						mapToId: "value",
+						title: "Temperature (T)",
+					},
+					"Abuse Test Temperatures",
+					"testTempratures",
+					sourceCode.testTempraturesChart,
+				];
+				break;
+			case "voltage":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/voltage`,
+					voltageChart,
+					{
+						mapToId: "test_time",
+						title: "Time (s)",
+					},
+					{
+						mapToId: "value",
+						title: "Voltage (V)",
+					},
+					"Voltage Abuse Voltage",
+					"voltage",
+					sourceCode.voltageChart,
+				];
+				break;
+			default:
+				break;
+		}
+		ref.current.getEchartsInstance().dispatchAction({
+			type: "restore",
+		});
+		ref.current.getEchartsInstance().setOption({
+			title: {
+				show: true,
+				id: chartId,
+				text: chartTitle,
+				textStyle: {
+					fontSize: 14,
+					overflow: "breakAll",
+				},
+			},
+			animation: false,
+			dataset: filteredChartData[chartId],
+			series: _createChartDataSeries(
+				filteredChartData[chartId], // replace with actual data
+				xAxis.mapToId,
+				yAxis.mapToId,
+				chartId
+			),
+			xAxis: {
+				type: "value",
+				name: xAxis.title,
+				nameLocation: "middle",
+				nameGap: 25,
+				nameTextStyle: {
+					fontSize: 14,
+				},
+			},
+			yAxis: {
+				type: "value",
+				name: yAxis.title,
+				nameLocation: "middle",
+				nameGap: 25,
+				nameTextStyle: {
+					fontSize: 14,
+				},
+			},
+			legend: _createChartLegend(filteredChartData[chartId], chartId),
+			toolbox: {
+				feature: {
+					myTool: {
+						show: true,
+						title: "View Code",
+						icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
+						onclick: function () {
+							formatCode(code);
+						},
+					},
+					saveAsImage: {
+						show: "true",
+					},
+					dataZoom: {
+						yAxisIndex: "none",
+					},
+				},
+			},
+		});
 	};
 
 	return (
@@ -270,6 +436,7 @@ const DashboardAbuseTest = () => {
 						testType="abuseTest"
 						onFilterChange={handleFilterChange}
 						internalServerErrorFound={internalServerErrorFound}
+						disableSelection={disableSelection}
 					/>
 					<ViewCodeModal
 						code={codeContent}

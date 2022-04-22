@@ -3,7 +3,7 @@ import { Result, Button } from "antd";
 
 const PageNotFound = () => {
 	return (
-		<div style={{ paddingTop: "4rem" }}>
+		<div style={{ paddingTop: "1rem" }}>
 			<Result
 				status="404"
 				title="404"

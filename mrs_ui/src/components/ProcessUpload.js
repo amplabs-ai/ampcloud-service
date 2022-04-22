@@ -25,7 +25,7 @@ const ProcessUpload = ({ processingProgressMsg, processingProgress }) => {
 	return (
 		<div className="processingStatusBar">
 			{Object.keys(steps).length ? (
-				<div className="mb-5 container w-100" style={{ paddingTop: "75px" }}>
+				<div className="mb-5 container w-100" style={{ paddingTop: "1rem" }}>
 					<Steps current={current} status={status === "exception" ? "error" : "process"}>
 						{Object.keys(steps).map((s, i) => (
 							<Step title={s} key={s} />

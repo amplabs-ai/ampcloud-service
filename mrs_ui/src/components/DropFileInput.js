@@ -27,53 +27,64 @@ const DropFileInput = (props) => {
 
 	const onFileDrop = (e) => {
 		let fileName = e.target.files[0].name;
-		setShallShowFileValModal(true);
-		// Parsing file data
-		let data = [];
-		let newFile = null;
-		Papa.parse(e.target.files[0], {
-			header: true,
-			skipEmptyLines: true,
-			fastMode: true,
-			transformHeader: function (h, i) {
-				// fix cycle column header
-				console.log("transformHeader", h, i);
-				if (h.toLowerCase().includes("cycle")) return "cycle";
-				if (h.toLowerCase().includes("time")) return "test_time";
-				if (h.toLowerCase().includes("voltage")) return "voltage";
-				if (h.toLowerCase().includes("current")) return "current";
-				return h;
-			},
-			dynamicTyping: true,
-			step: function (results, parser) {
-				if (results.errors.length) {
-					parser.abort();
-					message.error("Error Parsing File");
-					message.error("Error Parsing File");
-					return;
-				} else {
-					data.push(results.data);
-				}
-			},
-			complete: function (results) {
-				if (data.length) {
-					console.log("papaparse", data);
-					if (props.pageType === "cycle-test") {
-						newFile = _checkCycleTestCsv(data, fileName);
-						if (newFile) {
-							setShallShowFileValModal(false);
-							props.onFileChange([newFile]);
-							console.log("[newFile]", [newFile]);
-							setFileList([newFile]);
-						}
-					} else if (props.pageType === "abuse-test") {
-						// _validateAbuseTestCsv(data);
+		let actualFile = e.target.files[0];
+		if (props.pageType !== "cycle-test") {
+			props.onFileChange([actualFile]);
+			console.log("[[actualFile]]", [actualFile]);
+			setFileList([actualFile]);
+		} else {
+			setShallShowFileValModal(true);
+
+			// Parsing file data
+			let data = [];
+			let newFile = null;
+			Papa.parse(e.target.files[0], {
+				header: true,
+				skipEmptyLines: true,
+				fastMode: true,
+				transformHeader: function (h, i) {
+					// fix cycle column header
+					console.log("transformHeader", h, i);
+					if (h.toLowerCase().includes("cycle")) return "cycle";
+					if (h.toLowerCase().includes("time")) return "test_time";
+					if (h.toLowerCase().includes("voltage")) return "voltage";
+					if (h.toLowerCase().includes("current")) return "current";
+					return h;
+				},
+				dynamicTyping: true,
+				step: function (results, parser) {
+					if (results.errors.length) {
+						parser.abort();
+						message.error("Error Parsing File");
+						message.error("Error Parsing File");
+						return;
+					} else {
+						data.push(results.data);
 					}
-				} else {
-					console.log("file is empty!");
-				}
-			},
-		});
+				},
+				complete: function (results) {
+					if (data.length) {
+						console.log("papaparse", data);
+						if (props.pageType === "cycle-test") {
+							newFile = _checkCycleTestCsv(data, fileName);
+							if (newFile) {
+								setShallShowFileValModal(false);
+								props.onFileChange([newFile]);
+								console.log("[newFile]", [newFile]);
+								setFileList([newFile]);
+							}
+						} else if (props.pageType === "abuse-test") {
+							// _validateAbuseTestCsv(data);
+							// props.onFileChange([actualFile]);
+							// console.log("[[actualFile]]", [actualFile]);
+							// setFileList([actualFile]);
+						}
+					} else {
+						console.log("file is empty!");
+					}
+				},
+			});
+		}
 	};
 
 	const _checkCycleTestCsv = (data, fileName) => {

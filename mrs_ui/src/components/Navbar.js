@@ -10,7 +10,7 @@ const Navbar = () => {
 	const location = useLocation();
 	const auth = useAuth();
 	const uploadMenu = (
-		<Menu>
+		<Menu data-toggle="collapse" data-target=".navbar-collapse">
 			<Menu.Item key="cycleTest">
 				<Link className="nav-link" to="/upload/cycle-test">
 					Cycle Test
