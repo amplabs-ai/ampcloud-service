@@ -8,10 +8,32 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
     df_tmerge = pd.DataFrame()
     with gzip.open(file, 'rb') as decompressed_file:
         df_time_series_file = pd.read_csv(decompressed_file, sep=',')
+    column_list = mapping.split(",")
+    missing_columns = set(column_list).difference(set(df_time_series_file.columns))
+    if missing_columns:
+        raise KeyError(f"{missing_columns} columns are not present")
+    #validating renaming optional columns:
+    columns_to_rename = {}
+    for col in df_time_series_file.columns:
+        column = col.lower().strip()
+        if 'discharge' in column and 'capacity' in column:
+            columns_to_rename[col] = 'capacity_discharge'
+        elif 'charge' in column and 'capacity' in column:
+            columns_to_rename[col] = 'capacity_charge'
+        elif 'discharge' in column and 'energy' in column:
+            columns_to_rename[col] = 'energy_discharge'
+        elif 'charge' in column and 'energy' in column:
+            columns_to_rename[col] = 'energy_charge'
+        elif 'date' in column and 'time' in column:
+            columns_to_rename[col] = 'date_time'
+        elif 'cell' in column and 'temperature' in column:
+            columns_to_rename[col] = 'cell_temperature'
+        elif 'environment' in column and 'temperature' in column:
+            columns_to_rename[col] = 'env_temperature'
+
+    df_time_series_file.rename(columns=columns_to_rename, inplace=True)
 
     df_ts = pd.DataFrame()
-    column_list = mapping.split(",")
-
     for col in column_list:
         if col == 'date_time':
             df_ts['date_time'] = pd.to_datetime(
@@ -32,15 +54,22 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
             df_ts['date_time'].iloc[0]
         df_ts['test_time'] = df_ts['test_time'].dt.total_seconds()
 
-    df_ts['ah_c'] = 0
-    df_ts['e_c'] = 0
-    df_ts['ah_d'] = 0
-    df_ts['e_d'] = 0
+    df_ts['ah_c'] = df_time_series_file['capacity_charge'] if 'capacity_charge' in df_time_series_file.columns else 0
+    df_ts['e_c'] = df_time_series_file['energy_charge'] if 'energy_charge' in df_time_series_file.columns else 0
+    df_ts['ah_d'] = df_time_series_file['capacity_discharge'] if 'capacity_discharge' in df_time_series_file.columns else 0
+    df_ts['e_d'] = df_time_series_file['energy_discharge'] if 'energy_discharge' in df_time_series_file.columns else 0
+
     # df_ts['cycle_index_file'] = df_ts[
     #     'cycle'].apply(pd.to_numeric)
     df_ts['cycle_time'] = 0
     df_ts['cycle_index'] = df_ts['cycle'].apply(pd.to_numeric)
     # df_ts['filename'] = file.filename
+
+    if 'cell_temperature' in df_time_series_file:
+        df_ts['cell_temperature'] = df_time_series_file['cell_temperature']
+    
+    if 'env_temperature' in df_time_series_file:
+        df_ts['env_temperature'] = df_time_series_file['env_temperature']
 
     if df_tmerge.empty:
         df_tmerge = df_ts[df_ts['test_time'] > 0]
@@ -185,7 +214,7 @@ def read_maccor(file):
 def read_ornlabuse(file):
 
     # excels = glob.glob(file_path + '*.xls*')
-
+    column_list = ['Running Time', 'Axial Force', 'Analog 1', 'Axial Displacement', 'Running Time 1', 'TC 01', 'TC 02', 'TC 03', 'TC 04', 'TC 05', 'TC 06']
     df_tmerge = pd.DataFrame()
     # for excel in excels:
     #     if '~$' in excel:
@@ -193,6 +222,9 @@ def read_ornlabuse(file):
     with gzip.open(file, 'rb') as decompressed_file:
             df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
 
+    missing_columns = set(column_list).difference(set(df_ts_file.columns))
+    if missing_columns:
+        raise KeyError(f"{missing_columns} columns are not present")
     df_ts_a = pd.DataFrame()
     df_ts_a['test_time'] = df_ts_file['Running Time']
     df_ts_a['axial_d'] = df_ts_file['Axial Displacement']
@@ -238,6 +270,7 @@ def read_ornlabuse(file):
 def read_snlabuse(file):
 
     # excels = glob.glob(file_path + '*.xls*')
+    column_list = ['Running Time',	'Axial Displacement', 'Axial Force', 'Analog 1', 'TC 01', 'TC 02', 'TC 03', 'TC 04', 'TC 05', 'TC 06']
 
     df_tmerge = pd.DataFrame()
 
@@ -247,6 +280,10 @@ def read_snlabuse(file):
     
     with gzip.open(file, 'rb') as decompressed_file:
             df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
+
+    missing_columns = set(column_list).difference(set(df_ts_file.columns))
+    if missing_columns:
+        raise KeyError(f"{missing_columns} columns are not present")
 
     df_ts = pd.DataFrame()
     df_ts[ARCHIVE_COLS.TEST_TIME.value] = df_ts_file[

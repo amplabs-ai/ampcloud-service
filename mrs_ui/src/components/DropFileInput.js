@@ -89,7 +89,8 @@ const DropFileInput = (props) => {
 	const _checkCycleTestCsv = (data, fileName) => {
 		setFileValidationErrs([]); // reset err, file_preview_icon
 		if (_checkHeaders(data)) {
-			return _fixCycleIndex(_sortTestTime(data), fileName);
+			// return _fixCycleIndex(_sortTestTime(data), fileName);
+			return _fixCycleIndex(data);
 		} else {
 			return false;
 		}
@@ -133,20 +134,20 @@ const DropFileInput = (props) => {
 	};
 
 	const _fixCycleIndex = (data, fileName) => {
-		let x = data.map((d, i, arr) => {
-			if (i !== 0) {
-				if (arr[i]["cycle"] < arr[i - 1]["cycle"]) {
-					return {
-						...d,
-						cycle: arr[i - 1]["cycle"],
-					};
-				}
-			}
-			return d;
-		});
-		console.log("fixCycleIndexData", x);
-		console.log("fixCycleIndexData csv", Papa.unparse(x));
-
+		// let x = data.map((d, i, arr) => {
+		// 	if (i !== 0) {
+		// 		if (arr[i]["cycle"] < arr[i - 1]["cycle"]) {
+		// 			return {
+		// 				...d,
+		// 				cycle: arr[i - 1]["cycle"],
+		// 			};
+		// 		}
+		// 	}
+		// 	return d;
+		// });
+		// console.log("fixCycleIndexData", x);
+		// console.log("fixCycleIndexData csv", Papa.unparse(x));
+		let x = data
 		let parts = [new Blob([Papa.unparse(x)], { type: "text/plain" })];
 
 		// Construct a file

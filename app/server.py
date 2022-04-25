@@ -1,6 +1,6 @@
 import connexion
 from connexion import ProblemException
-import os 
+import os
 from flask import jsonify, render_template
 from sqlalchemy import create_engine
 from app.exception_handler import *
@@ -17,8 +17,8 @@ logging.basicConfig(filename="logs/audit.log",
                     level=logging.INFO)
 
 app = connexion.FlaskApp(__name__)
-app.add_api('../api/api.yaml') 
-app.app.config['DATABASE_URI'] = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
+app.add_api('../api/api.yaml')
+app.app.config['DATABASE_URI'] = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
 # READ CONFIG from env file
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)

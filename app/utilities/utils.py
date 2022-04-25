@@ -128,10 +128,10 @@ def calc_cycle_stats(df_t, cell_id, email):
 
         df_f = df_t[df_t[LABEL.CYCLE_INDEX.value] == x]
 
-        df_f[LABEL.AH_C.value] = 0
-        df_f[LABEL.E_C.value] = 0
-        df_f[LABEL.AH_D.value] = 0
-        df_f[LABEL.E_D.value] = 0
+        # df_f[LABEL.AH_C.value] = 0
+        # df_f[LABEL.E_C.value] = 0
+        # df_f[LABEL.AH_D.value] = 0
+        # df_f[LABEL.E_D.value] = 0
 
         if not df_f.empty:
 
@@ -262,8 +262,10 @@ def calc_cycle_quantities(df):
             initial_time = x[0]
         else:
             if x[1] >= 0:
-                x[3] = (x[0] - last_time) * (x[1] + last_i_c) * 0.5 + last_ah_c
-                x[4] = (x[0] - last_time) * (x[1] + last_i_c) * 0.5 * (
+                if (x[3] == 0).all():
+                    x[3] = (x[0] - last_time) * (x[1] + last_i_c) * 0.5 + last_ah_c
+                if (x[4] == 0).all():
+                    x[4] = (x[0] - last_time) * (x[1] + last_i_c) * 0.5 * (
                     x[2] + last_v_c) * 0.5 + last_e_c
                 last_i_c = x[1]
                 last_v_c = x[2]
@@ -271,14 +273,16 @@ def calc_cycle_quantities(df):
                 last_e_c = x[4]
 
             if x[1] <= 0:
-                x[5] = (x[0] - last_time) * (x[1] + last_i_d) * 0.5 + last_ah_d
+                if (x[5] == 0).all():
+                    x[5] = (x[0] - last_time) * (x[1] + last_i_d) * 0.5 + last_ah_d
                 # if x[5] == 0:
                 #     print("x5=0:" + str(x[5]) + " last_ah_d: " +
                 #           str(last_ah_d))
                 # if last_ah_d == 0:
                 #     print("x5:" + str(x[5]) + " last_ah_d=0: " +
                 #           str(last_ah_d))
-                x[6] = (x[0] - last_time) * (x[1] + last_i_d) * 0.5 * (
+                if (x[6] == 0).all():
+                    x[6] = (x[0] - last_time) * (x[1] + last_i_d) * 0.5 * (
                     x[2] + last_v_d) * 0.5 + last_e_d
                 last_i_d = x[1]
                 last_v_d = x[2]
@@ -288,21 +292,25 @@ def calc_cycle_quantities(df):
         x[7] = x[0] - initial_time
         last_time = x[0]
 
-    df_tmp = pd.DataFrame(data=tmp_arr[:, [3]], columns=[LABEL.AH_C.value])
-    df_tmp.index += df.index[0]
-    df[LABEL.AH_C.value] = df_tmp[LABEL.AH_C.value] / 3600.0
+    if (df['ah_c'] == 0).all():
+        df_tmp = pd.DataFrame(data=tmp_arr[:, [3]], columns=[LABEL.AH_C.value])
+        df_tmp.index += df.index[0]
+        df[LABEL.AH_C.value] = df_tmp[LABEL.AH_C.value] / 3600.0
 
-    df_tmp = pd.DataFrame(data=tmp_arr[:, [4]], columns=[LABEL.E_C.value])
-    df_tmp.index += df.index[0]
-    df[LABEL.E_C.value] = df_tmp[LABEL.E_C.value] / 3600.0
+    if (df['e_c'] == 0).all():
+        df_tmp = pd.DataFrame(data=tmp_arr[:, [4]], columns=[LABEL.E_C.value])
+        df_tmp.index += df.index[0]
+        df[LABEL.E_C.value] = df_tmp[LABEL.E_C.value] / 3600.0
 
-    df_tmp = pd.DataFrame(data=tmp_arr[:, [5]], columns=[LABEL.AH_D.value])
-    df_tmp.index += df.index[0]
-    df[LABEL.AH_D.value] = -df_tmp[LABEL.AH_D.value] / 3600.0
+    if (df['ah_d'] == 0).all():
+        df_tmp = pd.DataFrame(data=tmp_arr[:, [5]], columns=[LABEL.AH_D.value])
+        df_tmp.index += df.index[0]
+        df[LABEL.AH_D.value] = -df_tmp[LABEL.AH_D.value] / 3600.0
 
-    df_tmp = pd.DataFrame(data=tmp_arr[:, [6]], columns=[LABEL.E_D.value])
-    df_tmp.index += df.index[0]
-    df[LABEL.E_D.value] = -df_tmp[LABEL.E_D.value] / 3600.0
+    if (df['e_d'] == 0).all():
+        df_tmp = pd.DataFrame(data=tmp_arr[:, [6]], columns=[LABEL.E_D.value])
+        df_tmp.index += df.index[0]
+        df[LABEL.E_D.value] = -df_tmp[LABEL.E_D.value] / 3600.0
 
     df_tmp = pd.DataFrame(data=tmp_arr[:, [7]],
                         columns=[LABEL.CYCLE_TIME.value])

@@ -1,5 +1,5 @@
 *__pycache__
-node_modules/
+# node_modules/
 *.DS_Store
 env
 battery-blc-library.yaml
@@ -15,4 +15,8 @@ postgres-data
 */tmp/*
 package-lock.json
 key
+app/static
+*.log
+restart.sh
+app/templates
 

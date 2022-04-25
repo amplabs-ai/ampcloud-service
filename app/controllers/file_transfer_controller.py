@@ -46,6 +46,9 @@ def upload_file(tester):
         ))
         return Response(200, "SUCCESS").to_dict(), 200
     except KeyError as err:
+        if 'not present' in err.args[0]:
+            status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
+            status[f"{email}|{data['cell_id']}"]['progress']['message'] = err.args[0]
         logging.error("User {email} Action UPLOAD_FILE error KEY_ERROR".format(email = email))
         return Response(500, "INTERNAL SERVER ERROR").to_dict(), 500
     except Exception as err:
