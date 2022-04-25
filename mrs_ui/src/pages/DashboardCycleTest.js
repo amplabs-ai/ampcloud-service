@@ -21,12 +21,23 @@ const DashboardCycleTest = () => {
 			}
 		};
 
-		window.addEventListener("resize", function () {
-			cycleIndexChart.current.resize();
-			timeSeriesChart.current.resize();
-			efficiencyChart.current.resize();
-			cycleQtyByStepChart.current.resize();
-		});
+		// window.addEventListener("load", function () {
+		// 	cycleIndexChart.current.getEchartsInstance().resize();
+		// 	timeSeriesChart.current.getEchartsInstance().resize();
+		// 	efficiencyChart.current.getEchartsInstance().resize();
+		// 	cycleQtyByStepChart.current.getEchartsInstance().resize();
+		// 	console.log("asdw", window.screen.width);
+		// 	if (window.screen.width < 1200) {
+		// 		cycleIndexChart.current.getEchartsInstance().setOption({
+		// 			legend: {
+		// 				bottom: "0",
+		// 				right: "auto",
+		// 				top: "auto",
+		// 				orient: "horizontal",
+		// 			},
+		// 		});
+		// 	}
+		// });
 	}, []);
 
 	const cycleIndexChart = useRef();
@@ -153,7 +164,7 @@ const DashboardCycleTest = () => {
 		showChartLoadingError(chartType, false); // removes previous error
 		ref.current.getEchartsInstance().showLoading();
 		axios
-			.get("endpoint", request)
+			.get(endpoint, request)
 			.then((result) => {
 				if (chartType === "cycleQtyByStep") {
 					setDisableSelection(false);
@@ -175,7 +186,7 @@ const DashboardCycleTest = () => {
 						id: chartId,
 						text: chartTitle,
 						textStyle: {
-							fontSize: 14,
+							fontSize: window.screen.width < 600 ? 15 : 20,
 							overflow: "breakAll",
 						},
 					},
@@ -192,7 +203,7 @@ const DashboardCycleTest = () => {
 						nameLocation: "middle",
 						nameGap: 25,
 						nameTextStyle: {
-							fontSize: 14,
+							fontSize: window.screen.width < 600 ? 14 : 20,
 						},
 					},
 					yAxis: {
@@ -201,7 +212,7 @@ const DashboardCycleTest = () => {
 						nameLocation: "middle",
 						nameGap: 25,
 						nameTextStyle: {
-							fontSize: 14,
+							fontSize: window.screen.width < 600 ? 14 : 20,
 						},
 					},
 					legend: _createChartLegend(result.records[0], chartId),
@@ -241,6 +252,7 @@ const DashboardCycleTest = () => {
 	const showChartLoadingError = (chartType, show) => {
 		console.log("chartType", chartType);
 		setChartLoadingError((prev) => {
+			console.log({ ...prev, [chartType]: show });
 			return { ...prev, [chartType]: show };
 		});
 	};
@@ -270,9 +282,13 @@ const DashboardCycleTest = () => {
 		return {
 			data: x,
 			type: "scroll",
-			orient: "horizontal",
-			left: "0",
-			bottom: "0",
+			orient: window.screen.width < 600 ? "horizontal" : "vertical",
+			left: "right",
+			top: window.screen.width < 600 ? "auto" : "15%",
+			bottom: "0%",
+			// right: window.screen.width < 1200 ? "auto" : "0%",
+			// top: window.screen.width < 1200 ? "auto" : "16%",
+			// bottom: window.screen.width < 1200 ? "0" : "auto",
 			icon:
 				chartId === "timeSeries"
 					? "pin"
@@ -280,8 +296,26 @@ const DashboardCycleTest = () => {
 			pageTextStyle: {
 				overflow: "truncate",
 			},
-			backgroundColor: "#FFFFFF",
+			// backgroundColor: "#FFFFFF",
+			textStyle: {
+				fontSize: window.screen.width < 600 ? 12 : 16,
+			},
 		};
+		// return {
+		// 	data: x,
+		// 	type: "scroll",
+		// 	orient: "horizontal",
+		// 	left: "0",
+		// 	bottom: "0",
+		// 	icon:
+		// 		chartId === "timeSeries"
+		// 			? "pin"
+		// 			: "path://M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z",
+		// 	pageTextStyle: {
+		// 		overflow: "truncate",
+		// 	},
+		// 	backgroundColor: "#FFFFFF",
+		// };
 	};
 
 	const handleCellIdChange = async (selectedCellIds) => {
@@ -507,35 +541,71 @@ const DashboardCycleTest = () => {
 						searchParams={searchParams}
 					/>
 					<div className="row pb-5">
-						<div className="col-md-6 mt-2">
-							<div className="card shadow-sm">
+						<div className="col-md-12 mt-2">
+							<div className="card shadow">
 								<div className="card-body">
-									{chartLoadingError.cycleIndexChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts lazyUpdate={true} showLoading ref={cycleIndexChart} option={initialChartOptions} />
+									{chartLoadingError.cycleIndex && <Alert message="Error loading chart!" type="error" showIcon />}
+									<ReactEcharts
+										style={{
+											width: "100%",
+											height: window.screen.width < 600 ? "18rem" : "25rem",
+										}}
+										lazyUpdate={true}
+										showLoading
+										ref={cycleIndexChart}
+										option={initialChartOptions}
+									/>
 								</div>
 							</div>
 						</div>
-						<div className="col-md-6 mt-2">
-							<div className="card shadow-sm">
+						<div className="col-md-12 mt-2">
+							<div className="card shadow">
 								<div className="card-body">
-									{chartLoadingError.efficiencyChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts lazyUpdate={true} showLoading ref={efficiencyChart} option={initialChartOptions} />
+									{chartLoadingError.efficiency && <Alert message="Error loading chart!" type="error" showIcon />}
+									<ReactEcharts
+										style={{
+											width: "100%",
+											height: window.screen.width < 600 ? "18rem" : "25rem",
+										}}
+										lazyUpdate={true}
+										showLoading
+										ref={efficiencyChart}
+										option={initialChartOptions}
+									/>
 								</div>
 							</div>
 						</div>
-						<div className="col-md-6 mt-2">
-							<div className="card shadow-sm">
+						<div className="col-md-12 mt-2">
+							<div className="card shadow">
 								<div className="card-body">
-									{chartLoadingError.timeSeriesChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts lazyUpdate={true} showLoading ref={timeSeriesChart} option={initialChartOptions} />
+									{chartLoadingError.timeSeries && <Alert message="Error loading chart!" type="error" showIcon />}
+									<ReactEcharts
+										style={{
+											width: "100%",
+											height: window.screen.width < 600 ? "18rem" : "25rem",
+										}}
+										lazyUpdate={true}
+										showLoading
+										ref={timeSeriesChart}
+										option={initialChartOptions}
+									/>
 								</div>
 							</div>
 						</div>
-						<div className="col-md-6 mt-2">
-							<div className="card shadow-sm">
+						<div className="col-md-12 mt-2">
+							<div className="card shadow">
 								<div className="card-body">
-									{chartLoadingError.cycleQtyByStepChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts lazyUpdate={true} showLoading ref={cycleQtyByStepChart} option={initialChartOptions} />
+									{chartLoadingError.cycleQtyByStep && <Alert message="Error loading chart!" type="error" showIcon />}
+									<ReactEcharts
+										style={{
+											width: "100%",
+											height: window.screen.width < 600 ? "18rem" : "25rem",
+										}}
+										lazyUpdate={true}
+										showLoading
+										ref={cycleQtyByStepChart}
+										option={initialChartOptions}
+									/>
 								</div>
 							</div>
 						</div>

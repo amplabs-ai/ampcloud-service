@@ -4,39 +4,26 @@ const initialChartOptions = {
 		axisPointer: { type: "cross" },
 	},
 	animation: false,
+	// grid: {
+	// 	width: "95%",
+	// 	height: "70%",
+	// 	left: "3%",
+	// 	right: "4%",
+	// 	bottom: "15%",
+	// 	containLabel: true,
+	// },
 	grid: {
-		width: "95%",
-		height: "70%",
-		left: "3%",
-		right: "4%",
-		bottom: "15%",
+		left: window.screen.width < 600 ? "6%" : "3%",
+		right: window.screen.width < 600 ? "10%" : "20%",
+		// bottom: "10%",
 		containLabel: true,
 	},
-	// async loading...
 	toolbox: {
-		itemSize: 20,
-		itemGap: 15,
-		right: "20",
-		bottom: "84%",
-		// feature: {
-		// saveAsImage: {},
-		// myTool: {
-		// 	show: true,
-		// 	title: "View Code",
-		// 	icon: "image://https://img.icons8.com/color-glass/48/000000/code.png",
-		// 	onclick: function () {
-
-		// 	},
-		// },
-		// viewCode: {
-		// 	show: true,
-		// 	title: "View Code",
-		// 	icon: "image://https://img.icons8.com/color-glass/48/000000/code.png",
-		// 	onclick: function () {
-		// 		alert("myToolHandler2");
-		// 	},
-		// },
-		// },
+		itemSize: window.screen.width < 600 ? 16 : 20,
+		// itemGap: 15,
+		// right: "20",
+		// bottom: "84%",
+		top: window.screen.width < 600 ? "6%" : "5%",
 	},
 	dataset: [],
 };

@@ -14,7 +14,7 @@ const DashboardFilterBar = (props) => {
 	const [tableLoading, setTableLoading] = useState(true);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
-	const [step, setStep] = useState(localStorage.getItem("step") ? localStorage.getItem("step") : 1);
+	const [step, setStep] = useState(localStorage.getItem("step") ? localStorage.getItem("step") : 500);
 	const [stepInputPlaceholder, setStepInputPlaceholder] = useState("Step");
 	const [stepInputStatus, setStepInputStatus] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);
@@ -97,8 +97,8 @@ const DashboardFilterBar = (props) => {
 		let result = props.onFilterChange(selectedRows, props.testType === "abuseTest" ? sample : step);
 		console.log("selectedRows after delete", selectedRows);
 		if (result) {
-			message.success("Filter Applied!"); // potential bug in antd need to call msg twice
-			message.success("Filter Applied!");
+			message.success(props.testType === "abuseTest" ? "Sample Applied!" : "Cycle Step Applied!"); // potential bug in antd need to call msg twice
+			message.success(props.testType === "abuseTest" ? "Sample Applied!" : "Cycle Step Applied!");
 		} else {
 			message.error("Error Applying filters!");
 			message.error("Error Applying filters!");
@@ -250,7 +250,7 @@ const DashboardFilterBar = (props) => {
 			<Modal centered width="auto" visible={loading} closable={false} footer={null} maskClosable={false}>
 				<Spin size="large" />
 			</Modal>
-			<div className="card shadow-sm">
+			<div className="card shadow">
 				<div className="card-body filterBar">
 					<div style={{ display: "inline-block" }} className="pe-2">
 						{props.testType === "abuseTest" ? (
@@ -267,7 +267,7 @@ const DashboardFilterBar = (props) => {
 						) : (
 							<Input
 								type="number"
-								addonBefore="Step"
+								addonBefore="Cycle Step"
 								status={stepInputStatus}
 								onChange={(e) => {
 									setStepInputStatus("");
@@ -280,13 +280,9 @@ const DashboardFilterBar = (props) => {
 							/>
 						)}
 					</div>
-					<button
-						disabled={!cellIds.length}
-						onClick={() => handleApplyFilter()}
-						className=" btn btn-outline-dark btn-sm"
-					>
-						{props.testType === "abuseTest" ? "Apply Sample" : "Apply Step"}
-					</button>
+					<Button disabled={!cellIds.length} onClick={() => handleApplyFilter()}>
+						{props.testType === "abuseTest" ? "Apply Sample" : "Apply Cycle Step"}
+					</Button>
 					{/* view code modal */}
 					<ViewCodeModal
 						code={codeContent}
@@ -304,7 +300,7 @@ const DashboardFilterBar = (props) => {
 						pagination={false}
 						scroll={{
 							x: true,
-							y: "300px",
+							y: "150px",
 						}}
 						size="small"
 						rowSelection={{

@@ -44,7 +44,6 @@ const DropFileInput = (props) => {
       setFileList([actualFile]);
     } else {
       setShallShowFileValModal(true);
-
       // Parsing file data
       let data = [];
       let newFile = null;
@@ -56,7 +55,11 @@ const DropFileInput = (props) => {
           // fix cycle column header
           console.log("transformHeader", h, i);
           if (h.toLowerCase().includes("cycle")) return "cycle";
-          if (h.toLowerCase().includes("time")) return "test_time";
+          if (
+            h.toLowerCase().includes("test") &&
+            h.toLowerCase().includes("time")
+          )
+            return "test_time";
           if (h.toLowerCase().includes("voltage")) return "voltage";
           if (h.toLowerCase().includes("current")) return "current";
           return h;

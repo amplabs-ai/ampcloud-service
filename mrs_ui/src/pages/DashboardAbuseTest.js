@@ -447,7 +447,7 @@ const DashboardAbuseTest = () => {
 
 					<div className="row pb-5">
 						<div className="col-md-12 mt-2">
-							<div className="card shadow-sm">
+							<div className="card shadow">
 								<div className="card-body">
 									{chartLoadingError.testTempraturesChart && <Alert message="Error" type="error" showIcon />}
 									<ReactEcharts showLoading ref={testTempraturesChart} option={initialChartOptions} />
@@ -455,7 +455,7 @@ const DashboardAbuseTest = () => {
 							</div>
 						</div>
 						<div className="col-md-6 mt-2">
-							<div className="card shadow-sm">
+							<div className="card shadow">
 								<div className="card-body">
 									{chartLoadingError.forceAndDisplacementChart && <Alert message="Error" type="error" showIcon />}
 									<ReactEcharts showLoading ref={forceAndDisplacementChart} option={initialChartOptions} />
@@ -463,7 +463,7 @@ const DashboardAbuseTest = () => {
 							</div>
 						</div>
 						<div className="col-md-6 mt-2">
-							<div className="card shadow-sm">
+							<div className="card shadow">
 								<div className="card-body">
 									{chartLoadingError.voltageChart && <Alert message="Error" type="error" showIcon />}
 									<ReactEcharts showLoading ref={voltageChart} option={initialChartOptions} />
