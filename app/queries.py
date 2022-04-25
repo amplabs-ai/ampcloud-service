@@ -44,7 +44,7 @@ select * from
 FROM cycle_timeseries
 where 
     cell_id IN {cell_id} and 
-    MOD(cycle_index,{step})=0 and
+    (MOD(cycle_index,{step})=0 or cycle_index = 1 or cycle_index = ( SELECT MAX(cycle_index) FROM cycle_stats WHERE cell_id IN {cell_id} and email = '{email}')) and 
     email = '{email}'
 order by cycle_index, series) as foo where series is not null
 """

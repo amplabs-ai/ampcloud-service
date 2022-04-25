@@ -38,7 +38,7 @@ class AbuseMeta(Model):
             "thickness": self.thickness,
             "v_init": self.v_init,
             "indentor": self.indentor,
-            "nail_speed": self.nail_speed    
+            "nail_speed": self.nail_speed
         }
 
 class AbuseTimeSeries(Model):
@@ -218,7 +218,7 @@ class CycleTimeSeries(Model):
 Archive Operator
 - Manages objects in Archive
 - Supports Create/Read/Update/Delete of ArchiveCells
-- For example, methods accept ArchiveCell(s) as input and provides ArchiveCell(s) as output 
+- For example, methods accept ArchiveCell(s) as input and provides ArchiveCell(s) as output
 - Performs all necessary SQL functions related to Archive db
 """
 
@@ -274,9 +274,9 @@ class ArchiveOperator:
             CycleTimeSeries.env_temperature.label(OUTPUT_LABELS.ENV_TEMPERATURE.value),
             CycleTimeSeries.cell_temperature.label(
                 OUTPUT_LABELS.CELL_TEMPERATURE.value)).filter(
-                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).order_by('date_time').statement
+                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).order_by('index').statement
         return pd.read_sql(sql, self.session.bind).round(DEGREE)
-    
+
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
         sql = self.session.query(
             CycleStats.cycle_index.label(OUTPUT_LABELS.CYCLE_INDEX.value),
@@ -289,17 +289,17 @@ class ArchiveOperator:
             CycleStats.ah_d.label(OUTPUT_LABELS.DISCHARGE_CAPACITY.value),
             CycleStats.e_c.label(OUTPUT_LABELS.CHARGE_ENERGY.value),
             CycleStats.e_d.label(OUTPUT_LABELS.DISCHARGE_ENERGY.value)).filter(
-                    CycleStats.cell_id == cell_id, CycleStats.email == email).statement
+                    CycleStats.cell_id == cell_id, CycleStats.email == email).order_by('cycle_index').statement
         return pd.read_sql(sql, self.session.bind).round(DEGREE)
 
     # CELL
-    
+
     def get_all_cell_meta(self, email, test):
         return self.select_table(CellMeta, email, test)
 
     def get_all_cell_meta_with_id(self, cell_id, email, test):
         return self.get_all_data_from_table_with_id(CellMeta, cell_id, email, test)
-    
+
     #ECHARTS
 
     def get_all_data_from_CQBS_query(self, cell_id, step, email):
@@ -327,7 +327,7 @@ class ArchiveOperator:
         else:
             return self.session.execute(
                 EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
-    
+
     def get_all_data_from_CCVC_query(self, cell_id, email):
         if len(cell_id)>1:
             return self.session.execute(
@@ -369,7 +369,7 @@ class ArchiveOperator:
             model_object = model(**data)
             data_list.append(model_object)
         self.session.add_all(data_list)
-    
+
     def add(self, df, model):
         record = df.to_dict('records')
         model_object = model(**record[0])
@@ -388,8 +388,8 @@ class ArchiveOperator:
 
     def select_table_with_id(self, table, cell_id, email, test):
         return self.session.query(table).filter(table.cell_id == cell_id, table.email == email, table.test == test)
-        
+
     def select_data_from_table(self, table, email, test):
         return self.session.query(table).filter(table.email == email, table.test == test).first()
-        
+
 

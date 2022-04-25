@@ -1,6 +1,6 @@
 import connexion
 from connexion import ProblemException
-import os 
+import os
 from flask import jsonify, render_template
 from sqlalchemy import create_engine
 from app.archive_constants import AMPLABS_DB_URL

@@ -15,11 +15,11 @@ const { Title } = Typography;
 
 const DashboardCycleTest = () => {
 	useEffect(() => {
-		instance.onmessage = (message) => {
-			if (message) {
-				console.log("Message from worker", message.data);
-			}
-		};
+		// instance.onmessage = (message) => {
+		// 	if (message) {
+		// 		console.log("Message from worker", message.data);
+		// 	}
+		// };
 
 		// window.addEventListener("load", function () {
 		// 	cycleIndexChart.current.getEchartsInstance().resize();

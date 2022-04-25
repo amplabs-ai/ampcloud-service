@@ -103,7 +103,7 @@ def file_data_process_service(cell_id, email):
             stat_df['email'] = email
             final_df['cell_id'] = cell_id
             final_df['email'] = email
-            status[f"{email}|{cell_id}"]['progress']['percentage'] = 66
+            status[f"{email}|{cell_id}"]['progress']['percentage'] = 70
 
             ao.add_all(test_metadata, CycleMeta)
             ao.add_all(stat_df, CycleStats)
@@ -113,12 +113,12 @@ def file_data_process_service(cell_id, email):
             status[f"{email}|{cell_id}"]['progress']['steps']["STATS CALCULATION"] = True
             final_df['cell_id'] = cell_id
             final_df['email'] = email
-            status[f"{email}|{cell_id}"]['progress']['percentage'] = 66
+            status[f"{email}|{cell_id}"]['progress']['percentage'] = 70
             ao.add_all(test_metadata, AbuseMeta)
             ao.add_all(final_df, AbuseTimeSeries)
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 78
         ao.commit()
-        status[f"{email}|{cell_id}"]["steps"]["WRITING TO DATABASE"] = True
+        status[f"{email}|{cell_id}"]['progress']['steps']["WRITING TO DATABASE"] = True
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 100
         status[f"{email}|{cell_id}"]['progress']['message'] = "COMPLETED"
 
