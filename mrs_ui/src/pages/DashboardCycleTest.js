@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import ReactEcharts from "echarts-for-react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
@@ -7,6 +7,8 @@ import initialChartOptions from "../chartConfig/initialConfigs";
 import sourceCode from "../chartConfig/chartSourceCode";
 import { Result, Button, Alert, Typography, Modal, Spin } from "antd";
 
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
+
 import WorkerBuilder from "../worker/woker-builder";
 import Worker from "../worker/fibo.worker";
 const instance = new WorkerBuilder(Worker);
@@ -14,6 +16,23 @@ const instance = new WorkerBuilder(Worker);
 const { Title } = Typography;
 
 const DashboardCycleTest = () => {
+	const screen1 = useFullScreenHandle();
+	const screen2 = useFullScreenHandle();
+	const screen3 = useFullScreenHandle();
+	const screen4 = useFullScreenHandle();
+
+	// const reportChange = useCallback(
+	// 	(state, handle) => {
+	// 		// if (handle === screen1) {
+	// 		// 	console.log("Screen 1 went to", state, handle);
+	// 		// }
+	// 		// if (handle === screen2) {
+	// 		// 	console.log("Screen 2 went to", state, handle);
+	// 		// }
+	// 	},
+	// 	[screen1]
+	// );
+
 	useEffect(() => {
 		// instance.onmessage = (message) => {
 		// 	if (message) {
@@ -151,7 +170,7 @@ const DashboardCycleTest = () => {
 					},
 					{
 						mapToId: "v",
-						title: "Volateg (V)",
+						title: "Voltage (V)",
 					},
 					"Cycle Quantities by Step",
 					"cycleQtyByStep",
@@ -187,7 +206,8 @@ const DashboardCycleTest = () => {
 						text: chartTitle,
 						textStyle: {
 							fontSize: window.screen.width < 600 ? 15 : 20,
-							overflow: "breakAll",
+							overflow: "break",
+							width: window.screen.width < 600 ? 300 : "auto",
 						},
 					},
 					dataset: result.records[0],
@@ -203,7 +223,7 @@ const DashboardCycleTest = () => {
 						nameLocation: "middle",
 						nameGap: 25,
 						nameTextStyle: {
-							fontSize: window.screen.width < 600 ? 14 : 20,
+							fontSize: window.screen.width < 600 ? 14 : 18,
 						},
 					},
 					yAxis: {
@@ -212,11 +232,12 @@ const DashboardCycleTest = () => {
 						nameLocation: "middle",
 						nameGap: 25,
 						nameTextStyle: {
-							fontSize: window.screen.width < 600 ? 14 : 20,
+							fontSize: window.screen.width < 600 ? 14 : 18,
 						},
 					},
 					legend: _createChartLegend(result.records[0], chartId),
 					toolbox: {
+						top: window.screen.width < 600 ? "6%" : "3%",
 						feature: {
 							myTool: {
 								show: true,
@@ -224,6 +245,75 @@ const DashboardCycleTest = () => {
 								icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 								onclick: function () {
 									formatCode(code);
+								},
+							},
+							myTool2: {
+								show: true,
+								title: "Enter Fullscreen",
+								icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
+								onclick: function () {
+									ref.current.getEchartsInstance().setOption({
+										grid: {
+											left: window.screen.width < 600 ? "8%" : "5%",
+											right: window.screen.width < 600 ? "5%" : "25%",
+											bottom: window.screen.width < 600 ? "16%" : "5%",
+										},
+									});
+									ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+									ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+									switch (chartType) {
+										case "cycleIndex":
+											screen1.enter();
+											break;
+										case "timeSeries":
+											screen2.enter();
+											break;
+										case "efficiency":
+											screen3.enter();
+											break;
+										case "cycleQtyByStep":
+											screen4.enter();
+											break;
+										default:
+											break;
+									}
+								},
+							},
+							myTool3: {
+								show: true,
+								title: "Exit Fullscreen",
+								icon: `path://M372.939,216.545c-6.123,0-12.03,5.269-12.03,12.03v132.333H24.061V24.061h132.333c6.388,0,12.03-5.642,12.03-12.03
+								S162.409,0,156.394,0H24.061C10.767,0,0,10.767,0,24.061v336.848c0,13.293,10.767,24.061,24.061,24.061h336.848
+								c13.293,0,24.061-10.767,24.061-24.061V228.395C384.97,221.731,380.085,216.545,372.939,216.545z,M372.939,0H252.636c-6.641,0-12.03,5.39-12.03,12.03s5.39,12.03,12.03,12.03h91.382L99.635,268.432
+								c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
+								s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
+								onclick: function () {
+									ref.current.getEchartsInstance().setOption({
+										grid: {
+											left: window.screen.width < 600 ? "8%" : "5%",
+											right: window.screen.width < 600 ? "5%" : "40%",
+											bottom: window.screen.width < 600 ? "16%" : "11%",
+											containLabel: true,
+										},
+									});
+									ref.current.ele.style.marginTop = "0%";
+									ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "18rem";
+									switch (chartType) {
+										case "cycleIndex":
+											screen1.exit();
+											break;
+										case "timeSeries":
+											screen2.exit();
+											break;
+										case "efficiency":
+											screen3.exit();
+											break;
+										case "cycleQtyByStep":
+											screen4.exit();
+											break;
+										default:
+											break;
+									}
 								},
 							},
 							saveAsImage: {
@@ -234,6 +324,18 @@ const DashboardCycleTest = () => {
 							},
 						},
 					},
+					color: [
+						"#1f77b4", // muted blue
+						"#ff7f0e", // safety orange
+						"#2ca02c", // cooked asparagus green
+						"#d62728", // brick red
+						"#9467bd", // muted purple
+						"#8c564b", // chestnut brown
+						"#e377c2", // raspberry yogurt pink
+						"#7f7f7f", // middle gray
+						"#bcbd22", // curry yellow-green
+						"#17becf", // blue-teal
+					],
 				});
 				ref.current.getEchartsInstance().hideLoading();
 			})
@@ -262,6 +364,7 @@ const DashboardCycleTest = () => {
 		data.forEach((d) => {
 			x.push({
 				type: chartId === "timeSeries" ? "scatter" : "line",
+				symbolSize: chartId === "timeSeries" ? 5 : 10,
 				name: d.id,
 				showSymbol: false,
 				datasetId: d.id,
@@ -431,7 +534,7 @@ const DashboardCycleTest = () => {
 					},
 					{
 						mapToId: "v",
-						title: "Volateg (V)",
+						title: "Voltage (V)",
 					},
 					"Cycle Quantities by Step",
 					"cycleQtyByStep",
@@ -450,25 +553,18 @@ const DashboardCycleTest = () => {
 				id: chartId,
 				text: chartTitle,
 				textStyle: {
-					fontSize: 14,
-					overflow: "breakAll",
+					fontSize: window.screen.width < 600 ? 15 : 20,
+					overflow: "break",
+					width: window.screen.width < 600 ? 300 : "auto",
 				},
 			},
-			animation: false,
-			dataset: filteredChartData[chartId],
-			series: _createChartDataSeries(
-				filteredChartData[chartId], // replace with actual data
-				xAxis.mapToId,
-				yAxis.mapToId,
-				chartId
-			),
 			xAxis: {
 				type: "value",
 				name: xAxis.title,
 				nameLocation: "middle",
 				nameGap: 25,
 				nameTextStyle: {
-					fontSize: 14,
+					fontSize: window.screen.width < 600 ? 14 : 18,
 				},
 			},
 			yAxis: {
@@ -477,11 +573,11 @@ const DashboardCycleTest = () => {
 				nameLocation: "middle",
 				nameGap: 25,
 				nameTextStyle: {
-					fontSize: 14,
+					fontSize: window.screen.width < 600 ? 14 : 18,
 				},
 			},
-			legend: _createChartLegend(filteredChartData[chartId], chartId),
 			toolbox: {
+				top: window.screen.width < 600 ? "6%" : "3%",
 				feature: {
 					myTool: {
 						show: true,
@@ -489,6 +585,75 @@ const DashboardCycleTest = () => {
 						icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 						onclick: function () {
 							formatCode(code);
+						},
+					},
+					myTool2: {
+						show: true,
+						title: "Enter Fullscreen",
+						icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
+						onclick: function () {
+							ref.current.getEchartsInstance().setOption({
+								grid: {
+									left: window.screen.width < 600 ? "8%" : "5%",
+									right: window.screen.width < 600 ? "5%" : "25%",
+									bottom: window.screen.width < 600 ? "16%" : "5%",
+								},
+							});
+							ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+							ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+							switch (chartType) {
+								case "cycleIndex":
+									screen1.enter();
+									break;
+								case "timeSeries":
+									screen2.enter();
+									break;
+								case "efficiency":
+									screen3.enter();
+									break;
+								case "cycleQtyByStep":
+									screen4.enter();
+									break;
+								default:
+									break;
+							}
+						},
+					},
+					myTool3: {
+						show: true,
+						title: "Exit Fullscreen",
+						icon: `path://M372.939,216.545c-6.123,0-12.03,5.269-12.03,12.03v132.333H24.061V24.061h132.333c6.388,0,12.03-5.642,12.03-12.03
+						S162.409,0,156.394,0H24.061C10.767,0,0,10.767,0,24.061v336.848c0,13.293,10.767,24.061,24.061,24.061h336.848
+						c13.293,0,24.061-10.767,24.061-24.061V228.395C384.97,221.731,380.085,216.545,372.939,216.545z,M372.939,0H252.636c-6.641,0-12.03,5.39-12.03,12.03s5.39,12.03,12.03,12.03h91.382L99.635,268.432
+						c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
+						s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
+						onclick: function () {
+							ref.current.getEchartsInstance().setOption({
+								grid: {
+									left: window.screen.width < 600 ? "8%" : "5%",
+									right: window.screen.width < 600 ? "5%" : "40%",
+									bottom: window.screen.width < 600 ? "16%" : "11%",
+									containLabel: true,
+								},
+							});
+							ref.current.ele.style.marginTop = "0%";
+							ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "18rem";
+							switch (chartType) {
+								case "cycleIndex":
+									screen1.exit();
+									break;
+								case "timeSeries":
+									screen2.exit();
+									break;
+								case "efficiency":
+									screen3.exit();
+									break;
+								case "cycleQtyByStep":
+									screen4.exit();
+									break;
+								default:
+									break;
+							}
 						},
 					},
 					saveAsImage: {
@@ -499,6 +664,27 @@ const DashboardCycleTest = () => {
 					},
 				},
 			},
+			color: [
+				"#1f77b4", // muted blue
+				"#ff7f0e", // safety orange
+				"#2ca02c", // cooked asparagus green
+				"#d62728", // brick red
+				"#9467bd", // muted purple
+				"#8c564b", // chestnut brown
+				"#e377c2", // raspberry yogurt pink
+				"#7f7f7f", // middle gray
+				"#bcbd22", // curry yellow-green
+				"#17becf", // blue-teal
+			],
+
+			dataset: filteredChartData[chartId],
+			series: _createChartDataSeries(
+				filteredChartData[chartId], // replace with actual data
+				xAxis.mapToId,
+				yAxis.mapToId,
+				chartId
+			),
+			legend: _createChartLegend(filteredChartData[chartId], chartId),
 		});
 	};
 
@@ -541,73 +727,81 @@ const DashboardCycleTest = () => {
 						searchParams={searchParams}
 					/>
 					<div className="row pb-5">
-						<div className="col-md-12 mt-2">
-							<div className="card shadow">
-								<div className="card-body">
-									{chartLoadingError.cycleIndex && <Alert message="Error loading chart!" type="error" showIcon />}
-									<ReactEcharts
-										style={{
-											width: "100%",
-											height: window.screen.width < 600 ? "18rem" : "25rem",
-										}}
-										lazyUpdate={true}
-										showLoading
-										ref={cycleIndexChart}
-										option={initialChartOptions}
-									/>
+						<div className="col-md-6 mt-2">
+							<FullScreen handle={screen1}>
+								<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+									<div className="card-body">
+										{chartLoadingError.cycleIndex && <Alert message="Error loading chart!" type="error" showIcon />}
+										<ReactEcharts
+											style={{
+												width: "100%",
+												height: window.screen.width < 600 ? "15rem" : "18rem",
+											}}
+											lazyUpdate={true}
+											showLoading
+											ref={cycleIndexChart}
+											option={initialChartOptions}
+										/>
+									</div>
 								</div>
-							</div>
+							</FullScreen>
 						</div>
-						<div className="col-md-12 mt-2">
-							<div className="card shadow">
-								<div className="card-body">
-									{chartLoadingError.efficiency && <Alert message="Error loading chart!" type="error" showIcon />}
-									<ReactEcharts
-										style={{
-											width: "100%",
-											height: window.screen.width < 600 ? "18rem" : "25rem",
-										}}
-										lazyUpdate={true}
-										showLoading
-										ref={efficiencyChart}
-										option={initialChartOptions}
-									/>
+						<div className="col-md-6 mt-2">
+							<FullScreen handle={screen2}>
+								<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+									<div className="card-body">
+										{chartLoadingError.timeSeries && <Alert message="Error loading chart!" type="error" showIcon />}
+										<ReactEcharts
+											style={{
+												width: "100%",
+												height: window.screen.width < 600 ? "15rem" : "18rem",
+											}}
+											lazyUpdate={true}
+											showLoading
+											ref={timeSeriesChart}
+											option={initialChartOptions}
+										/>
+									</div>
 								</div>
-							</div>
+							</FullScreen>
 						</div>
-						<div className="col-md-12 mt-2">
-							<div className="card shadow">
-								<div className="card-body">
-									{chartLoadingError.timeSeries && <Alert message="Error loading chart!" type="error" showIcon />}
-									<ReactEcharts
-										style={{
-											width: "100%",
-											height: window.screen.width < 600 ? "18rem" : "25rem",
-										}}
-										lazyUpdate={true}
-										showLoading
-										ref={timeSeriesChart}
-										option={initialChartOptions}
-									/>
+						<div className="col-md-6 mt-2">
+							<FullScreen handle={screen3}>
+								<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+									<div className="card-body">
+										{chartLoadingError.efficiency && <Alert message="Error loading chart!" type="error" showIcon />}
+										<ReactEcharts
+											style={{
+												width: "100%",
+												height: window.screen.width < 600 ? "15rem" : "18rem",
+											}}
+											lazyUpdate={true}
+											showLoading
+											ref={efficiencyChart}
+											option={initialChartOptions}
+										/>
+									</div>
 								</div>
-							</div>
+							</FullScreen>
 						</div>
-						<div className="col-md-12 mt-2">
-							<div className="card shadow">
-								<div className="card-body">
-									{chartLoadingError.cycleQtyByStep && <Alert message="Error loading chart!" type="error" showIcon />}
-									<ReactEcharts
-										style={{
-											width: "100%",
-											height: window.screen.width < 600 ? "18rem" : "25rem",
-										}}
-										lazyUpdate={true}
-										showLoading
-										ref={cycleQtyByStepChart}
-										option={initialChartOptions}
-									/>
+						<div className="col-md-6 mt-2">
+							<FullScreen handle={screen4}>
+								<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+									<div className="card-body">
+										{chartLoadingError.cycleQtyByStep && <Alert message="Error loading chart!" type="error" showIcon />}
+										<ReactEcharts
+											style={{
+												width: "100%",
+												height: window.screen.width < 600 ? "15rem" : "18rem",
+											}}
+											lazyUpdate={true}
+											showLoading
+											ref={cycleQtyByStepChart}
+											option={initialChartOptions}
+										/>
+									</div>
 								</div>
-							</div>
+							</FullScreen>
 						</div>
 					</div>
 				</div>

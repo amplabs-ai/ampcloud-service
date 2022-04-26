@@ -3,7 +3,7 @@ const initialChartOptions = {
 		trigger: "axis",
 		axisPointer: { type: "cross" },
 	},
-	animation: false,
+	// animation: false,
 	// grid: {
 	// 	width: "95%",
 	// 	height: "70%",
@@ -13,9 +13,9 @@ const initialChartOptions = {
 	// 	containLabel: true,
 	// },
 	grid: {
-		left: window.screen.width < 600 ? "6%" : "3%",
-		right: window.screen.width < 600 ? "10%" : "20%",
-		// bottom: "10%",
+		left: window.screen.width < 600 ? "8%" : "5%",
+		right: window.screen.width < 600 ? "5%" : "40%",
+		bottom: window.screen.width < 600 ? "16%" : "11%",
 		containLabel: true,
 	},
 	toolbox: {
