@@ -97,8 +97,8 @@ const DashboardFilterBar = (props) => {
 		let result = props.onFilterChange(selectedRows, props.testType === "abuseTest" ? sample : step);
 		console.log("selectedRows after delete", selectedRows);
 		if (result) {
-			message.success(props.testType === "abuseTest" ? "Sample Applied!" : "Cycle Step Applied!"); // potential bug in antd need to call msg twice
-			message.success(props.testType === "abuseTest" ? "Sample Applied!" : "Cycle Step Applied!");
+			message.success("Filter Applied!"); // potential bug in antd need to call msg twice
+			message.success("Filter Applied!");
 		} else {
 			message.error("Error Applying filters!");
 			message.error("Error Applying filters!");
@@ -281,7 +281,8 @@ const DashboardFilterBar = (props) => {
 						)}
 					</div>
 					<Button disabled={!cellIds.length} onClick={() => handleApplyFilter()}>
-						{props.testType === "abuseTest" ? "Apply Sample" : "Apply Cycle Step"}
+						{/* {props.testType === "abuseTest" ? "Apply Sample" : "Apply Cycle Step"} */}
+						Apply Filter
 					</Button>
 					{/* view code modal */}
 					<ViewCodeModal

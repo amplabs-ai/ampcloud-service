@@ -137,7 +137,7 @@ df = pd.DataFrame()
 if status:
     for item in response['records'][0]:
         df = df.append(pd.DataFrame.from_records(item['source']))
-    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Volateg (V)"}, title = "Cycle Quantities by step")
+    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Voltage (V)"}, title = "Cycle Quantities by step")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)
