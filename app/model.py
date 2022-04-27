@@ -224,7 +224,7 @@ Archive Operator
 
 
 class ArchiveOperator:
-    url = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
+    url = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
     engine = create_engine(url, poolclass=NullPool)
     Model.metadata.create_all(engine)
 
