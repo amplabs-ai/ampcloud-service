@@ -1,41 +1,57 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: Battery Archive API
+  title: AmpLabs API
 paths:
   /healthcheck:
     get:
-      summary: Test
+      summary: health check
       x-openapi-router-controller: app.controllers.auth_controller
       operationId: health_check
       tags:
-        - Auth
+        - Healthcheck
       responses:
         "200":
-          description: Successfull response
+          description: Successfull
   /login:
     post:
-      summary: Login
+      summary: Login (do login before trying any other request)
       x-openapi-router-controller: app.controllers.auth_controller
       operationId: login
       tags:
         - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: # Request body contents
+              type: object
+              properties:
+                email:
+                  type: string
+              example: # Sample object
+                email: "test@test.com"
+
       responses:
         "200":
-          description: Successfull response
+          description: Successfull
+        "500":
+          description: Something went wrong
   /logout:
     get:
-      summary: Logout
+      summary: Logout, clears the cookies set
       x-openapi-router-controller: app.controllers.auth_controller
       operationId: logout
       tags:
         - Auth
       responses:
         "200":
-          description: Successfull response
+          description: Successfull
+        "500":
+          description: Something went wrong
   /cells/{test}/meta:
     get:
-      summary: Fetches metadata for all cells
+      summary: Fetches metadata for all cells for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: get_cells
       tags:
@@ -49,12 +65,15 @@ paths:
           explode: false
           schema:
             type: string
+            enum: [cycle, abuse]
       responses:
         "200":
           description: Successfull
+        "500":
+          description: Something went wrong.
   /cells/{cell_id}:
     delete:
-      summary: Delete a cell from archive
+      summary: Delete all data for a cell from archive for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: delete_cell
       tags:
@@ -71,47 +90,152 @@ paths:
       responses:
         "200":
           description: Successfull
+        "500":
+          description: Internal Server Error
+  /upload/cells/initialize:
+    post:
+      summary: Initialize upload file request (required to be sent before /upload/cells/{tester} request)
+      description: |
+        Data sent in this request will be used by the succeeding upload file request.
+
+         **For uploading cycle test file following form fields are useed:**
+         
+         - Required
+           - cell_id
+           - file_count
+           - test_type
+         - Cell Metadata
+           - anode
+           - cathode
+           - source
+           - ah
+           - form_factor
+         - Test Metadata
+           - temperature
+           - soc_max
+           - soc_min
+           - crate_c
+           - crate_d
+         
+         **For uploading abuse test file following form fields are useed:**
+         
+         - Required
+           - cell_id
+           - file_count
+           - test_type
+         - Cell Metadata
+           - anode
+           - cathode
+           - source
+           - ah
+           - form_factor
+         - Test Metadata
+           - temperature
+           - thickness
+           - nail_speed
+           - indentor
+           - v_init
+           
+         **Note: Must be logged in before sending this request**
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: init_file_upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cell_id:
+                  type: string
+                  nullable: false
+                file_count:
+                  type: integer
+                  enum: [1]
+                  description: Number of files that will be sent in the upload request
+                test_type:
+                  type: string
+                  enum: [cycle, abuse]
+                anode:
+                  type: string
+                cathode:
+                  type: string
+                source:
+                  type: string
+                ah:
+                  type: number
+                form_factor:
+                  type: string
+                temperature:
+                  type: number
+                soc_max:
+                  type: number
+                soc_min:
+                  type: number
+                crate_c:
+                  type: number
+                crate_d:
+                  type: number
+                thickness:
+                  type: number
+                v_init:
+                  type: number
+                indentor:
+                  type: number
+                nail_speed:
+                  type: number
+              required:
+                - cell_id
+                - file_count
+                - test_type
+
+      tags:
+        - Upload
+      responses:
+        "200":
+          description: Successfull response
   /upload/cells/{tester}:
     post:
-      summary: Upload cycle test file
+      summary: Upload test file
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: upload_file
       parameters:
         - name: tester
           in: path
-          description: Cell ID of the resource to get
+          description: |
+            If test_type sent in upload/initialize request is cycle then tester must be generic. For abuse it can be any of ornl/snl
+            else
           required: true
           style: simple
           explode: false
           schema:
             type: string
+            enum: ["generic", "ornl", "snl"]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cell_id:
+                  description: similar to the cell_id sent in upload initialize request.
+                  type: string
+                file:
+                  type: string
+                  format: binary
+              required:
+                - cell_id
+                - file
       tags:
         - Upload
       responses:
         "200":
-          description: Successfull response
-  /upload/cells/initialize:
-    post:
-      summary: Upload cycle test file
-      x-openapi-router-controller: app.controllers.file_transfer_controller
-      operationId: init_file_upload
-      # parameters:
-      #   - name: tester
-      #     in: path
-      #     description: Cell ID of the resource to get
-      #     required: true
-      #     style: simple
-      #     explode: false
-      #     schema:
-      #       type: string
-      tags:
-        - Upload
-      responses:
-        "200":
-          description: Successfull response
+          description: Successfull
+        "500":
+          description: Something went wrong
+
   /upload/cells/status/{cell_id}:
     get:
-      summary: Check upload status
+      summary: Check upload status for the file sent via uplaod request.
       x-openapi-router-controller: app.controllers.status_check_controller
       operationId: get_status
       parameters:
@@ -128,9 +252,11 @@ paths:
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /download/cells/cycle_timeseries/{cell_id}:
     get:
-      summary: Download Cycle timeseries
+      summary: Download Cycle timeseries csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_timeseries
       parameters:
@@ -146,10 +272,12 @@ paths:
         - Download
       responses:
         "200":
-          description: Successfull response
+          description: Successfull
+        "500":
+          description: Something went wrong
   /download/cells/cycle_data/{cell_id}:
     get:
-      summary: Download cycle data
+      summary: Download Cycle csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_data
       parameters:
@@ -165,14 +293,16 @@ paths:
         - Download
       responses:
         "200":
-          description: Successfull response
+          description: Successfull
+        "500":
+          description: Something went wrong
   /echarts/cycleQuantitiesByStep:
     get:
       summary: Fetches cycle quantities by step query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_cycle_quantities_by_step
       tags:
-        - Echart
+        - Echart - Get json data required for plotting
       parameters:
         - name: cell_id
           in: query
@@ -192,18 +322,18 @@ paths:
           style: form
           schema:
             type: integer
-            items:
-              type: integer
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /echarts/energyAndCapacityDecay:
     get:
       summary: Fetches energy and capacity decay query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_energy_and_capacity_decay
       tags:
-        - Echart
+        - Echart - Get json data required for plotting
       parameters:
         - name: cell_id
           in: query
@@ -218,13 +348,15 @@ paths:
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong"
   /echarts/efficiency:
     get:
       summary: Fetches efficiency query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_efficiency
       tags:
-        - Echart
+        - Echart - Get json data required for plotting
       parameters:
         - name: cell_id
           in: query
@@ -239,13 +371,15 @@ paths:
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /echarts/compareByCycleTime:
     get:
       summary: Fetches comapre cycle voltage and current query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_compare_by_cycle_time
       tags:
-        - Echart
+        - Echart - Get json data required for plotting
       parameters:
         - name: cell_id
           in: query
@@ -260,13 +394,15 @@ paths:
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /echarts/forceAndDisplacement:
     get:
       summary: Fetches force and displacement query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_force_and_displacement
       tags:
-        - Echart
+        - Echart - Get json data required for plotting
       parameters:
         - name: cell_id
           in: query
@@ -291,13 +427,15 @@ paths:
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /echarts/testTempratures:
     get:
       summary: Fetches test tempratures query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_test_tempratures
       tags:
-        - Echart
+        - Echart - Get json data required for plotting
       parameters:
         - name: cell_id
           in: query
@@ -322,13 +460,15 @@ paths:
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /echarts/voltage:
     get:
       summary: Fetches voltage query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_voltage
       tags:
-        - Echart
+        - Echart - Get json data required for plotting
       parameters:
         - name: cell_id
           in: query
@@ -353,9 +493,11 @@ paths:
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /download/cells/cycle_data_json/{cell_id}:
     get:
-      summary: Download cycle timeseries
+      summary: Get cycle data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_cycle_data_json
       parameters:
@@ -371,10 +513,12 @@ paths:
         - Download
       responses:
         "200":
-          description: Successfull response
+          description: Successfull
+        "500":
+          description: Something went wrong
   /download/cells/cycle_timeseries_json/{cell_id}:
     get:
-      summary: Download cycle timeseries
+      summary: Get cycle timeseries data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_cycle_timeseries_json
       parameters:
@@ -390,4 +534,13 @@ paths:
         - Download
       responses:
         "200":
-          description: Successfull response
+          description: Successfull
+        "500":
+          description: Something went wrong
+tags:
+  - name: Auth
+  - name: Healthcheck
+  - name: Cell Meta
+  - name: Download
+  - name: Echart - Get json data required for plotting
+  - name: Upload
