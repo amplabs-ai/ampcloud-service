@@ -24,7 +24,7 @@ def delete_cell_service(cell_id, email):
         #     logging.warn("User {email} action DELETE cell_id {cell_id} do not exixts")
         #     return 400, RESPONSE_MESSAGE['CELL_ID_NOT_EXISTS'].format(cell_id)
         ao.remove_cell_from_archive(cell_id, email)
-        ao.commit()
+        # ao.commit()
         logging.info("User {email} action DELETE cell_id {cell_id}".format(email=email, cell_id=cell_id))
         return 200, RESPONSE_MESSAGE['CELL_METADATA_DELETED'].format(cell_id)
     except Exception as err:

@@ -16,6 +16,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from app.queries import *
 from sqlalchemy.pool import NullPool
+import threading
+import numpy as np
 
 Model = declarative_base()
 
@@ -235,7 +237,7 @@ class ArchiveOperator:
 
     def set_session(self):
         self.session = scoped_session(
-            sessionmaker(autocommit=False, autoflush=False, bind=ArchiveOperator.engine))
+            sessionmaker(autocommit=True, autoflush=False, bind=ArchiveOperator.engine))
 
     def release_session(self):
         self.session.remove()
@@ -274,7 +276,7 @@ class ArchiveOperator:
             CycleTimeSeries.env_temperature.label(OUTPUT_LABELS.ENV_TEMPERATURE.value),
             CycleTimeSeries.cell_temperature.label(
                 OUTPUT_LABELS.CELL_TEMPERATURE.value)).filter(
-                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).order_by('index').statement
+                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).order_by('cycle_index','test_time').statement
         return pd.read_sql(sql, self.session.bind).round(DEGREE)
 
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
@@ -363,12 +365,30 @@ class ArchiveOperator:
 
     # GENERAL ORM
     def add_all(self, df, model):
-        records = df.to_dict('records')
-        data_list = []
-        for data in records:
-            model_object = model(**data)
-            data_list.append(model_object)
-        self.session.add_all(data_list)
+        def insert_df(item):
+            conn = ArchiveOperator.engine.connect()
+            conn.execute(
+                CycleTimeSeries.__table__.insert(),
+                item.to_dict('records'),)
+
+
+        if model == 'cycle_timeseries':
+            threads = []
+            df_list = np.array_split(df, 16)
+
+            for item in df_list:
+                threads.append(threading.Thread(target= insert_df, args = (item,)))
+
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()    
+        else:
+            df.to_sql(model,
+                            con=self.session.bind,
+                            if_exists="append",
+                            chunksize=1000,
+                            index=False, method= 'multi')
 
     def add(self, df, model):
         record = df.to_dict('records')
