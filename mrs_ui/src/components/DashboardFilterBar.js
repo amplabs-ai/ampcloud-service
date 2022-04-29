@@ -5,6 +5,10 @@ import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import ViewCodeModal from "./ViewCodeModal";
 import { cycleDataCodeContent, timeSeriesDataCodeContent } from "../chartConfig/cellIdViewCode";
 
+import Highlighter from "react-highlight-words";
+
+import { SearchOutlined } from "@ant-design/icons";
+
 const { Text } = Typography;
 const { Option } = Select;
 const SAMPLE_OPTIONS = [5].concat(Array.from({ length: 10 }, (_, index) => (index + 1) * 10));
@@ -22,6 +26,9 @@ const DashboardFilterBar = (props) => {
 	const [sample, setSample] = useState(localStorage.getItem("sample") ? localStorage.getItem("sample") : 10);
 	const [loading, setLoading] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
+
+	const [searchText, setSearchText] = useState("");
+	const [searchedColumn, setSearchedColumn] = useState("");
 
 	useEffect(() => {
 		let endpoint = props.testType === "abuseTest" ? "/cells/abuse/meta" : "/cells/cycle/meta";
@@ -155,11 +162,88 @@ const DashboardFilterBar = (props) => {
 			});
 	};
 
+	// ===============Filter================
+	let searchInput;
+	const getColumnSearchProps = (dataIndex) => ({
+		filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+			<div style={{ padding: 8 }}>
+				<Input
+					ref={(node) => {
+						searchInput = node;
+					}}
+					placeholder={`Search ${dataIndex}`}
+					value={selectedKeys[0]}
+					onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+					onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+					style={{ marginBottom: 8, display: "block" }}
+				/>
+				<Space>
+					<Button
+						type="primary"
+						onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+						icon={<SearchOutlined />}
+						size="small"
+						style={{ width: 90 }}
+					>
+						Search
+					</Button>
+					<Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+						Reset
+					</Button>
+					{/* <Button
+						type="link"
+						size="small"
+						onClick={() => {
+							confirm({ closeDropdown: false });
+							setSearchText(selectedKeys[0]);
+							setSearchedColumn(dataIndex);
+						}}
+					>
+						Filter
+					</Button> */}
+				</Space>
+			</div>
+		),
+		filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
+		onFilter: (value, record) =>
+			record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : "",
+		onFilterDropdownVisibleChange: (visible) => {
+			if (visible) {
+				setTimeout(() => searchInput.select(), 100);
+			}
+		},
+		render: (text) =>
+			searchedColumn === dataIndex ? (
+				<Highlighter
+					highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+					searchWords={[searchText]}
+					autoEscape
+					textToHighlight={text ? text.toString() : ""}
+				/>
+			) : (
+				text
+			),
+	});
+
+	const handleSearch = (selectedKeys, confirm, dataIndex) => {
+		confirm();
+		setSearchText(selectedKeys[0]);
+		setSearchedColumn(dataIndex);
+	};
+
+	const handleReset = (clearFilters) => {
+		clearFilters();
+		setSearchText("");
+	};
+
+	// ==============================
+
 	const columns = [
 		{
 			title: "Cell Id",
 			dataIndex: "cell_id",
 			width: 100,
+			...getColumnSearchProps("cell_id"),
 		},
 		{
 			title: "Cycle Data",
@@ -291,6 +375,10 @@ const DashboardFilterBar = (props) => {
 						setModalVisible={setModalVisible}
 						searchParams={searchParams}
 					/>
+
+					<span style={{ float: "right", fontSize: "0.9rem" }}>
+						<Text type="secondary">Total: {cellIds.length}</Text>
+					</span>
 					<br />
 					<Table
 						sticky={true}

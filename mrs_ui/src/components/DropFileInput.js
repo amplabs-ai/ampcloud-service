@@ -90,7 +90,7 @@ const DropFileInput = (props) => {
 		setFileValidationErrs([]); // reset err, file_preview_icon
 		if (_checkHeaders(data)) {
 			// return _fixCycleIndex(_sortTestTime(data), fileName);
-			return _fixCycleIndex(data);
+			return _fixCycleIndex(data, fileName);
 		} else {
 			return false;
 		}
@@ -147,7 +147,7 @@ const DropFileInput = (props) => {
 		// });
 		// console.log("fixCycleIndexData", x);
 		// console.log("fixCycleIndexData csv", Papa.unparse(x));
-		let x = data
+		let x = data;
 		let parts = [new Blob([Papa.unparse(x)], { type: "text/plain" })];
 
 		// Construct a file

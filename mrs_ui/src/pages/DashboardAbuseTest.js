@@ -1,14 +1,26 @@
 import React, { useState, useRef, useEffect } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
-import { Result, Button, Alert, Typography, Badge } from "antd";
+import { Result, Button, Alert, Typography, Badge, Modal, Card, PageHeader } from "antd";
 import sourceCode from "../chartConfig/chartSourceCode";
 import axios from "axios";
 import ViewCodeModal from "../components/ViewCodeModal";
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../chartConfig/initialConfigs";
-import { FaCloudUploadAlt } from "react-icons/fa";
+
+import { FaLinkedin, FaEnvelope, FaCloudUploadAlt } from "react-icons/fa";
+
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import HelmetMetaData from "../components/HelmetMetaData";
+
+import { ShareAltOutlined } from "@ant-design/icons";
+import { toPng, toBlob } from "html-to-image";
+import Cookies from "js-cookie";
 
 const DashboardAbuseTest = () => {
+	const screen1 = useFullScreenHandle();
+	const screen2 = useFullScreenHandle();
+	const screen3 = useFullScreenHandle();
+
 	const [noDataFound, setNoDataFound] = useState(false);
 	const [internalServerError, setInternalServerError] = useState("");
 	const [searchParams, setSearchParams] = useState("");
@@ -21,18 +33,52 @@ const DashboardAbuseTest = () => {
 	});
 	const [disableSelection, setDisableSelection] = useState(true);
 	const [chartData, setChartData] = useState({});
+	const [shallShowShareDashModal, setShallShowShareDashModal] = useState(false);
+	const [chartsLoaded, setChartsLoaded] = useState({
+		forceAndDisplacement: false,
+		testTempratures: false,
+		voltage: false,
+	});
+	const [metaImageDash, setMetaImageDash] = useState(null);
 
 	const forceAndDisplacementChart = useRef();
 	const testTempraturesChart = useRef();
 	const voltageChart = useRef();
+	const dashboardRef = useRef(null);
 
 	const { Title } = Typography;
 
 	useEffect(() => {
-		window.addEventListener("resize", function () {
-			forceAndDisplacementChart.current.resize();
-			testTempraturesChart.current.resize();
-			voltageChart.current.resize();
+		let check = true;
+		Object.values(chartsLoaded).forEach((c) => {
+			if (!c) {
+				check = false;
+			}
+		});
+		if (check) {
+			if (dashboardRef.current === null) {
+				return;
+			}
+			toBlob(dashboardRef.current).then(function (blob) {
+				let reader = new FileReader();
+				reader.readAsDataURL(blob);
+				reader.onloadend = function () {
+					let base64data = reader.result;
+					setMetaImageDash(base64data);
+				};
+			});
+		}
+	}, [chartsLoaded]);
+
+	useEffect(() => {
+		forceAndDisplacementChart.current.getEchartsInstance().one("finished", () => {
+			setChartsLoaded((prev) => ({ ...prev, forceAndDisplacement: true }));
+		});
+		testTempraturesChart.current.getEchartsInstance().one("finished", () => {
+			setChartsLoaded((prev) => ({ ...prev, testTempratures: true }));
+		});
+		voltageChart.current.getEchartsInstance().one("finished", () => {
+			setChartsLoaded((prev) => ({ ...prev, voltage: true }));
 		});
 	}, []);
 
@@ -98,8 +144,12 @@ const DashboardAbuseTest = () => {
 			data: x,
 			type: "scroll",
 			orient: "horizontal",
-			left: "0",
-			bottom: "0",
+			// left: "right",
+			// top: window.screen.width < 600 ? "auto" : "15%",
+			bottom: "0%",
+			// right: window.screen.width < 1200 ? "auto" : "0%",
+			// top: window.screen.width < 1200 ? "auto" : "16%",
+			// bottom: window.screen.width < 1200 ? "0" : "auto",
 			icon:
 				chartId === "testTempratures"
 					? "path://M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"
@@ -107,7 +157,10 @@ const DashboardAbuseTest = () => {
 			pageTextStyle: {
 				overflow: "truncate",
 			},
-			backgroundColor: "#FFFFFF",
+			// backgroundColor: "#FFFFFF",
+			textStyle: {
+				fontSize: window.screen.width < 600 ? 12 : 16,
+			},
 		};
 	};
 
@@ -195,8 +248,10 @@ const DashboardAbuseTest = () => {
 						id: chartId,
 						text: chartTitle,
 						textStyle: {
-							fontSize: 14,
-							overflow: "breakAll",
+							fontSize: window.screen.width < 600 ? 15 : 20,
+							fontWeight: "normal",
+							overflow: "break",
+							width: window.screen.width < 600 ? 300 : 500,
 						},
 					},
 					dataset: result.records[0],
@@ -210,16 +265,40 @@ const DashboardAbuseTest = () => {
 						type: "value",
 						name: xAxis.title,
 						nameLocation: "middle",
-						nameGap: 20,
+						nameGap: 25,
+						nameTextStyle: {
+							fontSize: window.screen.width < 600 ? 12 : 16,
+							padding: [5, 0],
+						},
+						scale: true,
 					},
 					yAxis: {
 						type: "value",
 						name: yAxis.title,
 						nameLocation: "middle",
 						nameGap: 30,
+						nameTextStyle: {
+							fontSize: window.screen.width < 600 ? 12 : 16,
+						},
+						scale: true,
+						padding: [0, 5],
+					},
+					grid: {
+						left: window.screen.width < 600 ? "8%" : "7%",
 					},
 					legend: _createChartLegend(result.records[0], chartId),
 					toolbox: {
+						zlevel: 30,
+						top: window.screen.width < 600 ? "8%" : "5%",
+						emphasis: {
+							iconStyle: {
+								textPosition: "top",
+								color: "#FFFFFF",
+								textBackgroundColor: "#000000",
+								textPadding: 5,
+								opacity: 1,
+							},
+						},
 						feature: {
 							myTool: {
 								show: true,
@@ -232,11 +311,106 @@ const DashboardAbuseTest = () => {
 							saveAsImage: {
 								show: "true",
 							},
+							myTool2: {
+								show: true,
+								title: "Enter Fullscreen",
+								icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
+								onclick: function () {
+									ref.current.getEchartsInstance().setOption({
+										grid: {
+											left: window.screen.width < 600 ? "8%" : "5%",
+											right: window.screen.width < 600 ? "5%" : "5%",
+											bottom: window.screen.width < 600 ? "16%" : "10%",
+										},
+										toolbox: {
+											top: "0%",
+											emphasis: {
+												iconStyle: {
+													textPosition: "bottom",
+												},
+											},
+										},
+									});
+									ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+									ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+									switch (chartType) {
+										case "forceAndDisplacement":
+											screen1.enter();
+											break;
+										case "testTempratures":
+											screen2.enter();
+											break;
+										case "voltage":
+											screen3.enter();
+											break;
+										default:
+											break;
+									}
+								},
+							},
+							myTool3: {
+								show: true,
+								title: "Exit Fullscreen",
+								icon: `path://M372.939,216.545c-6.123,0-12.03,5.269-12.03,12.03v132.333H24.061V24.061h132.333c6.388,0,12.03-5.642,12.03-12.03
+								S162.409,0,156.394,0H24.061C10.767,0,0,10.767,0,24.061v336.848c0,13.293,10.767,24.061,24.061,24.061h336.848
+								c13.293,0,24.061-10.767,24.061-24.061V228.395C384.97,221.731,380.085,216.545,372.939,216.545z,M372.939,0H252.636c-6.641,0-12.03,5.39-12.03,12.03s5.39,12.03,12.03,12.03h91.382L99.635,268.432
+								c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
+								s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
+								onclick: function () {
+									ref.current.getEchartsInstance().setOption({
+										grid: {
+											left: window.screen.width < 600 ? "8%" : "7%",
+											right: window.screen.width < 600 ? "5%" : "5%",
+											bottom: window.screen.width < 600 ? "16%" : "12%",
+											containLabel: true,
+										},
+										toolbox: {
+											top: window.screen.width < 600 ? "8%" : "5%",
+											emphasis: {
+												iconStyle: {
+													textPosition: "top",
+												},
+											},
+										},
+									});
+									ref.current.ele.style.marginTop = "0%";
+									ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+									switch (chartType) {
+										case "forceAndDisplacement":
+											screen1.exit();
+											break;
+										case "testTempratures":
+											screen2.exit();
+											break;
+										case "voltage":
+											screen3.exit();
+											break;
+										default:
+											break;
+									}
+								},
+							},
 							dataZoom: {
 								yAxisIndex: "none",
+								brushStyle: {
+									borderWidth: 1,
+									borderColor: "#000000",
+								},
 							},
 						},
 					},
+					color: [
+						"#1f77b4", // muted blue
+						"#ff7f0e", // safety orange
+						"#2ca02c", // cooked asparagus green
+						"#d62728", // brick red
+						"#9467bd", // muted purple
+						"#8c564b", // chestnut brown
+						"#e377c2", // raspberry yogurt pink
+						"#7f7f7f", // middle gray
+						"#bcbd22", // curry yellow-green
+						"#17becf", // blue-teal
+					],
 				});
 				ref.current.getEchartsInstance().hideLoading();
 			})
@@ -354,38 +528,49 @@ const DashboardAbuseTest = () => {
 				id: chartId,
 				text: chartTitle,
 				textStyle: {
-					fontSize: 14,
-					overflow: "breakAll",
+					fontSize: window.screen.width < 600 ? 15 : 20,
+					fontWeight: "normal",
+					overflow: "break",
+					width: window.screen.width < 600 ? 300 : 500,
 				},
 			},
-			animation: false,
-			dataset: filteredChartData[chartId],
-			series: _createChartDataSeries(
-				filteredChartData[chartId], // replace with actual data
-				xAxis.mapToId,
-				yAxis.mapToId,
-				chartId
-			),
 			xAxis: {
 				type: "value",
 				name: xAxis.title,
 				nameLocation: "middle",
 				nameGap: 25,
 				nameTextStyle: {
-					fontSize: 14,
+					fontSize: window.screen.width < 600 ? 12 : 16,
+					padding: [5, 0],
 				},
+				scale: true,
 			},
 			yAxis: {
 				type: "value",
 				name: yAxis.title,
 				nameLocation: "middle",
-				nameGap: 25,
+				nameGap: 30,
 				nameTextStyle: {
-					fontSize: 14,
+					fontSize: window.screen.width < 600 ? 12 : 16,
 				},
+				scale: true,
+				padding: [0, 5],
 			},
-			legend: _createChartLegend(filteredChartData[chartId], chartId),
+			grid: {
+				left: window.screen.width < 600 ? "8%" : "7%",
+			},
 			toolbox: {
+				zlevel: 30,
+				top: window.screen.width < 600 ? "8%" : "5%",
+				emphasis: {
+					iconStyle: {
+						textPosition: "top",
+						color: "#FFFFFF",
+						textBackgroundColor: "#000000",
+						textPadding: 5,
+						opacity: 1,
+					},
+				},
 				feature: {
 					myTool: {
 						show: true,
@@ -398,12 +583,135 @@ const DashboardAbuseTest = () => {
 					saveAsImage: {
 						show: "true",
 					},
+					myTool2: {
+						show: true,
+						title: "Enter Fullscreen",
+						icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
+						onclick: function () {
+							ref.current.getEchartsInstance().setOption({
+								grid: {
+									left: window.screen.width < 600 ? "8%" : "5%",
+									right: window.screen.width < 600 ? "5%" : "5%",
+									bottom: window.screen.width < 600 ? "16%" : "10%",
+								},
+								toolbox: {
+									top: "0%",
+									emphasis: {
+										iconStyle: {
+											textPosition: "bottom",
+										},
+									},
+								},
+							});
+							ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+							ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+							switch (chartType) {
+								case "forceAndDisplacement":
+									screen1.enter();
+									break;
+								case "testTempratures":
+									screen2.enter();
+									break;
+								case "voltage":
+									screen3.enter();
+									break;
+								default:
+									break;
+							}
+						},
+					},
+					myTool3: {
+						show: true,
+						title: "Exit Fullscreen",
+						icon: `path://M372.939,216.545c-6.123,0-12.03,5.269-12.03,12.03v132.333H24.061V24.061h132.333c6.388,0,12.03-5.642,12.03-12.03
+						S162.409,0,156.394,0H24.061C10.767,0,0,10.767,0,24.061v336.848c0,13.293,10.767,24.061,24.061,24.061h336.848
+						c13.293,0,24.061-10.767,24.061-24.061V228.395C384.97,221.731,380.085,216.545,372.939,216.545z,M372.939,0H252.636c-6.641,0-12.03,5.39-12.03,12.03s5.39,12.03,12.03,12.03h91.382L99.635,268.432
+						c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
+						s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
+						onclick: function () {
+							ref.current.getEchartsInstance().setOption({
+								grid: {
+									left: window.screen.width < 600 ? "8%" : "7%",
+									right: window.screen.width < 600 ? "5%" : "5%",
+									bottom: window.screen.width < 600 ? "16%" : "12%",
+									containLabel: true,
+								},
+								toolbox: {
+									top: window.screen.width < 600 ? "8%" : "5%",
+									emphasis: {
+										iconStyle: {
+											textPosition: "top",
+										},
+									},
+								},
+							});
+							ref.current.ele.style.marginTop = "0%";
+							ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+							switch (chartType) {
+								case "forceAndDisplacement":
+									screen1.exit();
+									break;
+								case "testTempratures":
+									screen2.exit();
+									break;
+								case "voltage":
+									screen3.exit();
+									break;
+								default:
+									break;
+							}
+						},
+					},
 					dataZoom: {
 						yAxisIndex: "none",
+						brushStyle: {
+							borderWidth: 1,
+							borderColor: "#000000",
+						},
 					},
 				},
 			},
+			color: [
+				"#1f77b4", // muted blue
+				"#ff7f0e", // safety orange
+				"#2ca02c", // cooked asparagus green
+				"#d62728", // brick red
+				"#9467bd", // muted purple
+				"#8c564b", // chestnut brown
+				"#e377c2", // raspberry yogurt pink
+				"#7f7f7f", // middle gray
+				"#bcbd22", // curry yellow-green
+				"#17becf", // blue-teal
+			],
+
+			dataset: filteredChartData[chartId],
+			series: _createChartDataSeries(
+				filteredChartData[chartId], // replace with actual data
+				xAxis.mapToId,
+				yAxis.mapToId,
+				chartId
+			),
+			legend: _createChartLegend(filteredChartData[chartId], chartId),
 		});
+	};
+
+	const doShareDashboard = () => {
+		console.log("share");
+		setShallShowShareDashModal(true);
+		// if (dashboardRef.current === null) {
+		// 	return;
+		// }
+
+		// toPng(dashboardRef.current, { cacheBust: true })
+		// 	.then((dataUrl) => {
+		// 		const link = document.createElement("a");
+		// 		link.download = "my-image-name.png";
+		// 		link.href = dataUrl;
+		// 		link.click();
+		// 	})
+		// 	.catch((err) => {
+		// 		console.log(err);
+		// 	});
 	};
 
 	return (
@@ -430,44 +738,127 @@ const DashboardAbuseTest = () => {
 				/>
 			) : (
 				<div style={{ margin: "0.6rem" }}>
-					<Title level={3}>Abuse Test Dashboard</Title>
-					<DashboardFilterBar
-						onCellIdChange={handleCellIdChange}
-						testType="abuseTest"
-						onFilterChange={handleFilterChange}
-						internalServerErrorFound={internalServerErrorFound}
-						disableSelection={disableSelection}
-					/>
-					<ViewCodeModal
-						code={codeContent}
-						modalVisible={modalVisible}
-						setModalVisible={setModalVisible}
-						searchParams={searchParams}
-					/>
+					<Modal
+						title="Share Dashboard"
+						centered
+						visible={shallShowShareDashModal}
+						footer={false}
+						onCancel={() => setShallShowShareDashModal(false)}
+						style={{ maxHeight: "70%" }}
+					>
+						<div style={{ display: "flex" }}>
+							<div style={{ width: "50%" }} className="text-center">
+								<a
+									href={`https://www.linkedin.com/sharing/share-offsite/?url=http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+										"userId"
+									)}`}
+									target="_blank"
+								>
+									<FaLinkedin size={70} />
+								</a>
+							</div>
+							<div style={{ width: "50%" }} className="text-center">
+								<a
+									href={`mailto:?subject=Amplabs.ai - Dashboared&body=I just created a Abuse Test dashboard on AmpLabs, check it out at amplabs.ai. http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+										"userId"
+									)}`}
+									target="_blank"
+								>
+									<FaEnvelope size={70} />
+								</a>
+							</div>
+						</div>
+						<Card
+							cover={<img alt="dashboard screenshot" src={metaImageDash} />}
+							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
+						>
+							{`I just created a Abuse Test dashboard on AmpLabs, check it out at amplabs.ai http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+								"userId"
+							)}`}
+						</Card>
+					</Modal>
+					<HelmetMetaData image={metaImageDash}></HelmetMetaData>
+					<PageHeader
+						className="site-page-header mb-1 shadow"
+						style={{ marginTop: "0.8em" }}
+						ghost={true}
+						title="Abuse Test Dashboard"
+						extra={[
+							<Button key="1" size="large" type="primary" onClick={doShareDashboard} icon={<ShareAltOutlined />}>
+								Share
+							</Button>,
+						]}
+					></PageHeader>
 
-					<div className="row pb-5">
-						<div className="col-md-12 mt-2">
-							<div className="card shadow">
-								<div className="card-body">
-									{chartLoadingError.testTempraturesChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={testTempraturesChart} option={initialChartOptions} />
-								</div>
+					<div ref={dashboardRef}>
+						<DashboardFilterBar
+							onCellIdChange={handleCellIdChange}
+							testType="abuseTest"
+							onFilterChange={handleFilterChange}
+							internalServerErrorFound={internalServerErrorFound}
+							disableSelection={disableSelection}
+						/>
+						<ViewCodeModal
+							code={codeContent}
+							modalVisible={modalVisible}
+							setModalVisible={setModalVisible}
+							searchParams={searchParams}
+						/>
+
+						<div className="row pb-5">
+							<div className="col-md-12 mt-2">
+								<FullScreen handle={screen1}>
+									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+										<div className="card-body">
+											{chartLoadingError.testTempraturesChart && <Alert message="Error" type="error" showIcon />}
+											<ReactEcharts
+												style={{
+													width: "100%",
+													height: window.screen.width < 600 ? "15rem" : "24em",
+												}}
+												showLoading
+												ref={testTempraturesChart}
+												option={initialChartOptions}
+											/>
+										</div>
+									</div>
+								</FullScreen>
 							</div>
-						</div>
-						<div className="col-md-6 mt-2">
-							<div className="card shadow">
-								<div className="card-body">
-									{chartLoadingError.forceAndDisplacementChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={forceAndDisplacementChart} option={initialChartOptions} />
-								</div>
+							<div className="col-md-6 mt-2">
+								<FullScreen handle={screen2}>
+									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+										<div className="card-body">
+											{chartLoadingError.forceAndDisplacementChart && <Alert message="Error" type="error" showIcon />}
+											<ReactEcharts
+												style={{
+													width: "100%",
+													height: window.screen.width < 600 ? "15rem" : "24em",
+												}}
+												showLoading
+												ref={forceAndDisplacementChart}
+												option={initialChartOptions}
+											/>
+										</div>
+									</div>
+								</FullScreen>
 							</div>
-						</div>
-						<div className="col-md-6 mt-2">
-							<div className="card shadow">
-								<div className="card-body">
-									{chartLoadingError.voltageChart && <Alert message="Error" type="error" showIcon />}
-									<ReactEcharts showLoading ref={voltageChart} option={initialChartOptions} />
-								</div>
+							<div className="col-md-6 mt-2">
+								<FullScreen handle={screen3}>
+									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+										<div className="card-body">
+											{chartLoadingError.voltageChart && <Alert message="Error" type="error" showIcon />}
+											<ReactEcharts
+												style={{
+													width: "100%",
+													height: window.screen.width < 600 ? "15rem" : "24em",
+												}}
+												showLoading
+												ref={voltageChart}
+												option={initialChartOptions}
+											/>
+										</div>
+									</div>
+								</FullScreen>
 							</div>
 						</div>
 					</div>

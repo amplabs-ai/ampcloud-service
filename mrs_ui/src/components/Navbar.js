@@ -1,7 +1,7 @@
 import React from "react";
 import logo from "../images/amplabsLogo.png";
 import { Link } from "react-router-dom";
-import { Menu, Dropdown } from "antd";
+import { Menu, Dropdown, Avatar } from "antd";
 import { useAuth } from "./auth";
 import { useLocation } from "react-router-dom";
 import { FaAngleDown } from "react-icons/fa";
@@ -97,6 +97,13 @@ const Navbar = () => {
 								<li className="nav-item">
 									<Dropdown overlay={userProfileMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
+											{/* <Avatar
+												style={{
+													marginRight: "6px",
+												}}
+											>
+												U
+											</Avatar> */}
 											{auth.user} <FaAngleDown />
 										</Link>
 									</Dropdown>
