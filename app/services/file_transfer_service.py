@@ -5,6 +5,7 @@ from app.model import AbuseMeta, AbuseTimeSeries, CellMeta, CycleMeta, ArchiveOp
 from app.utilities.file_reader import read_generic, read_maccor, read_arbin, read_ornlabuse, read_snlabuse
 from app.utilities.utils import calc_abuse_stats, status, calc_cycle_stats, sort_timeseries
 from collections import OrderedDict
+import logging
 
 def init_file_upload_service(email, data):
     cell_id = data.get('cell_id')
@@ -92,7 +93,7 @@ def file_data_process_service(cell_id, email):
         cell_metadata = status[f"{email}|{cell_id}"]['cell_metadata']
         test_metadata = status[f"{email}|{cell_id}"]['test_metadata']
         ao.remove_cell_from_archive(cell_id, email)
-        ao.add_all(cell_metadata, CellMeta)
+        ao.add_all(cell_metadata, 'cell_metadata')
 
         if status[f"{email}|{cell_id}"]['test_type'] == TEST_TYPE.CYCLE.value:
             # df_tmerge_sorted = sort_timeseries(df_tmerge)
@@ -105,25 +106,27 @@ def file_data_process_service(cell_id, email):
             final_df['email'] = email
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 70
 
-            ao.add_all(test_metadata, CycleMeta)
-            ao.add_all(stat_df, CycleStats)
-            ao.add_all(final_df, CycleTimeSeries)
+            ao.add_all(test_metadata, 'cycle_metadata')
+            status[f"{email}|{cell_id}"]['progress']['percentage'] = 75
+            ao.add_all(stat_df, 'cycle_stats')
+            status[f"{email}|{cell_id}"]['progress']['percentage'] = 80
+            ao.add_all(final_df, 'cycle_timeseries')
         else:
             final_df = calc_abuse_stats(df_tmerge, test_metadata, cell_id, email)
             status[f"{email}|{cell_id}"]['progress']['steps']["STATS CALCULATION"] = True
             final_df['cell_id'] = cell_id
             final_df['email'] = email
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 70
-            ao.add_all(test_metadata, AbuseMeta)
-            ao.add_all(final_df, AbuseTimeSeries)
+            ao.add_all(test_metadata, 'abuse_metadata')
+            ao.add_all(final_df, 'abuse_timeseries')
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 78
-        ao.commit()
+        # ao.commit()
         status[f"{email}|{cell_id}"]['progress']['steps']["WRITING TO DATABASE"] = True
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 100
         status[f"{email}|{cell_id}"]['progress']['message'] = "COMPLETED"
 
     except Exception as err:
-        print(err)
+        logging.error(err)
         status[f"{email}|{cell_id}"]['progress']['percentage'] = -1
         for key, value in status[f"{email}|{cell_id}"]['progress']['steps'].items():
             if not value:
