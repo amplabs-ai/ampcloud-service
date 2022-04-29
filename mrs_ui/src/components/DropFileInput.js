@@ -104,7 +104,7 @@ const DropFileInput = (props) => {
     setFileValidationErrs([]); // reset err, file_preview_icon
     if (_checkHeaders(data)) {
       // return _fixCycleIndex(_sortTestTime(data), fileName);
-      return _fixCycleIndex(data);
+      return _fixCycleIndex(data, fileName);
     } else {
       return false;
     }

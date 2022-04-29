@@ -68,7 +68,7 @@ h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant
 }
 
 .ant-btn-lg {
-  height: 45px!important;
+  height: 40px!important;
 }
 
 /* remove later  */
@@ -81,3 +81,6 @@ h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant
   width: auto
 }
 
+.site-page-header {
+  border: 1px solid rgb(235, 237, 240);
+}

@@ -11,13 +11,14 @@ import PageNotFound from "./pages/PageNotFound";
 import DashboardAbuseTest from "./pages/DashboardAbuseTest";
 import DashboardCycleTest from "./pages/DashboardCycleTest";
 import ProcessUpload from "./components/ProcessUpload";
+import PlotterPage from "./pages/PlotterPage";
 
 function App() {
 	return (
 		<>
 			<p>My Token = {window.token}</p>
-			<AuthProvider>
-				<Router>
+			<Router>
+				<AuthProvider>
 					<BackTop />
 					<Navbar />
 					<Routes>
@@ -75,10 +76,11 @@ function App() {
 						</Route>
 
 						<Route path="/uploadProgress" element={<ProcessUpload />}></Route>
+						<Route path="/plotter" element={<PlotterPage />}></Route>
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>
-				</Router>
-			</AuthProvider>
+				</AuthProvider>
+			</Router>
 		</>
 	);
 }

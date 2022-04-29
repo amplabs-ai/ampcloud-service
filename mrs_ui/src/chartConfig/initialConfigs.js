@@ -14,8 +14,8 @@ const initialChartOptions = {
 	// },
 	grid: {
 		left: window.screen.width < 600 ? "8%" : "5%",
-		right: window.screen.width < 600 ? "5%" : "40%",
-		bottom: window.screen.width < 600 ? "16%" : "11%",
+		right: window.screen.width < 600 ? "5%" : "5%",
+		bottom: window.screen.width < 600 ? "16%" : "13%",
 		containLabel: true,
 	},
 	toolbox: {
