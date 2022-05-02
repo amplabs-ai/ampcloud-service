@@ -10,6 +10,11 @@ def get_cells(test):
     status, detail, *records = get_cellmeta_service(email, test)
     return Response(status, detail, records).to_dict(), status
 
+def get_cell_with_id(cell_id):
+    email = request.cookies.get("userId")
+    status, detail, *records = get_cellmeta_with_id_service(cell_id, email)
+    return Response(status, detail, records).to_dict(), status
+
 def delete_cell(cell_id):
     email = request.cookies.get("userId")
     status, detail = delete_cell_service(cell_id, email)

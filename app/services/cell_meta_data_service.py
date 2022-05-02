@@ -16,6 +16,18 @@ def get_cellmeta_service(email, test):
     finally:
         ao.release_session()
 
+def get_cellmeta_with_id_service(cell_id, email):
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        archive_cells = ao.get_all_cell_meta_with_id(cell_id, email)
+        records = [cell.to_dict() for cell in archive_cells]
+        return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+    except Exception as err:
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()
+
 def delete_cell_service(cell_id, email):
     try:
         ao = ArchiveOperator()

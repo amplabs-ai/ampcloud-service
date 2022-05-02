@@ -299,8 +299,15 @@ class ArchiveOperator:
     def get_all_cell_meta(self, email, test):
         return self.select_table(CellMeta, email, test)
 
-    def get_all_cell_meta_with_id(self, cell_id, email, test):
-        return self.get_all_data_from_table_with_id(CellMeta, cell_id, email, test)
+    def get_all_cell_meta_with_id(self, cell_id, email):
+        return self.get_all_data_from_table_with_id(CellMeta, cell_id, email)
+
+    #TEST METADATA
+    def get_all_test_metadata_from_table(self, test_model, email):
+        return self.get_all_data_from_table_with_email(test_model, email)
+    
+    def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
+        return self.get_all_data_from_table_with_id(test_model, cell_id, email)
 
     #ECHARTS
 
@@ -362,6 +369,64 @@ class ArchiveOperator:
             return self.session.execute(
                 ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
 
+    #GA DB OPERATIONS
+    def add_cell_to_db(self, cell):
+        df_cell_md = cell.cellmeta
+        df_test_meta_md = cell.testmeta
+        df_stats, df_timeseries = cell.stat
+        df_cell_md.to_sql(cell.cell_meta_table,
+                          con=self.session.bind,
+                          if_exists="append",
+                          chunksize=1000,
+                          index=False)
+        df_test_meta_md.to_sql(cell.test_meta_table,
+                               con=self.session.bind,
+                               if_exists='append',
+                               chunksize=1000,
+                               index=False)
+        if cell.test_stats_table:
+            df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
+                            con=self.session.bind,
+                            if_exists='append',
+                            chunksize=1000,
+                            index=False)
+        df_timeseries.to_sql(cell.test_ts_table,
+                             con=self.session.bind,
+                             if_exists='append',
+                             chunksize=1000,
+                             index=False)
+    
+    def add_meta_to_db(self, cell):
+        df_cell_md = cell.cellmeta
+        df_test_meta_md = cell.testmeta
+        df_stats, _ = cell.stat
+        print("CELL META", df_cell_md)
+        df_cell_md.to_sql(cell.cell_meta_table,
+                          con=self.session.bind,
+                          if_exists="append",
+                          chunksize=1000,
+                          index=False)
+        print("DF TS META", df_test_meta_md)
+        df_test_meta_md.to_sql(cell.test_meta_table,
+                               con=self.session.bind,
+                               if_exists='append',
+                               chunksize=1000,
+                               index=False)
+        if cell.test_stats_table:
+            print("DF STATS", df_stats)
+            df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
+                            con=self.session.bind,
+                            if_exists='append',
+                            chunksize=1000,
+                            index=False)
+    
+    def add_ts_to_db(self, cell): 
+        _, df_timeseries = cell.stat
+        df_timeseries.to_sql(cell.test_ts_table,
+                             con=self.session.bind,
+                             if_exists='append',
+                             chunksize=1000,
+                             index=False)
 
     # GENERAL ORM
     def add_all(self, df, model):
@@ -397,19 +462,25 @@ class ArchiveOperator:
 
     def get_all_data_from_table(self, table):
         return self.select_table(table).all()
+    
+    def get_all_data_from_table_with_email(self, table, email):
+        return self.select_table_with_email(table, email).all()
 
-    def get_all_data_from_table_with_id(self, table, cell_id, email, test):
-        return self.select_table_with_id(table, cell_id, email, test).all()
+    def get_all_data_from_table_with_id(self, table, cell_id, email):
+        return self.select_table_with_id(table, cell_id, email).all()
 
     # BASIC
 
     def select_table(self, table, email, test):
         return self.session.query(table).filter(table.email == email, table.test == test)
 
-    def select_table_with_id(self, table, cell_id, email, test):
-        return self.session.query(table).filter(table.cell_id == cell_id, table.email == email, table.test == test)
+    def select_table_with_id(self, table, cell_id, email):
+        return self.session.query(table).filter(table.cell_id == cell_id, table.email == email)
 
     def select_data_from_table(self, table, email, test):
         return self.session.query(table).filter(table.email == email, table.test == test).first()
+    
+    def select_table_with_email(self, table, email):
+        return self.session.query(table).filter(table.email == email)
 
 
