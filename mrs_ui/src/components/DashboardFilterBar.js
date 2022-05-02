@@ -204,7 +204,7 @@ const DashboardFilterBar = (props) => {
 				</Space>
 			</div>
 		),
-		filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />,
+		filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined, fontSize: "1rem" }} />,
 		onFilter: (value, record) =>
 			record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : "",
 		onFilterDropdownVisibleChange: (visible) => {
@@ -298,6 +298,7 @@ const DashboardFilterBar = (props) => {
 			title: "Cell Id",
 			dataIndex: "cell_id",
 			width: 100,
+			...getColumnSearchProps("cell_id"),
 		},
 		{
 			title: "Delete",
