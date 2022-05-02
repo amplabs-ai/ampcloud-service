@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import os
 from sqlalchemy import (
     Column,
@@ -438,16 +439,9 @@ class ArchiveOperator:
 
 
         if model == 'cycle_timeseries':
-            threads = []
-            df_list = np.array_split(df, 16)
-
-            for item in df_list:
-                threads.append(threading.Thread(target= insert_df, args = (item,)))
-
-            for thread in threads:
-                thread.start()
-            for thread in threads:
-                thread.join()    
+            df_list = np.array_split(df, 8)
+            with ThreadPoolExecutor(max_workers=8) as exe:
+                exe.map(insert_df,df_list)   
         else:
             df.to_sql(model,
                             con=self.session.bind,
