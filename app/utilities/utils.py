@@ -90,7 +90,7 @@ def sort_timeseries(df_tmerge):
     return df_ts
 
 
-def calc_cycle_stats(df_t, cell_id, email):
+def calc_cycle_stats(df_t, cell_id = None, email = None):
     """
     Calculate cycle states from cycle timeseries data
 
@@ -123,15 +123,17 @@ def calc_cycle_stats(df_t, cell_id, email):
     step = 60/len(df_c.index)
 
     for c_ind in df_c.index:
-        status[f"{email}|{cell_id}"]['progress']['percentage'] += step
+        if email and cell_id:
+            status[f"{email}|{cell_id}"]['progress']['percentage'] += step
         x = c_ind + 1
 
         df_f = df_t[df_t[LABEL.CYCLE_INDEX.value] == x]
 
-        # df_f[LABEL.AH_C.value] = 0
-        # df_f[LABEL.E_C.value] = 0
-        # df_f[LABEL.AH_D.value] = 0
-        # df_f[LABEL.E_D.value] = 0
+        if not email:
+            df_f[LABEL.AH_C.value] = 0
+            df_f[LABEL.E_C.value] = 0
+            df_f[LABEL.AH_D.value] = 0
+            df_f[LABEL.E_D.value] = 0
 
         if not df_f.empty:
 
@@ -219,10 +221,11 @@ def calc_cycle_stats(df_t, cell_id, email):
         # df_cc = df_cc.drop([LABEL.CELL_ID.value], axis=1)
     return df_cc, df_tt
 
-def calc_abuse_stats(df_t, df_test_md, cell_id, email):
+def calc_abuse_stats(df_t, df_test_md, cell_id = None, email = None):
     step = 60/len(df_t.index)
     for _ in df_t.index:
-        status[f"{email}|{cell_id}"]['progress']['percentage'] += step
+        if email and cell_id:
+            status[f"{email}|{cell_id}"]['progress']['percentage'] += step
         df_t[LABEL.NORM_D.value] = df_t.iloc[
             0:, df_t.columns.get_loc(LABEL.AXIAL_D.value)] - df_t[
                 LABEL.AXIAL_D.value][0]
@@ -318,3 +321,49 @@ def calc_cycle_quantities(df):
     df[LABEL.CYCLE_TIME.value] = df_tmp[LABEL.CYCLE_TIME.value]
 
     return df
+
+def split_cycle_metadata(df_c_md):
+
+    df_cell_md = extract_cell_metdata(df_c_md)
+
+    # Build test metadata
+    df_test_md = pd.DataFrame()
+    df_test_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
+    df_test_md[LABEL.CRATE_C.value] = [df_c_md[LABEL.CRATE_C.value]]
+    df_test_md[LABEL.CRATE_D.value] = [df_c_md[LABEL.CRATE_D.value]]
+    df_test_md[LABEL.SOC_MAX.value] = [df_c_md[LABEL.SOC_MAX.value]]
+    df_test_md[LABEL.SOC_MIN.value] = [df_c_md[LABEL.SOC_MIN.value]]
+    df_test_md[LABEL.TEMP.value] = [df_c_md[LABEL.TEMP.value]]
+
+    return df_cell_md, df_test_md
+
+
+def split_abuse_metadata(df_c_md):
+
+    df_cell_md = extract_cell_metdata(df_c_md)
+
+    # Build test metadata
+    df_test_md = pd.DataFrame()
+    df_test_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
+    df_test_md[LABEL.THICKNESS.value] = [df_c_md[LABEL.THICKNESS.value]]
+    df_test_md[LABEL.V_INIT.value] = [df_c_md[LABEL.V_INIT.value]]
+    df_test_md[LABEL.INDENTOR.value] = [df_c_md[LABEL.INDENTOR.value]]
+    df_test_md[LABEL.NAIL_SPEED.value] = [df_c_md[LABEL.NAIL_SPEED.value]]
+    df_test_md[LABEL.TEMP.value] = [df_c_md[LABEL.TEMP.value]]
+
+    return df_cell_md, df_test_md
+
+def extract_cell_metdata(df_c_md):
+    """ Build cell metadata """
+    df_cell_md = pd.DataFrame()
+    df_cell_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
+    df_cell_md[LABEL.ANODE.value] = [df_c_md[LABEL.ANODE.value]]
+    df_cell_md[LABEL.CATHODE.value] = [df_c_md[LABEL.CATHODE.value]]
+    df_cell_md[LABEL.SOURCE.value] = [df_c_md[LABEL.SOURCE.value]]
+    df_cell_md[LABEL.AH.value] = [df_c_md[LABEL.AH.value]]
+    df_cell_md[LABEL.FORM_FACTOR.value] = [df_c_md[LABEL.FORM_FACTOR.value]]
+    df_cell_md[LABEL.TEST.value] = [df_c_md[LABEL.TEST.value]]
+    # df_cell_md[LABEL.MAPPING.value] = [df_c_md[LABEL.MAPPING.value]]
+    df_cell_md[LABEL.TESTER.value] = [df_c_md[LABEL.TESTER.value]]
+
+    return df_cell_md

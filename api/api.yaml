@@ -5,7 +5,7 @@ info:
 paths:
   /healthcheck:
     get:
-      summary: health check
+      summary: Health check
       x-openapi-router-controller: app.controllers.auth_controller
       operationId: health_check
       tags:
@@ -24,12 +24,12 @@ paths:
         required: true
         content:
           application/json:
-            schema: # Request body contents
+            schema:
               type: object
               properties:
                 email:
                   type: string
-              example: # Sample object
+              example:
                 email: "test@test.com"
 
       responses:
@@ -72,6 +72,26 @@ paths:
         "500":
           description: Something went wrong.
   /cells/{cell_id}:
+    get:
+      summary: Fetches metadata for given cell id for the email logged in.
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: get_cell_with_id
+      tags:
+        - Cell Meta
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell Id
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
     delete:
       summary: Delete all data for a cell from archive for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
@@ -87,11 +107,65 @@ paths:
           explode: false
           schema:
             type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       responses:
         "200":
           description: Successfull
         "500":
           description: Internal Server Error
+  /cells/tests/{test}/meta:
+    get:
+      summary: Fetches test metadata of test.
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: get_testmeta
+      tags:
+        - Test Meta
+      parameters:
+        - name: test
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /cells/tests/{test}/meta/{cell_id}:
+    get:
+      summary: Fetches test metadata of testname for a cell id
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: get_testmeta_by_cell_id
+      tags:
+        - Test Meta
+      parameters:
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: test
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
   /upload/cells/initialize:
     post:
       summary: Initialize upload file request (required to be sent before /upload/cells/{tester} request)
@@ -148,6 +222,7 @@ paths:
                 cell_id:
                   type: string
                   nullable: false
+                  example: SNL_18650_NMC_35C_0-100_0.5-1C_a
                 file_count:
                   type: integer
                   enum: [1]
@@ -157,42 +232,57 @@ paths:
                   enum: [cycle, abuse]
                 anode:
                   type: string
+                  example: Graphite
                 cathode:
                   type: string
+                  example: NMC
                 source:
                   type: string
+                  example: Commercial
                 ah:
                   type: number
+                  example: 3
                 form_factor:
                   type: string
+                  example: NA
                 temperature:
                   type: number
+                  example: 25
                 soc_max:
                   type: number
+                  example: 100
                 soc_min:
                   type: number
+                  example: 10
                 crate_c:
                   type: number
+                  example: 0.5
                 crate_d:
                   type: number
+                  example: 1
                 thickness:
                   type: number
+                  example: 7
                 v_init:
                   type: number
+                  example: 4.12
                 indentor:
                   type: number
+                  example: 6
                 nail_speed:
                   type: number
+                  example: 0.05
               required:
                 - cell_id
                 - file_count
                 - test_type
-
       tags:
         - Upload
       responses:
         "200":
           description: Successfull response
+        "500":
+          description: Something went wrong
   /upload/cells/{tester}:
     post:
       summary: Upload test file
@@ -219,9 +309,9 @@ paths:
                 cell_id:
                   description: similar to the cell_id sent in upload initialize request.
                   type: string
+                  example: SNL_18650_NMC_35C_0-100_0.5-1C_a
                 file:
                   type: string
-                  format: binary
               required:
                 - cell_id
                 - file
@@ -247,6 +337,7 @@ paths:
           explode: false
           schema:
             type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Upload
       responses:
@@ -268,6 +359,7 @@ paths:
           explode: false
           schema:
             type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -289,6 +381,7 @@ paths:
           explode: false
           schema:
             type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -314,6 +407,7 @@ paths:
             type: array
             items:
               type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
         - name: step
           in: query
           description: steps
@@ -322,6 +416,7 @@ paths:
           style: form
           schema:
             type: integer
+            example: 500
       responses:
         "200":
           description: Successfull response
@@ -345,6 +440,7 @@ paths:
             type: array
             items:
               type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       responses:
         "200":
           description: Successfull response
@@ -368,6 +464,7 @@ paths:
             type: array
             items:
               type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       responses:
         "200":
           description: Successfull response
@@ -391,6 +488,7 @@ paths:
             type: array
             items:
               type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       responses:
         "200":
           description: Successfull response
@@ -414,6 +512,7 @@ paths:
             type: array
             items:
               type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
         - name: sample
           in: query
           description: sample
@@ -424,6 +523,7 @@ paths:
             type: integer
             items:
               type: integer
+              example: 50
       responses:
         "200":
           description: Successfull response
@@ -447,6 +547,7 @@ paths:
             type: array
             items:
               type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
         - name: sample
           in: query
           description: sample
@@ -457,6 +558,7 @@ paths:
             type: integer
             items:
               type: integer
+              example: 50
       responses:
         "200":
           description: Successfull response
@@ -480,6 +582,7 @@ paths:
             type: array
             items:
               type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
         - name: sample
           in: query
           description: sample
@@ -490,6 +593,7 @@ paths:
             type: integer
             items:
               type: integer
+              example: 50
       responses:
         "200":
           description: Successfull response
@@ -509,6 +613,7 @@ paths:
           explode: false
           schema:
             type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -530,6 +635,7 @@ paths:
           explode: false
           schema:
             type: string
+            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -537,10 +643,124 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+  /ga/publish/finish/{tracker}:
+    post:
+      summary: "test api endpoint"
+      x-openapi-router-controller: app.controllers.ga_controller
+      operationId: finish
+      tags:
+        - Galvanalyser-Integration
+      parameters:
+        - name: tracker
+          in: path
+          description: Dataset ID of the resource to get from Galvanalyser
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Finish
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracker:
+                    type: string
+                    example: "uuid_abc_123"
+  /ga/publish/{dataset_id}:
+    post:
+      summary: Handler for Galvanalyser Publishing
+      x-openapi-router-controller: app.controllers.ga_controller
+      operationId: ga_publish
+      tags:
+        - Galvanalyser-Integration
+      parameters:
+        - name: dataset_id
+          in: path
+          description: Dataset ID of the resource to get from Galvanalyser
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+              required:
+                - token
+
+      responses:
+        "200":
+          description: Publish
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracker:
+                    type: string
+                    example: "uuid_abc_123"
+  /ga/publish/status/{tracker}:
+    get:
+      summary: Status Checker for Galvanalyser Publishing
+      x-openapi-router-controller: app.controllers.ga_controller
+      operationId: ga_publish_status
+      tags:
+        - Galvanalyser-Integration
+      parameters:
+        - name: tracker
+          in: path
+          description: status tracker
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A paged array of cells
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracker:
+                    type: string
+                    example: "uuid_abc_123"
+        default:
+          description: unexpected error
+
 tags:
   - name: Auth
-  - name: Healthcheck
   - name: Cell Meta
+  - name: Test Meta
+  - name: Upload
   - name: Download
   - name: Echart - Get json data required for plotting
-  - name: Upload
+
+  - name: Galvanalyser-Integration
+  - name: Healthcheck
