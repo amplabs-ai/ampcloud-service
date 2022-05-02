@@ -3,13 +3,14 @@ import axios from "axios";
 // ====== charts =======
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../chartConfig/initialConfigs";
+import { enterFullscreenOption, exitFullscreenOption } from "../chartConfig/chartFullScreenOption";
 // ======= Components ==========
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import ViewCodeModal from "../components/ViewCodeModal";
 // ====== python code files ======
 import sourceCode from "../chartConfig/chartSourceCode";
 // ====== styling components, icons... ========
-import { Result, Button, Alert, Modal, PageHeader, Card } from "antd";
+import { Result, Button, Alert, Modal, PageHeader, Card, Skeleton } from "antd";
 import { FaLinkedin, FaEnvelope } from "react-icons/fa";
 import { ShareAltOutlined } from "@ant-design/icons";
 // ====== dependencies =======
@@ -37,12 +38,6 @@ const DashboardCycleTest = () => {
 	const [chartData, setChartData] = useState({});
 	const [internalServerError, setInternalServerError] = useState("");
 	const [disableSelection, setDisableSelection] = useState(true);
-	const [fullscreenState, setFullscreenState] = useState({
-		screen1: false,
-		screen2: false,
-		screen3: false,
-		screen4: false,
-	});
 	const [metaImageDash, setMetaImageDash] = useState(null);
 	const [shallShowShareDashModal, setShallShowShareDashModal] = useState(false);
 	const [chartsLoaded, setChartsLoaded] = useState({
@@ -51,6 +46,7 @@ const DashboardCycleTest = () => {
 		efficiency: false,
 		cycleQtyByStep: false,
 	});
+	const [stepFromFilter, setStepFromFilter] = useState("");
 
 	// ======= Hooks ==========
 	const screen1 = useFullScreenHandle();
@@ -97,22 +93,58 @@ const DashboardCycleTest = () => {
 
 	const reportChange = useCallback(
 		(state, handle) => {
-			if (handle === screen1) {
-				setFullscreenState((prev) => {
-					return { ...prev, screen1: state.active };
-				});
-			} else if (handle === screen2) {
-				setFullscreenState((prev) => {
-					return { ...prev, screen2: state.active };
-				});
-			} else if (handle === screen3) {
-				setFullscreenState((prev) => {
-					return { ...prev, screen3: state.active };
-				});
-			} else if (handle === screen4) {
-				setFullscreenState((prev) => {
-					return { ...prev, screen4: state.active };
-				});
+			console.log("fullscreen changed", state);
+			let chartName = handle.node.current.children[0].dataset.id;
+			console.log("chartName", chartName);
+			switch (chartName) {
+				case "cycleIndexChart":
+					if (state) {
+						cycleIndexChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						cycleIndexChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						cycleIndexChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						cycleIndexChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						cycleIndexChart.current.ele.style.marginTop = "0%";
+						cycleIndexChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
+				case "timeSeriesChart":
+					console.log("timeSeries");
+					if (state) {
+						timeSeriesChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						timeSeriesChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						timeSeriesChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						timeSeriesChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						timeSeriesChart.current.ele.style.marginTop = "0%";
+						timeSeriesChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
+				case "efficiencyChart":
+					console.log("effiency chart");
+					if (state) {
+						efficiencyChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						efficiencyChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						efficiencyChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						efficiencyChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						efficiencyChart.current.ele.style.marginTop = "0%";
+						efficiencyChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
+				case "cycleQtyByStepChart":
+					if (state) {
+						cycleQtyByStepChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						cycleQtyByStepChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						cycleQtyByStepChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						cycleQtyByStepChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						cycleQtyByStepChart.current.ele.style.marginTop = "0%";
+						cycleQtyByStepChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
+				default:
+					break;
 			}
 		},
 		[screen1, screen2, screen3, screen4]
@@ -143,6 +175,7 @@ const DashboardCycleTest = () => {
 		let request = {
 			params: params,
 		};
+		setStepFromFilter(step);
 		setSearchParams(params.toString());
 		_fetchData(request, "cycleIndex");
 		_fetchData(request, "timeSeries");
@@ -163,6 +196,13 @@ const DashboardCycleTest = () => {
 		// });
 		// console.log("navigator.hardwareConcurrency", navigator.hardwareConcurrency);
 		console.log("selected cellIds", selectedCellIds);
+
+		let params = new URLSearchParams();
+		selectedCellIds.forEach((cellId) => {
+			params.append("cell_id", cellId.cell_id);
+		});
+		params.append("step", stepFromFilter);
+		setSearchParams(params.toString());
 		setDisableSelection(true);
 		let filteredChartData = {};
 		for (const chartName in chartData) {
@@ -183,10 +223,6 @@ const DashboardCycleTest = () => {
 		for (let response of responses) {
 			setDisableSelection(false);
 		}
-		// _renderChartsAfterFilter(filteredChartData, "cycleQtyByStep");
-		// _renderChartsAfterFilter(filteredChartData, "cycleIndex");
-		// _renderChartsAfterFilter(filteredChartData, "timeSeries");
-		// _renderChartsAfterFilter(filteredChartData, "efficiency");
 	};
 
 	const doShareDashboard = () => {
@@ -372,23 +408,6 @@ const DashboardCycleTest = () => {
 								title: "Enter Fullscreen",
 								icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 								onclick: function () {
-									ref.current.getEchartsInstance().setOption({
-										grid: {
-											left: window.screen.width < 600 ? "8%" : "5%",
-											right: window.screen.width < 600 ? "5%" : "5%",
-											bottom: window.screen.width < 600 ? "16%" : "10%",
-										},
-										toolbox: {
-											top: "0%",
-											emphasis: {
-												iconStyle: {
-													textPosition: "bottom",
-												},
-											},
-										},
-									});
-									ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
-									ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
 									switch (chartType) {
 										case "cycleIndex":
 											screen1.enter();
@@ -416,24 +435,6 @@ const DashboardCycleTest = () => {
 								c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
 								s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
 								onclick: function () {
-									ref.current.getEchartsInstance().setOption({
-										grid: {
-											left: window.screen.width < 600 ? "8%" : "5%",
-											right: window.screen.width < 600 ? "5%" : "5%",
-											bottom: window.screen.width < 600 ? "16%" : "12%",
-											containLabel: true,
-										},
-										toolbox: {
-											top: window.screen.width < 600 ? "8%" : "5%",
-											emphasis: {
-												iconStyle: {
-													textPosition: "top",
-												},
-											},
-										},
-									});
-									ref.current.ele.style.marginTop = "0%";
-									ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
 									switch (chartType) {
 										case "cycleIndex":
 											screen1.exit();
@@ -456,7 +457,7 @@ const DashboardCycleTest = () => {
 								show: "true",
 							},
 							dataZoom: {
-								yAxisIndex: "none",
+								// yAxisIndex: "none",
 								brushStyle: {
 									borderWidth: 1,
 									borderColor: "#000000",
@@ -484,10 +485,6 @@ const DashboardCycleTest = () => {
 				ref.current.getEchartsInstance().hideLoading();
 				showChartLoadingError(chartType, true);
 			});
-	};
-
-	const _getFullScreenState = () => {
-		return fullscreenState;
 	};
 
 	const showChartLoadingError = (chartType, show) => {
@@ -692,23 +689,6 @@ const DashboardCycleTest = () => {
 						title: "Enter Fullscreen",
 						icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 						onclick: function () {
-							ref.current.getEchartsInstance().setOption({
-								grid: {
-									left: window.screen.width < 600 ? "8%" : "5%",
-									right: window.screen.width < 600 ? "5%" : "5%",
-									bottom: window.screen.width < 600 ? "16%" : "10%",
-								},
-								toolbox: {
-									top: "0%",
-									emphasis: {
-										iconStyle: {
-											textPosition: "bottom",
-										},
-									},
-								},
-							});
-							ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
-							ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
 							switch (chartType) {
 								case "cycleIndex":
 									screen1.enter();
@@ -736,24 +716,6 @@ const DashboardCycleTest = () => {
 						c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
 						s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
 						onclick: function () {
-							ref.current.getEchartsInstance().setOption({
-								grid: {
-									left: window.screen.width < 600 ? "8%" : "5%",
-									right: window.screen.width < 600 ? "5%" : "5%",
-									bottom: window.screen.width < 600 ? "16%" : "12%",
-									containLabel: true,
-								},
-								toolbox: {
-									top: window.screen.width < 600 ? "8%" : "5%",
-									emphasis: {
-										iconStyle: {
-											textPosition: "top",
-										},
-									},
-								},
-							});
-							ref.current.ele.style.marginTop = "0%";
-							ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
 							switch (chartType) {
 								case "cycleIndex":
 									screen1.exit();
@@ -863,12 +825,13 @@ const DashboardCycleTest = () => {
 							</div>
 						</div>
 						<Card
-							cover={<img alt="dashboard screenshot" src={metaImageDash} />}
+							loading={!metaImageDash}
+							cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
 							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
 						>
-							{`I just created a Cycle Test dashboard on AmpLabs, check it out at amplabs.ai http://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
+							{`I just created a Cycle Test dashboard on AmpLabs! Check it out at http://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
 								"userId"
-							)}`}
+							)} @materialscience # amplabs #batterytechnology #batterydata #materialsscience #researchers`}
 						</Card>
 					</Modal>
 					<HelmetMetaData image={metaImageDash}></HelmetMetaData>
@@ -902,7 +865,7 @@ const DashboardCycleTest = () => {
 							<div className="col-md-6 mt-2">
 								{/* <input type="file" onChange={(e) => setMetaImageDash(e.target.files[0])} /> */}
 								<FullScreen handle={screen1} onChange={reportChange}>
-									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+									<div data-id="cycleIndexChart" className="card shadow" style={{ height: "100%", width: "100%" }}>
 										<div className="card-body">
 											{chartLoadingError.cycleIndex && <Alert message="Error loading chart!" type="error" showIcon />}
 											<ReactEcharts
@@ -910,7 +873,6 @@ const DashboardCycleTest = () => {
 													width: "100%",
 													height: window.screen.width < 600 ? "15rem" : "24em",
 												}}
-												lazyUpdate={true}
 												showLoading
 												ref={cycleIndexChart}
 												option={initialChartOptions}
@@ -920,8 +882,8 @@ const DashboardCycleTest = () => {
 								</FullScreen>
 							</div>
 							<div className="col-md-6 mt-2">
-								<FullScreen handle={screen3}>
-									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+								<FullScreen handle={screen3} onChange={reportChange}>
+									<div data-id="efficiencyChart" className="card shadow" style={{ height: "100%", width: "100%" }}>
 										<div className="card-body">
 											{chartLoadingError.efficiency && <Alert message="Error loading chart!" type="error" showIcon />}
 											<ReactEcharts
@@ -929,7 +891,6 @@ const DashboardCycleTest = () => {
 													width: "100%",
 													height: window.screen.width < 600 ? "15rem" : "24em",
 												}}
-												lazyUpdate={true}
 												showLoading
 												ref={efficiencyChart}
 												option={initialChartOptions}
@@ -940,7 +901,7 @@ const DashboardCycleTest = () => {
 							</div>
 							<div className="col-md-6 mt-2">
 								<FullScreen handle={screen2} onChange={reportChange}>
-									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+									<div data-id="timeSeriesChart" className="card shadow" style={{ height: "100%", width: "100%" }}>
 										<div className="card-body">
 											{chartLoadingError.timeSeries && <Alert message="Error loading chart!" type="error" showIcon />}
 											<ReactEcharts
@@ -948,7 +909,6 @@ const DashboardCycleTest = () => {
 													width: "100%",
 													height: window.screen.width < 600 ? "15rem" : "24em",
 												}}
-												lazyUpdate={true}
 												showLoading
 												ref={timeSeriesChart}
 												option={initialChartOptions}
@@ -958,8 +918,8 @@ const DashboardCycleTest = () => {
 								</FullScreen>
 							</div>
 							<div className="col-md-6 mt-2">
-								<FullScreen handle={screen4}>
-									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+								<FullScreen handle={screen4} onChange={reportChange}>
+									<div data-id="cycleQtyByStepChart" className="card shadow" style={{ height: "100%", width: "100%" }}>
 										<div className="card-body">
 											{chartLoadingError.cycleQtyByStep && (
 												<Alert message="Error loading chart!" type="error" showIcon />
@@ -969,7 +929,6 @@ const DashboardCycleTest = () => {
 													width: "100%",
 													height: window.screen.width < 600 ? "15rem" : "24em",
 												}}
-												lazyUpdate={true}
 												showLoading
 												ref={cycleQtyByStepChart}
 												option={initialChartOptions}

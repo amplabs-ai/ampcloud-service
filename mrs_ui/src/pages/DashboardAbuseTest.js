@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import { Result, Button, Alert, Typography, Badge, Modal, Card, PageHeader } from "antd";
 import sourceCode from "../chartConfig/chartSourceCode";
@@ -6,15 +6,13 @@ import axios from "axios";
 import ViewCodeModal from "../components/ViewCodeModal";
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../chartConfig/initialConfigs";
-
 import { FaLinkedin, FaEnvelope, FaCloudUploadAlt } from "react-icons/fa";
-
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import HelmetMetaData from "../components/HelmetMetaData";
-
 import { ShareAltOutlined } from "@ant-design/icons";
 import { toPng, toBlob } from "html-to-image";
 import Cookies from "js-cookie";
+import { enterFullscreenOption, exitFullscreenOption } from "../chartConfig/chartFullScreenOption";
 
 const DashboardAbuseTest = () => {
 	const screen1 = useFullScreenHandle();
@@ -40,6 +38,7 @@ const DashboardAbuseTest = () => {
 		voltage: false,
 	});
 	const [metaImageDash, setMetaImageDash] = useState(null);
+	const [sampleFromFilter, setsampleFromFilter] = useState("");
 
 	const forceAndDisplacementChart = useRef();
 	const testTempraturesChart = useRef();
@@ -82,6 +81,52 @@ const DashboardAbuseTest = () => {
 		});
 	}, []);
 
+	const reportChange = useCallback(
+		(state, handle) => {
+			console.log("fullscreen changed", state);
+			let chartName = handle.node.current.children[0].dataset.id;
+			console.log("chartName", chartName);
+			switch (chartName) {
+				case "forceAndDisplacementChart":
+					if (state) {
+						forceAndDisplacementChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						forceAndDisplacementChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						forceAndDisplacementChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						forceAndDisplacementChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						forceAndDisplacementChart.current.ele.style.marginTop = "0%";
+						forceAndDisplacementChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
+				case "testTempraturesChart":
+					if (state) {
+						testTempraturesChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						testTempraturesChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						testTempraturesChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						testTempraturesChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						testTempraturesChart.current.ele.style.marginTop = "0%";
+						testTempraturesChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
+				case "voltageChart":
+					if (state) {
+						voltageChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						voltageChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						voltageChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						voltageChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						voltageChart.current.ele.style.marginTop = "0%";
+						voltageChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
+				default:
+					break;
+			}
+		},
+		[screen1, screen2, screen3]
+	);
+
 	const internalServerErrorFound = (errStatus) => {
 		setInternalServerError(errStatus);
 	};
@@ -92,6 +137,7 @@ const DashboardAbuseTest = () => {
 			params.append("cell_id", cellId.cell_id);
 		});
 		params.append("sample", sample);
+		setsampleFromFilter(sample);
 		setSearchParams(params.toString());
 		return params;
 	};
@@ -316,28 +362,11 @@ const DashboardAbuseTest = () => {
 								title: "Enter Fullscreen",
 								icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 								onclick: function () {
-									ref.current.getEchartsInstance().setOption({
-										grid: {
-											left: window.screen.width < 600 ? "8%" : "5%",
-											right: window.screen.width < 600 ? "5%" : "5%",
-											bottom: window.screen.width < 600 ? "16%" : "10%",
-										},
-										toolbox: {
-											top: "0%",
-											emphasis: {
-												iconStyle: {
-													textPosition: "bottom",
-												},
-											},
-										},
-									});
-									ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
-									ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
 									switch (chartType) {
-										case "forceAndDisplacement":
+										case "testTempratures":
 											screen1.enter();
 											break;
-										case "testTempratures":
+										case "forceAndDisplacement":
 											screen2.enter();
 											break;
 										case "voltage":
@@ -357,29 +386,11 @@ const DashboardAbuseTest = () => {
 								c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
 								s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
 								onclick: function () {
-									ref.current.getEchartsInstance().setOption({
-										grid: {
-											left: window.screen.width < 600 ? "8%" : "7%",
-											right: window.screen.width < 600 ? "5%" : "5%",
-											bottom: window.screen.width < 600 ? "16%" : "12%",
-											containLabel: true,
-										},
-										toolbox: {
-											top: window.screen.width < 600 ? "8%" : "5%",
-											emphasis: {
-												iconStyle: {
-													textPosition: "top",
-												},
-											},
-										},
-									});
-									ref.current.ele.style.marginTop = "0%";
-									ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
 									switch (chartType) {
-										case "forceAndDisplacement":
+										case "testTempratures":
 											screen1.exit();
 											break;
-										case "testTempratures":
+										case "forceAndDisplacement":
 											screen2.exit();
 											break;
 										case "voltage":
@@ -391,7 +402,7 @@ const DashboardAbuseTest = () => {
 								},
 							},
 							dataZoom: {
-								yAxisIndex: "none",
+								// yAxisIndex: "none",
 								brushStyle: {
 									borderWidth: 1,
 									borderColor: "#000000",
@@ -423,6 +434,13 @@ const DashboardAbuseTest = () => {
 	};
 
 	const handleCellIdChange = async (selectedCellIds) => {
+		let params = new URLSearchParams();
+		selectedCellIds.forEach((cellId) => {
+			params.append("cell_id", cellId.cell_id);
+		});
+		params.append("sample", sampleFromFilter);
+		setSearchParams(params.toString());
+
 		setDisableSelection(true);
 		console.log("selectedCellIds", selectedCellIds);
 		console.log("chartData", chartData);
@@ -588,23 +606,6 @@ const DashboardAbuseTest = () => {
 						title: "Enter Fullscreen",
 						icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 						onclick: function () {
-							ref.current.getEchartsInstance().setOption({
-								grid: {
-									left: window.screen.width < 600 ? "8%" : "5%",
-									right: window.screen.width < 600 ? "5%" : "5%",
-									bottom: window.screen.width < 600 ? "16%" : "10%",
-								},
-								toolbox: {
-									top: "0%",
-									emphasis: {
-										iconStyle: {
-											textPosition: "bottom",
-										},
-									},
-								},
-							});
-							ref.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
-							ref.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
 							switch (chartType) {
 								case "forceAndDisplacement":
 									screen1.enter();
@@ -629,24 +630,6 @@ const DashboardAbuseTest = () => {
 						c-4.668,4.668-4.668,12.235,0,16.903c4.668,4.668,12.235,4.668,16.891,0L360.909,40.951v91.382c0,6.641,5.39,12.03,12.03,12.03
 						s12.03-5.39,12.03-12.03V12.03l0,0C384.97,5.558,379.412,0,372.939,0z`,
 						onclick: function () {
-							ref.current.getEchartsInstance().setOption({
-								grid: {
-									left: window.screen.width < 600 ? "8%" : "7%",
-									right: window.screen.width < 600 ? "5%" : "5%",
-									bottom: window.screen.width < 600 ? "16%" : "12%",
-									containLabel: true,
-								},
-								toolbox: {
-									top: window.screen.width < 600 ? "8%" : "5%",
-									emphasis: {
-										iconStyle: {
-											textPosition: "top",
-										},
-									},
-								},
-							});
-							ref.current.ele.style.marginTop = "0%";
-							ref.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
 							switch (chartType) {
 								case "forceAndDisplacement":
 									screen1.exit();
@@ -663,7 +646,7 @@ const DashboardAbuseTest = () => {
 						},
 					},
 					dataZoom: {
-						yAxisIndex: "none",
+						// yAxisIndex: "none",
 						brushStyle: {
 							borderWidth: 1,
 							borderColor: "#000000",
@@ -772,9 +755,9 @@ const DashboardAbuseTest = () => {
 							cover={<img alt="dashboard screenshot" src={metaImageDash} />}
 							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
 						>
-							{`I just created a Abuse Test dashboard on AmpLabs, check it out at amplabs.ai http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+							{`I just created a Cycle Test dashboard on AmpLabs! Check it out at http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
 								"userId"
-							)}`}
+							)} @materialscience # amplabs #batterytechnology #batterydata #materialsscience #researchers`}
 						</Card>
 					</Modal>
 					<HelmetMetaData image={metaImageDash}></HelmetMetaData>
@@ -807,8 +790,8 @@ const DashboardAbuseTest = () => {
 
 						<div className="row pb-5">
 							<div className="col-md-12 mt-2">
-								<FullScreen handle={screen1}>
-									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+								<FullScreen handle={screen1} onChange={reportChange}>
+									<div data-id="testTempraturesChart" className="card shadow" style={{ height: "100%", width: "100%" }}>
 										<div className="card-body">
 											{chartLoadingError.testTempraturesChart && <Alert message="Error" type="error" showIcon />}
 											<ReactEcharts
@@ -825,8 +808,12 @@ const DashboardAbuseTest = () => {
 								</FullScreen>
 							</div>
 							<div className="col-md-6 mt-2">
-								<FullScreen handle={screen2}>
-									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+								<FullScreen handle={screen2} onChange={reportChange}>
+									<div
+										data-id="forceAndDisplacementChart"
+										className="card shadow"
+										style={{ height: "100%", width: "100%" }}
+									>
 										<div className="card-body">
 											{chartLoadingError.forceAndDisplacementChart && <Alert message="Error" type="error" showIcon />}
 											<ReactEcharts
@@ -843,8 +830,8 @@ const DashboardAbuseTest = () => {
 								</FullScreen>
 							</div>
 							<div className="col-md-6 mt-2">
-								<FullScreen handle={screen3}>
-									<div className="card shadow" style={{ height: "100%", width: "100%" }}>
+								<FullScreen handle={screen3} onChange={reportChange}>
+									<div data-id="voltageChart" className="card shadow" style={{ height: "100%", width: "100%" }}>
 										<div className="card-body">
 											{chartLoadingError.voltageChart && <Alert message="Error" type="error" showIcon />}
 											<ReactEcharts

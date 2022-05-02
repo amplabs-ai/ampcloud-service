@@ -2,6 +2,7 @@ const initialChartOptions = {
 	tooltip: {
 		trigger: "axis",
 		axisPointer: { type: "cross" },
+		// showContent: false,
 	},
 	// animation: false,
 	// grid: {
