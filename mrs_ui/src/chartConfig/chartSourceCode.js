@@ -1,5 +1,5 @@
 const sourceCode = {
-	cycleIndexChart: `
+  cycleIndexChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -12,7 +12,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/energyAndCapacityDecay?{0}"
+url = "http://www.amplabs.ai/echarts/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -35,7 +35,7 @@ if status:
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./cycleIndexChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	timeSeriesChart: `
+  timeSeriesChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -48,7 +48,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/energyAndCapacityDecay?{0}"
+url = "http://www.amplabs.ai/energyAndCapacityDecay?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -71,7 +71,7 @@ if status:
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./timeSeriesChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	efficiencyChart: `
+  efficiencyChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -84,7 +84,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/efficiency?{0}"
+url = "http://www.amplabs.ai/echarts/efficiency?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -107,7 +107,7 @@ if status:
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./efficiencyChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	cycleQtyByStepChart: `
+  cycleQtyByStepChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -120,7 +120,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/cycleQuantitiesByStep?{0}"
+url = "http://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -137,12 +137,12 @@ df = pd.DataFrame()
 if status:
     for item in response['records'][0]:
         df = df.append(pd.DataFrame.from_records(item['source']))
-    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Voltage (V)"}, title = "Cycle Quantities by step")
+    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Volateg (V)"}, title = "Cycle Quantities by step")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	compareByCycleTimeChart: `
+  compareByCycleTimeChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -155,7 +155,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-url = "http://www.amplabs.ai:81/echarts/compareByCycleTime?{0}"
+url = "http://www.amplabs.ai/echarts/compareByCycleTime?{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -178,7 +178,7 @@ if status:
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./compareByCycleTimeChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	forceAndDisplacementChart: `
+  forceAndDisplacementChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -215,7 +215,7 @@ if status and response['records'][0]:
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./abuseForceDisplacementChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	testTempraturesChart: `
+  testTempraturesChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
@@ -251,7 +251,7 @@ if status and response['records'][0]:
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./abuseTestTemperatureChart.png', format="png", scale=1, width=1200, height=800)
     `,
-	voltageChart: `
+  voltageChart: `
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
 import warnings
