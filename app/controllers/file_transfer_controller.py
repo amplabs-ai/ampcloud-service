@@ -17,7 +17,7 @@ def init_file_upload():
         status, detail = init_file_upload_service(email, data)
         return Response(status, detail).to_dict(), status
     except Exception as err:
-        print(err)
+        logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
 def upload_file(tester):
@@ -55,6 +55,7 @@ def upload_file(tester):
         status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
         status[f"{email}|{data['cell_id']}"]['progress']['message'] = "READ FILE FAILED"
         logging.error("User {email} Action UPLOAD_FILE error UNKNOWN".format(email = email))
+        logging.error(err)
         return Response(500, "READ FILE FAILED").to_dict(), 500
 
 
@@ -72,8 +73,9 @@ def download_cycle_timeseries(cell_id):
         logging.info("User {email} Action DOWNLOAD_CYCLE_TIMESERIES file {filename} size {size} type CYCLE_TIMESERIES download_time {time}".format(
                 email=email, filename=f"{cell_id}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
         return resp
-    except:
+    except Exception as err:
         logging.error("User {email} Action DOWNLOAD_CYCLE_TIMESERIES error UNKNOWN".format(email=email))
+        logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
 
@@ -91,8 +93,9 @@ def download_cycle_data(cell_id):
         logging.info("User {email} Action DOWNLOAD_CYCLE_DATA file {filename} size {size} type CYCLE_DATA download_time {time}".format(
                 email=email, filename=f"{cell_id}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
         return resp
-    except:
+    except Exception as err:
         logging.error("User {email} Action DOWNLOAD_CYCLE_DATA error UNKNOWN".format(email=email))
+        logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
 def get_cycle_data_json(cell_id):
@@ -102,6 +105,7 @@ def get_cycle_data_json(cell_id):
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200
     except Exception as err:
+        logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
 
@@ -112,4 +116,5 @@ def get_cycle_timeseries_json(cell_id):
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200
     except Exception as err:
+        logging.error(err)
         return Response(500, "Failed").to_dict(), 500
