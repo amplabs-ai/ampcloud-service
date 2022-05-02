@@ -12,6 +12,7 @@ def get_cellmeta_service(email, test):
         records = [cell.to_dict() for cell in archive_cells]
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -24,6 +25,7 @@ def get_cellmeta_with_id_service(cell_id, email):
         records = [cell.to_dict() for cell in archive_cells]
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -41,6 +43,7 @@ def delete_cell_service(cell_id, email):
         return 200, RESPONSE_MESSAGE['CELL_METADATA_DELETED'].format(cell_id)
     except Exception as err:
         logging.error("User {email} action DELETE error INTERNAL_SERVER_ERROR".format(email=email))
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()

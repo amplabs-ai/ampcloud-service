@@ -1,5 +1,6 @@
 from app.archive_constants import RESPONSE_MESSAGE
 from app.model import ArchiveOperator, CellMeta
+import logging
 
 
 def login_service(email):
@@ -14,7 +15,7 @@ def login_service(email):
             redirect_url = "/upload"
         return 200, redirect_url
     except Exception as err:
-        print(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()

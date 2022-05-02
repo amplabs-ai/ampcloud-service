@@ -2,6 +2,7 @@
 from flask import request
 from app.response import Response
 from app.utilities.utils import status
+import logging
 
 def get_status(cell_id):
     try:
@@ -14,5 +15,6 @@ def get_status(cell_id):
         else:
             result = None
         return Response(200, "Status Received", result).to_dict(), 200
-    except:
+    except Exception as err:
+        logging.error(err)
         return Response(500, "Failed").to_dict(), 500
