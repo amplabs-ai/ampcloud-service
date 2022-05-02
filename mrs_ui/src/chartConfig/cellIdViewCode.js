@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 import pandas as pd
 
-url = "http://www.amplabs.ai:81/download/cells/cycle_data_json/{0}"
+url = "http://www.amplabs.ai/download/cells/cycle_data_json/{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
@@ -37,7 +37,7 @@ import urllib.error
 import urllib.request
 import pandas as pd
 
-url = "http://www.amplabs.ai:81/download/cells/cycle_timeseries_json/{0}"
+url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json/{0}"
 httprequest = urllib.request.Request(
         url, method="GET"
     )
