@@ -16,5 +16,5 @@ def get_status(cell_id):
             result = None
         return Response(200, "Status Received", result).to_dict(), 200
     except Exception as err:
-        logging.error(err)
+        logging.debug(err)
         return Response(500, "Failed").to_dict(), 500
