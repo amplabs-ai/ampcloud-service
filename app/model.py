@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import wait
 import os
 from sqlalchemy import (
     Column,
@@ -230,6 +231,7 @@ class ArchiveOperator:
     url = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
     engine = create_engine(url, poolclass=NullPool)
     Model.metadata.create_all(engine)
+    executor = ThreadPoolExecutor(10)
 
     def __init__(self, config={}):
         pass
@@ -440,8 +442,8 @@ class ArchiveOperator:
 
         if model == 'cycle_timeseries':
             df_list = np.array_split(df, 8)
-            with ThreadPoolExecutor(max_workers=8) as exe:
-                exe.map(insert_df,df_list)   
+            futures = [ArchiveOperator.executor.submit(insert_df, df) for df in df_list]
+            wait(futures)
         else:
             df.to_sql(model,
                             con=self.session.bind,

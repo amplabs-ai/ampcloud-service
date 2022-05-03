@@ -20,7 +20,7 @@ def get_cycle_quantities_by_step_service(cell_id, step, email):
             records.append({"id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -42,7 +42,7 @@ def get_energy_and_capacity_decay_service(cell_id, email):
             records.append({"id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -64,7 +64,7 @@ def get_efficiency_service(cell_id, email):
             records.append({"id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -86,7 +86,7 @@ def get_compare_by_cycle_time_service(cell_id, email):
             records.append({"id": key, "source": value}) 
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -108,7 +108,7 @@ def get_force_and_displacement_service(cell_id, email, sample):
             records.append({"id": key, "source": value}) 
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -130,7 +130,7 @@ def get_test_tempratures_service(cell_id, email, sample):
             records.append({"id": key, "source": value}) 
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
@@ -152,7 +152,7 @@ def get_voltage_service(cell_id, email, sample):
             records.append({"id": key, "source": value}) 
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()

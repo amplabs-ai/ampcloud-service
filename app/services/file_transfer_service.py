@@ -126,7 +126,7 @@ def file_data_process_service(cell_id, email):
         status[f"{email}|{cell_id}"]['progress']['message'] = "COMPLETED"
 
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         status[f"{email}|{cell_id}"]['progress']['percentage'] = -1
         for key, value in status[f"{email}|{cell_id}"]['progress']['steps'].items():
             if not value:
