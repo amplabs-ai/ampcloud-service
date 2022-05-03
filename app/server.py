@@ -7,6 +7,7 @@ from app.exception_handler import *
 from app.model import Model
 from flask_cors import CORS
 from flask_compress import Compress
+from app.controllers.dashboard_share_controller import dashboard_share
 import logging
 # from celery import Celery
 
@@ -27,6 +28,8 @@ app.add_error_handler(ProblemException, problem_exception)
 # CORS(app.app, origins=["http://www.amplabs.ai"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
+
+app.add_url_rule('/dashboard/share', 'dashboard_share', dashboard_share)
 
 @app.route("/")
 def my_index():

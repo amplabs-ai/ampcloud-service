@@ -15,7 +15,7 @@ def login_service(email):
             redirect_url = "/upload"
         return 200, redirect_url
     except Exception as err:
-        logging.error(err)
+        logging.debug(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
