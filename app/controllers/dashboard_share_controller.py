@@ -9,5 +9,5 @@ def dashboard_share():
         logging.info("User {} Action SHARE_DASHBOARD".format(email))
         return Response(200, "Success").to_dict(), 200
     except Exception as err:
-        logging.debug(err)
+        logging.error(err)
         return Response(500, "Internal Server Error").to_dict(), 500

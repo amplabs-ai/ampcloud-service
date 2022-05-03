@@ -217,7 +217,6 @@ if response:
     df = pd.DataFrame()
     for item in response['records'][0]:
             df = df.append(pd.DataFrame.from_records(item['source']))
-    df['value'] = pd.to_numeric(df['value'], errors='coerce')
 
     #Plot the chart
     plot_chart(df)
