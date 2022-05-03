@@ -10,8 +10,8 @@ import ViewCodeModal from "../components/ViewCodeModal";
 // ====== python code files ======
 import sourceCode from "../chartConfig/chartSourceCode";
 // ====== styling components, icons... ========
-import { Result, Button, Alert, Modal, PageHeader, Card, Skeleton } from "antd";
-import { FaLinkedin, FaEnvelope } from "react-icons/fa";
+import { Result, Button, Alert, Modal, PageHeader, Card, Skeleton, message } from "antd";
+import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { ShareAltOutlined } from "@ant-design/icons";
 // ====== dependencies =======
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
@@ -21,6 +21,7 @@ import Cookies from "js-cookie";
 
 import WorkerBuilder from "../worker/woker-builder";
 import Worker from "../worker/fibo.worker";
+import { useSearchParams } from "react-router-dom";
 const instance = new WorkerBuilder(Worker);
 
 const DashboardCycleTest = () => {
@@ -47,12 +48,42 @@ const DashboardCycleTest = () => {
 		cycleQtyByStep: false,
 	});
 	const [stepFromFilter, setStepFromFilter] = useState("");
+	const [shareDisabled, setShareDisabled] = useState(true);
 
 	// ======= Hooks ==========
 	const screen1 = useFullScreenHandle();
 	const screen2 = useFullScreenHandle();
 	const screen3 = useFullScreenHandle();
 	const screen4 = useFullScreenHandle();
+
+	const [searchParamsForCode] = useSearchParams();
+
+	// useEffect(() => {
+	// 	if ([...searchParamsForCode].length) {
+	// 		let code = searchParamsForCode.get("code");
+	// 		if (code) {
+	// 			console.log("code", code);
+	// 			const params = {
+	// 				grant_type: "authorization_code",
+	// 				code: code,
+	// 				redirect_uri:
+	// 				option: "value",
+	// 			};
+	// 			const data = Object.keys(params)
+	// 				.map((key) => `${key}=${encodeURIComponent(params[key])}`)
+	// 				.join("&");
+	// 			const options = {
+	// 				method: "POST",
+	// 				headers: { "content-type": "application/x-www-form-urlencoded" },
+	// 				data,
+	// 				url: "https://api.linkedin.com/v2/me",
+	// 			};
+	// 			axios(options).then((response) => {
+	// 				console.log(response);
+	// 			});
+	// 		}
+	// 	}
+	// }, []);
 
 	useEffect(() => {
 		let check = true;
@@ -62,17 +93,7 @@ const DashboardCycleTest = () => {
 			}
 		});
 		if (check) {
-			if (dashboardRef.current === null) {
-				return;
-			}
-			toBlob(dashboardRef.current).then(function (blob) {
-				let reader = new FileReader();
-				reader.readAsDataURL(blob);
-				reader.onloadend = function () {
-					let base64data = reader.result;
-					setMetaImageDash(base64data);
-				};
-			});
+			setShareDisabled(false);
 		}
 	}, [chartsLoaded]);
 
@@ -225,23 +246,77 @@ const DashboardCycleTest = () => {
 		}
 	};
 
+	// const b64toBlob = (b64Data, contentType = "", sliceSize = 512) => {
+	// 	const byteCharacters = atob(b64Data);
+	// 	const byteArrays = [];
+
+	// 	for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+	// 		const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+	// 		const byteNumbers = new Array(slice.length);
+	// 		for (let i = 0; i < slice.length; i++) {
+	// 			byteNumbers[i] = slice.charCodeAt(i);
+	// 		}
+
+	// 		const byteArray = new Uint8Array(byteNumbers);
+	// 		byteArrays.push(byteArray);
+	// 	}
+
+	// 	const blob = new Blob(byteArrays, { type: contentType });
+	// 	return blob;
+	// };
+
+	function copyToClipboard(textToCopy) {
+		if (navigator.clipboard && window.isSecureContext) {
+			return navigator.clipboard.writeText(textToCopy);
+			// return navigator.clipboard.write([new window.ClipboardItem({ "image/png": textToCopy })]);
+		} else {
+			let textArea = document.createElement("textarea");
+			textArea.value = textToCopy;
+			textArea.style.position = "fixed";
+			textArea.style.left = "-999999px";
+			textArea.style.top = "-999999px";
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			return new Promise((res, rej) => {
+				document.execCommand("copy") ? res() : rej();
+				textArea.remove();
+			});
+		}
+	}
+
+	const shareOnLinkedIn = () => {
+		// get oAuth code
+		window.open(`
+			https://www.linkedin.com/oauth/v2/authorization?
+			response_type=code&
+			state=123456789&
+			scope=r_emailaddress%20r_liteprofile%20w_member_social&
+			client_id=77s04eexgpvevc
+			&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fdashboard
+		`);
+		// get access token from oAuth code
+		// get user URN
+		// Post API
+	};
+
 	const doShareDashboard = () => {
 		console.log("share");
+		setMetaImageDash(null);
 		setShallShowShareDashModal(true);
-		// if (dashboardRef.current === null) {
-		// 	return;
-		// }
-
-		// toPng(dashboardRef.current, { cacheBust: true })
-		// 	.then((dataUrl) => {
-		// 		const link = document.createElement("a");
-		// 		link.download = "my-image-name.png";
-		// 		link.href = dataUrl;
-		// 		link.click();
-		// 	})
-		// 	.catch((err) => {
-		// 		console.log(err);
-		// 	});
+		if (dashboardRef.current === null) {
+			return;
+		}
+		toBlob(dashboardRef.current).then(function (blob) {
+			let reader = new FileReader();
+			reader.readAsDataURL(blob);
+			reader.onloadend = function () {
+				let base64data = reader.result;
+				setMetaImageDash(base64data);
+				// copyToClipboard(b64toBlob(base64data.split(",")[1], "image/png"));
+			};
+		});
 	};
 
 	// ========= Helpers ==========
@@ -805,9 +880,15 @@ const DashboardCycleTest = () => {
 						<div style={{ display: "flex" }}>
 							<div style={{ width: "50%" }} className="text-center">
 								<a
-									href={`https://www.linkedin.com/sharing/share-offsite/?url=http://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
+									title="LinkedIn"
+									href={`https://www.linkedin.com/sharing/share-offsite/?url=https://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
 										"userId"
 									)}`}
+									// href="#"
+									// onClick={(e) => {
+									// 	e.preventDefault();
+									// 	shareOnLinkedIn();
+									// }}
 									target="_blank"
 								>
 									<FaLinkedin size={70} />
@@ -815,7 +896,8 @@ const DashboardCycleTest = () => {
 							</div>
 							<div style={{ width: "50%" }} className="text-center">
 								<a
-									href={`mailto:?subject=Amplabs.ai - Dashboared&body=I just created a Cycle Test dashboard on AmpLabs, check it out at amplabs.ai. http://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
+									title="Mail"
+									href={`mailto:?subject=Amplabs.ai - Dashboared&body=I just created a Cycle Test dashboard on AmpLabs, check it out at amplabs.ai. https://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
 										"userId"
 									)}`}
 									target="_blank"
@@ -823,15 +905,29 @@ const DashboardCycleTest = () => {
 									<FaEnvelope size={70} />
 								</a>
 							</div>
+							<div style={{ width: "50%" }} className="text-center">
+								<div
+									className="btn btn-link"
+									title="Direct Link"
+									onClick={(e) => {
+										e.preventDefault();
+										copyToClipboard(`https://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get("userId")}`);
+										message.success("Copied to clipboard!");
+										message.success("Copied to clipboard!");
+									}}
+								>
+									<FaLink size={60} />
+								</div>
+							</div>
 						</div>
 						<Card
 							loading={!metaImageDash}
 							cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
 							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
 						>
-							{`I just created a Cycle Test dashboard on AmpLabs! Check it out at http://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
+							{`I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
 								"userId"
-							)} @materialscience # amplabs #batterytechnology #batterydata #materialsscience #researchers`}
+							)} @materialscience #amplabs #batterytechnology #batterydata #materialsscience #researchers`}
 						</Card>
 					</Modal>
 					<HelmetMetaData image={metaImageDash}></HelmetMetaData>
@@ -841,26 +937,33 @@ const DashboardCycleTest = () => {
 						ghost={true}
 						title="Cycle Test Dashboard"
 						extra={[
-							<Button key="1" size="large" type="primary" onClick={doShareDashboard} icon={<ShareAltOutlined />}>
+							<Button
+								disabled={shareDisabled}
+								key="1"
+								size="large"
+								type="primary"
+								onClick={doShareDashboard}
+								icon={<ShareAltOutlined />}
+							>
 								Share
 							</Button>,
 						]}
 					></PageHeader>
 					{/* <img src={metaImageDash} alt="Broken" /> */}
+					<DashboardFilterBar
+						testType="cycleTest"
+						onFilterChange={handleFilterChange}
+						onCellIdChange={handleCellIdChange}
+						internalServerErrorFound={internalServerErrorFound}
+						disableSelection={disableSelection}
+					/>
+					<ViewCodeModal
+						code={codeContent}
+						modalVisible={modalVisible}
+						setModalVisible={setModalVisible}
+						searchParams={searchParams}
+					/>
 					<div ref={dashboardRef}>
-						<DashboardFilterBar
-							testType="cycleTest"
-							onFilterChange={handleFilterChange}
-							onCellIdChange={handleCellIdChange}
-							internalServerErrorFound={internalServerErrorFound}
-							disableSelection={disableSelection}
-						/>
-						<ViewCodeModal
-							code={codeContent}
-							modalVisible={modalVisible}
-							setModalVisible={setModalVisible}
-							searchParams={searchParams}
-						/>
 						<div className="row pb-5">
 							<div className="col-md-6 mt-2">
 								{/* <input type="file" onChange={(e) => setMetaImageDash(e.target.files[0])} /> */}

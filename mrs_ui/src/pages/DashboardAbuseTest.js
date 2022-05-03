@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
-import { Result, Button, Alert, Typography, Badge, Modal, Card, PageHeader } from "antd";
+import { Result, Button, Alert, Typography, Badge, Modal, Card, PageHeader, Skeleton, message } from "antd";
 import sourceCode from "../chartConfig/chartSourceCode";
 import axios from "axios";
 import ViewCodeModal from "../components/ViewCodeModal";
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../chartConfig/initialConfigs";
-import { FaLinkedin, FaEnvelope, FaCloudUploadAlt } from "react-icons/fa";
+import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import HelmetMetaData from "../components/HelmetMetaData";
 import { ShareAltOutlined } from "@ant-design/icons";
@@ -39,6 +39,7 @@ const DashboardAbuseTest = () => {
 	});
 	const [metaImageDash, setMetaImageDash] = useState(null);
 	const [sampleFromFilter, setsampleFromFilter] = useState("");
+	const [shareDisabled, setShareDisabled] = useState(true);
 
 	const forceAndDisplacementChart = useRef();
 	const testTempraturesChart = useRef();
@@ -55,17 +56,7 @@ const DashboardAbuseTest = () => {
 			}
 		});
 		if (check) {
-			if (dashboardRef.current === null) {
-				return;
-			}
-			toBlob(dashboardRef.current).then(function (blob) {
-				let reader = new FileReader();
-				reader.readAsDataURL(blob);
-				reader.onloadend = function () {
-					let base64data = reader.result;
-					setMetaImageDash(base64data);
-				};
-			});
+			setShareDisabled(false);
 		}
 	}, [chartsLoaded]);
 
@@ -680,22 +671,40 @@ const DashboardAbuseTest = () => {
 
 	const doShareDashboard = () => {
 		console.log("share");
+		setMetaImageDash(null);
 		setShallShowShareDashModal(true);
-		// if (dashboardRef.current === null) {
-		// 	return;
-		// }
-
-		// toPng(dashboardRef.current, { cacheBust: true })
-		// 	.then((dataUrl) => {
-		// 		const link = document.createElement("a");
-		// 		link.download = "my-image-name.png";
-		// 		link.href = dataUrl;
-		// 		link.click();
-		// 	})
-		// 	.catch((err) => {
-		// 		console.log(err);
-		// 	});
+		if (dashboardRef.current === null) {
+			return;
+		}
+		toBlob(dashboardRef.current).then(function (blob) {
+			let reader = new FileReader();
+			reader.readAsDataURL(blob);
+			reader.onloadend = function () {
+				let base64data = reader.result;
+				setMetaImageDash(base64data);
+			};
+		});
 	};
+
+	function copyToClipboard(textToCopy) {
+		if (navigator.clipboard && window.isSecureContext) {
+			return navigator.clipboard.writeText(textToCopy);
+			// return navigator.clipboard.write([new window.ClipboardItem({ "image/png": textToCopy })]);
+		} else {
+			let textArea = document.createElement("textarea");
+			textArea.value = textToCopy;
+			textArea.style.position = "fixed";
+			textArea.style.left = "-999999px";
+			textArea.style.top = "-999999px";
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			return new Promise((res, rej) => {
+				document.execCommand("copy") ? res() : rej();
+				textArea.remove();
+			});
+		}
+	}
 
 	return (
 		<div>
@@ -732,7 +741,7 @@ const DashboardAbuseTest = () => {
 						<div style={{ display: "flex" }}>
 							<div style={{ width: "50%" }} className="text-center">
 								<a
-									href={`https://www.linkedin.com/sharing/share-offsite/?url=http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+									href={`https://www.linkedin.com/sharing/share-offsite/?url=https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
 										"userId"
 									)}`}
 									target="_blank"
@@ -742,7 +751,7 @@ const DashboardAbuseTest = () => {
 							</div>
 							<div style={{ width: "50%" }} className="text-center">
 								<a
-									href={`mailto:?subject=Amplabs.ai - Dashboared&body=I just created a Abuse Test dashboard on AmpLabs, check it out at amplabs.ai. http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+									href={`mailto:?subject=Amplabs.ai - Dashboared&body=I just created a Abuse Test dashboard on AmpLabs, check it out at amplabs.ai. https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
 										"userId"
 									)}`}
 									target="_blank"
@@ -750,14 +759,29 @@ const DashboardAbuseTest = () => {
 									<FaEnvelope size={70} />
 								</a>
 							</div>
+							<div style={{ width: "50%" }} className="text-center">
+								<div
+									className="btn btn-link"
+									title="Direct Link"
+									onClick={(e) => {
+										e.preventDefault();
+										copyToClipboard(`https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get("userId")}`);
+										message.success("Copied to clipboard!");
+										message.success("Copied to clipboard!");
+									}}
+								>
+									<FaLink size={60} />
+								</div>
+							</div>
 						</div>
 						<Card
-							cover={<img alt="dashboard screenshot" src={metaImageDash} />}
+							loading={!metaImageDash}
+							cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
 							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
 						>
-							{`I just created a Cycle Test dashboard on AmpLabs! Check it out at http://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+							{`I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
 								"userId"
-							)} @materialscience # amplabs #batterytechnology #batterydata #materialsscience #researchers`}
+							)} @materialscience #amplabs #batterytechnology #batterydata #materialsscience #researchers`}
 						</Card>
 					</Modal>
 					<HelmetMetaData image={metaImageDash}></HelmetMetaData>
