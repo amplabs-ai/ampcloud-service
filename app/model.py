@@ -231,7 +231,7 @@ class ArchiveOperator:
     url = AMPLABS_DB_URL
     engine = create_engine(url, poolclass=NullPool)
     Model.metadata.create_all(engine)
-    executor = ThreadPoolExecutor(10)
+    executor = ThreadPoolExecutor(100)
 
     def __init__(self, config={}):
         pass
@@ -308,7 +308,7 @@ class ArchiveOperator:
     #TEST METADATA
     def get_all_test_metadata_from_table(self, test_model, email):
         return self.get_all_data_from_table_with_email(test_model, email)
-    
+
     def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
         return self.get_all_data_from_table_with_id(test_model, cell_id, email)
 
@@ -398,7 +398,7 @@ class ArchiveOperator:
                              if_exists='append',
                              chunksize=1000,
                              index=False)
-    
+
     def add_meta_to_db(self, cell):
         df_cell_md = cell.cellmeta
         df_test_meta_md = cell.testmeta
@@ -422,8 +422,8 @@ class ArchiveOperator:
                             if_exists='append',
                             chunksize=1000,
                             index=False)
-    
-    def add_ts_to_db(self, cell): 
+
+    def add_ts_to_db(self, cell):
         _, df_timeseries = cell.stat
         df_timeseries.to_sql(cell.test_ts_table,
                              con=self.session.bind,
@@ -458,7 +458,7 @@ class ArchiveOperator:
 
     def get_all_data_from_table(self, table):
         return self.select_table(table).all()
-    
+
     def get_all_data_from_table_with_email(self, table, email):
         return self.select_table_with_email(table, email).all()
 
@@ -475,7 +475,7 @@ class ArchiveOperator:
 
     def select_data_from_table(self, table, email, test):
         return self.session.query(table).filter(table.email == email, table.test == test).first()
-    
+
     def select_table_with_email(self, table, email):
         return self.session.query(table).filter(table.email == email)
 

@@ -46,18 +46,33 @@ def get_compare_by_cycle_time(cell_id):
     fetch_time = (et-st).total_seconds()*1000
     logging.info("User {email} Action CHART_PREPARATION_TIME data CBCT size {size} fetch_time {fetch_time}".format(email=email, size=size, fetch_time=fetch_time))
     return Response(status, detail, records).to_dict(), status
-    
+
 def get_force_and_displacement(cell_id, sample):
     email = request.cookies.get("userId")
+    st = datetime.datetime.now()
     status, detail, *records = get_force_and_displacement_service(cell_id, email, sample)
+    et = datetime.datetime.now()
+    size = float(asizeof(records)/1000)
+    fetch_time = (et-st).total_seconds()*1000
+    logging.info("User {email} Action CHART_PREPARATION_TIME data Force/Disp size {size} fetch_time {fetch_time}".format(email=email, size=size, fetch_time=fetch_time))
     return Response(status, detail, records).to_dict(), status
 
 def get_test_tempratures(cell_id, sample):
     email = request.cookies.get("userId")
+    st = datetime.datetime.now()
     status, detail, *records = get_test_tempratures_service(cell_id, email, sample)
+    et = datetime.datetime.now()
+    size = float(asizeof(records)/1000)
+    fetch_time = (et-st).total_seconds()*1000
+    logging.info("User {email} Action CHART_PREPARATION_TIME data TestTemp size {size} fetch_time {fetch_time}".format(email=email, size=size, fetch_time=fetch_time))
     return Response(status, detail, records).to_dict(), status
 
 def get_voltage(cell_id, sample):
     email = request.cookies.get("userId")
+    st = datetime.datetime.now()
     status, detail, *records = get_voltage_service(cell_id, email, sample)
+    et = datetime.datetime.now()
+    size = float(asizeof(records)/1000)
+    fetch_time = (et-st).total_seconds()*1000
+    logging.info("User {email} Action CHART_PREPARATION_TIME data Volt size {size} fetch_time {fetch_time}".format(email=email, size=size, fetch_time=fetch_time))
     return Response(status, detail, records).to_dict(), status
