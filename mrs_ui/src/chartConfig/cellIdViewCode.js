@@ -7,7 +7,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -15,8 +15,8 @@ import urllib.request
 # PyData Libraries
 import pandas as pd
 
-def get_amplabs_data():
-    url = "https://www.amplabs.ai/download/cells/cycle_data_json/{0}"
+def get_amplabs_data(cell_id):
+    url = "https://www.amplabs.ai/download/cells/cycle_data_json/{}".format(cell_id)
     user = "{1}"
     httprequest = urllib.request.Request(
             url, method="GET"
@@ -32,7 +32,8 @@ def get_amplabs_data():
     return None
 
 #Fetch Data from Amplabs API
-response = get_amplabs_data()
+cell_id = "{0}"
+response = get_amplabs_data(cell_id)
 
 if response:
     df = pd.DataFrame(response['records'])
@@ -47,7 +48,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -55,8 +56,8 @@ import urllib.request
 # PyData Libraries
 import pandas as pd
 
-def get_amplabs_data():
-    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json/{0}"
+def get_amplabs_data(cell_id):
+    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json/{}".format(cell_id)
     user = "{1}"
     httprequest = urllib.request.Request(
             url, method="GET"
@@ -72,7 +73,8 @@ def get_amplabs_data():
     return None
 
 #Fetch Data from Amplabs API
-response = get_amplabs_data()
+cell_id = "{0}"
+response = get_amplabs_data(cell_id)
 
 if response:
     df = pd.DataFrame(response['records'])

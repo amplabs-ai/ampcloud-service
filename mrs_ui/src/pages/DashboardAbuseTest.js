@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
-import { Result, Button, Alert, Typography, Badge, Modal, Card, PageHeader, Skeleton, message } from "antd";
+import { Result, Button, Alert, Typography, Badge, Modal, Card, PageHeader, Skeleton, message, Spin } from "antd";
 import sourceCode from "../chartConfig/chartSourceCode";
 import axios from "axios";
 import ViewCodeModal from "../components/ViewCodeModal";
@@ -13,6 +13,7 @@ import { ShareAltOutlined } from "@ant-design/icons";
 import { toPng, toBlob } from "html-to-image";
 import Cookies from "js-cookie";
 import { enterFullscreenOption, exitFullscreenOption } from "../chartConfig/chartFullScreenOption";
+import { useSearchParams } from "react-router-dom";
 
 const DashboardAbuseTest = () => {
 	const screen1 = useFullScreenHandle();
@@ -40,6 +41,7 @@ const DashboardAbuseTest = () => {
 	const [metaImageDash, setMetaImageDash] = useState(null);
 	const [sampleFromFilter, setsampleFromFilter] = useState("");
 	const [shareDisabled, setShareDisabled] = useState(true);
+	const [shareLoadingMsg, setShareLoadingMsg] = useState("");
 
 	const forceAndDisplacementChart = useRef();
 	const testTempraturesChart = useRef();
@@ -47,6 +49,71 @@ const DashboardAbuseTest = () => {
 	const dashboardRef = useRef(null);
 
 	const { Title } = Typography;
+	const [searchParamsForCode] = useSearchParams();
+
+	useEffect(() => {
+		if ([...searchParamsForCode].length) {
+			let code = searchParamsForCode.get("code");
+			if (code) {
+				setShareLoadingMsg("creating post for you...");
+				console.log("code", code);
+
+				// send code to backend
+				let shareText = `I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+					"userId"
+				)} @materialscience #amplabs #batterytechnology #batterydata #materialsscience #researchers`;
+				let img = localStorage.getItem("dashImage");
+				let parts = [b64toBlob(img?.split(",")[1], "image/png")];
+				let file = new File(parts, "dashboard.png", {
+					lastModified: new Date(0),
+					type: "image/png",
+				});
+
+				const formData = new FormData();
+				formData.append("code", code);
+				formData.append("file", file);
+				formData.append("shareText", shareText);
+
+				axios
+					.post("/dashboard/share-linkedin", formData, {
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
+					})
+					.then((response) => {
+						console.log("linkedin share success", response);
+						// post shared successfully
+						// get redirect url to post share and redirect
+						window.open("https://www.linkedin.com/embed/feed/update/" + response.data.records.id);
+						setShareLoadingMsg("");
+					})
+					.catch((err) => {
+						setShareLoadingMsg("Something went wrong! Please refresh page & try again.");
+						console.log("linkedin share failed", err);
+					});
+			}
+		}
+	}, []);
+
+	const b64toBlob = (b64Data, contentType = "", sliceSize = 512) => {
+		const byteCharacters = atob(b64Data);
+		const byteArrays = [];
+
+		for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+			const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+			const byteNumbers = new Array(slice.length);
+			for (let i = 0; i < slice.length; i++) {
+				byteNumbers[i] = slice.charCodeAt(i);
+			}
+
+			const byteArray = new Uint8Array(byteNumbers);
+			byteArrays.push(byteArray);
+		}
+
+		const blob = new Blob(byteArrays, { type: contentType });
+		return blob;
+	};
 
 	useEffect(() => {
 		let check = true;
@@ -670,8 +737,10 @@ const DashboardAbuseTest = () => {
 	};
 
 	const doShareDashboard = () => {
+		axios.get('/dashboard/share').then(r => console.log(r))
 		console.log("share");
 		setMetaImageDash(null);
+		localStorage.setItem("dashImage", null);
 		setShallShowShareDashModal(true);
 		if (dashboardRef.current === null) {
 			return;
@@ -682,6 +751,7 @@ const DashboardAbuseTest = () => {
 			reader.onloadend = function () {
 				let base64data = reader.result;
 				setMetaImageDash(base64data);
+				localStorage.setItem("dashImage", base64data);
 			};
 		});
 	};
@@ -705,6 +775,20 @@ const DashboardAbuseTest = () => {
 			});
 		}
 	}
+
+	const shareOnLinkedIn = () => {
+		window.open(
+			`
+			https://www.linkedin.com/oauth/v2/authorization?
+			response_type=code&
+			state=123456789&
+			scope=r_emailaddress%20r_liteprofile%20w_member_social&
+			client_id=77s04eexgpvevc
+			&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fdashboard
+		`,
+			"_self"
+		);
+	};
 
 	return (
 		<div>
@@ -733,56 +817,74 @@ const DashboardAbuseTest = () => {
 					<Modal
 						title="Share Dashboard"
 						centered
-						visible={shallShowShareDashModal}
+						visible={shallShowShareDashModal || shareLoadingMsg}
 						footer={false}
-						onCancel={() => setShallShowShareDashModal(false)}
+						onCancel={() => {
+							setShallShowShareDashModal(false)
+							setShareLoadingMsg('')
+						}}
 						style={{ maxHeight: "70%" }}
 					>
-						<div style={{ display: "flex" }}>
-							<div style={{ width: "50%" }} className="text-center">
-								<a
-									href={`https://www.linkedin.com/sharing/share-offsite/?url=https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
-										"userId"
-									)}`}
-									target="_blank"
-								>
-									<FaLinkedin size={70} />
-								</a>
+						{shareLoadingMsg ? (
+							<div className="text-center">
+								<h4>{shareLoadingMsg}</h4>
+								<br></br>
+								<Spin size="large" />
 							</div>
-							<div style={{ width: "50%" }} className="text-center">
-								<a
-									href={`mailto:?subject=Amplabs.ai - Dashboared&body=I just created a Abuse Test dashboard on AmpLabs, check it out at amplabs.ai. https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
-										"userId"
-									)}`}
-									target="_blank"
-								>
-									<FaEnvelope size={70} />
-								</a>
-							</div>
-							<div style={{ width: "50%" }} className="text-center">
-								<div
-									className="btn btn-link"
-									title="Direct Link"
-									onClick={(e) => {
-										e.preventDefault();
-										copyToClipboard(`https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get("userId")}`);
-										message.success("Copied to clipboard!");
-										message.success("Copied to clipboard!");
-									}}
-								>
-									<FaLink size={60} />
+						) : (
+							<div>
+								<div style={{ display: "flex" }}>
+									<div style={{ width: "50%" }} className="text-center">
+										<a
+											// href={`https://www.linkedin.com/sharing/share-offsite/?url=https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+											// 	"userId"
+											// )}`}
+											// target="_blank"
+											href="#"
+											onClick={(e) => {
+												e.preventDefault();
+												shareOnLinkedIn();
+											}}
+										>
+											<FaLinkedin size={70} />
+										</a>
+									</div>
+									<div style={{ width: "50%" }} className="text-center">
+										<a
+											href={`mailto:?subject=Amplabs.ai - Dashboared&body=I just created a Abuse Test dashboard on AmpLabs, check it out at amplabs.ai. https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+												"userId"
+											)}`}
+											target="_blank"
+										>
+											<FaEnvelope size={70} />
+										</a>
+									</div>
+									<div style={{ width: "50%" }} className="text-center">
+										<div
+											className="btn btn-link"
+											title="Direct Link"
+											onClick={(e) => {
+												e.preventDefault();
+												copyToClipboard(`https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get("userId")}`);
+												message.success("Copied to clipboard!");
+												message.success("Copied to clipboard!");
+											}}
+										>
+											<FaLink size={60} />
+										</div>
+									</div>
 								</div>
+								<Card
+									loading={!metaImageDash}
+									cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
+									style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
+								>
+									{`I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+										"userId"
+									)} @materialscience #amplabs #batterytechnology #batterydata #materialsscience #researchers`}
+								</Card>
 							</div>
-						</div>
-						<Card
-							loading={!metaImageDash}
-							cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
-							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
-						>
-							{`I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
-								"userId"
-							)} @materialscience #amplabs #batterytechnology #batterydata #materialsscience #researchers`}
-						</Card>
+						)}
 					</Modal>
 					<HelmetMetaData image={metaImageDash}></HelmetMetaData>
 					<PageHeader
@@ -797,21 +899,21 @@ const DashboardAbuseTest = () => {
 						]}
 					></PageHeader>
 
-					<div ref={dashboardRef}>
-						<DashboardFilterBar
-							onCellIdChange={handleCellIdChange}
-							testType="abuseTest"
-							onFilterChange={handleFilterChange}
-							internalServerErrorFound={internalServerErrorFound}
-							disableSelection={disableSelection}
-						/>
-						<ViewCodeModal
-							code={codeContent}
-							modalVisible={modalVisible}
-							setModalVisible={setModalVisible}
-							searchParams={searchParams}
-						/>
+					<DashboardFilterBar
+						onCellIdChange={handleCellIdChange}
+						testType="abuseTest"
+						onFilterChange={handleFilterChange}
+						internalServerErrorFound={internalServerErrorFound}
+						disableSelection={disableSelection}
+					/>
+					<ViewCodeModal
+						code={codeContent}
+						modalVisible={modalVisible}
+						setModalVisible={setModalVisible}
+						searchParams={searchParams}
+					/>
 
+					<div ref={dashboardRef}>
 						<div className="row pb-5">
 							<div className="col-md-12 mt-2">
 								<FullScreen handle={screen1} onChange={reportChange}>

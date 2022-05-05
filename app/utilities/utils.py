@@ -3,6 +3,9 @@ import time
 import pandas as pd
 from app.archive_constants import LABEL
 
+import warnings
+warnings.filterwarnings('ignore')
+
 status = {}
 
 def default(obj):
@@ -15,11 +18,11 @@ def clear_status(email):
 
 def sort_timeseries(df_tmerge):
     # print(df_tmerge)
-    """ 
+    """
     Sort cycle timeseries data
 
     :param df_tmerge: dataframe returned after reading cycle timeseries data
-    :return: sorted dataframe 
+    :return: sorted dataframe
     """
     # Arrange the data by date time first, then by test time
     # Rebuild Cycle Index and test time to increment from file to file
@@ -94,7 +97,7 @@ def calc_cycle_stats(df_t, cell_id = None, email = None):
     """
     Calculate cycle states from cycle timeseries data
 
-    :param cell_id: cell_id for 
+    :param cell_id: cell_id for
     :param df_t: cycle timeseries data frame.
     :return: tuple of dataframes of calculated stats and timeseries data
     """

@@ -8,6 +8,12 @@ import styles from "./LandingPage.module.css";
 import { FaArrowRight, FaHandsHelping, FaLongArrowAltRight, FaNewspaper, FaSearch } from "react-icons/fa";
 import { useSpring, animated } from "react-spring";
 import Typewriter from "typewriter-effect";
+import num1 from "../assets/icons/numbers-1.svg";
+import num2 from "../assets/icons/numbers-2.svg";
+import num3 from "../assets/icons/numbers-3.svg";
+import pic1 from "../assets/uploadPage.png";
+import pic2 from "../assets/dashboardPage.png";
+import pic3 from "../assets/sharePage.png";
 
 const LandingPage = () => {
 	const navigate = useNavigate();
@@ -118,11 +124,31 @@ const LandingPage = () => {
 			) : (
 				<div className="row">
 					<animated.div className="col-md-8 p-2" style={aboutAnim}>
-						<h1 className="display-4 text-center mb-3">About</h1>
+						{/* <h1 className="display-4 text-center mb-3">About</h1> */}
 						<p className="para" style={{ lineHeight: "1.6" }}>
 							Tools for scientists, researchers, and engineers to analyze, publish, and collaborate in order to reinvent
 							our energy systems.
 						</p>
+						<div className="row">
+							<div className="col-lg-4 col-md-6 col-sm-12 text-center pt-2">
+								<img className="mb-4" style={{ height: "64px" }} src={num1} alt="imgg" />
+								<h3 className="h5 mb-2 fw-light">Upload data</h3>
+								<img className="w-100" src={pic1} alt="imgg" />
+								<p>Upload files in csv</p>
+							</div>
+							<div className="col-lg-4 col-md-6 col-sm-12 text-center pt-2">
+								<img className="mb-4" style={{ height: "64px" }} src={num2} alt="imgg" />
+								<h3 className="h5 mb-2 fw-light">Analyze data</h3>
+								<img className="w-100" src={pic2} alt="imgg" />
+								<p>Visualize your data with tools to make you productive.</p>
+							</div>
+							<div className="col-lg-4 col-md-6 col-sm-12 text-center pt-2">
+								<img className="mb-4" style={{ height: "64px" }} src={num3} alt="imgg" />
+								<h3 className="h5 mb-2 fw-light">Share data</h3>
+								<img className="w-100" src={pic3} alt="imgg" />
+								<p>Share your work and collaborate.</p>
+							</div>
+						</div>
 						{/* <div className="fs-2 fw-light">
 							<p className="fs-4">
 								Tools for <b>Scientists, Researchers, and Engineers</b> to
