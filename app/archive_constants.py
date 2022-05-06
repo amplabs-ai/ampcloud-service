@@ -10,6 +10,12 @@ LIVE_DB_URL = "<your-db-string>"
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
+# linkedin share constants
+LINKEDIN_CLIENT_ID = '78opgrui0xx0ng'
+LINKEDIN_CLIENT_SECRET = 'hGAIpqZh5swxgM6v'
+LINKEDIN_REDIRECT_URI_DASH_CYCLE='https://www.amplabs.ai/dashboard/cycle-test'
+LINKEDIN_REDIRECT_URI_DASH_ABUSE='https://www.amplabs.ai/dashboard/abuse-test'
+
 class TEST_TYPE(Enum):
     ABUSE = "abuse"
     CYCLE = "cycle"

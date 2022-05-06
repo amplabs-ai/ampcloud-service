@@ -7,7 +7,7 @@ from app.exception_handler import *
 from app.model import Model
 from flask_cors import CORS
 from flask_compress import Compress
-from app.controllers.dashboard_share_controller import dashboard_share, dashboard_share_linkedin
+from app.controllers.dashboard_share_controller import dashboard_audit, dashboard_share, dashboard_share_linkedin
 import logging
 # from celery import Celery
 
@@ -29,7 +29,7 @@ app.add_error_handler(ProblemException, problem_exception)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 
-app.add_url_rule('/dashboard/share', 'dashboard_share', dashboard_share)
+app.add_url_rule('/dashboard/audit', 'dashboard_audit', dashboard_audit)
 
 app.add_url_rule('/dashboard/share-linkedin', 'dashboard_share_linkedin', dashboard_share_linkedin, methods = ['POST'])
 

@@ -32,10 +32,10 @@ export const AuthProvider = ({ children }) => {
 	};
 
 	const logout = () => {
-		Cookies.remove("userId");
 		axios.get("/logout").then((res) => {
 			console.log("logout", res);
 		});
+		Cookies.remove("userId");
 		setUser(null);
 	};
 

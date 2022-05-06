@@ -3,8 +3,8 @@ import axios from "axios";
 import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography } from "antd";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import ViewCodeModal from "./ViewCodeModal";
-import { cycleDataCodeContent, timeSeriesDataCodeContent } from "../chartConfig/cellIdViewCode";
-
+import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../chartConfig/cellIdViewCode";
+import { audit } from "../auditAction/audit";
 import Highlighter from "react-highlight-words";
 
 import { SearchOutlined } from "@ant-design/icons";
@@ -132,12 +132,14 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const viewCycleDataCode = (k) => {
+		audit(`cycle_dash_cellId__cycle_viewcode`);
 		setSearchParams(encodeURIComponent(k.trim()));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
+		audit(`cycle_dash_cellId__ts_viewcode`);
 		setSearchParams(encodeURIComponent(k.trim()));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
@@ -150,6 +152,32 @@ const DashboardFilterBar = (props) => {
 			.get(`/download/cells/cycle_timeseries/${k}`)
 			.then(({ data }) => {
 				console.log("downloadTimeSeriesData", data);
+				var a = document.createElement("a");
+				var blob = new Blob([data], { type: "text/csv" });
+				a.href = window.URL.createObjectURL(blob);
+				a.download = k + " (Time Series).csv";
+				a.click();
+				setLoading(false);
+			})
+			.catch((err) => {
+				setLoading(false);
+			});
+	};
+
+	const viewAbuseTSCode = (k) => {
+		audit(`abuse_dash_cellId__ts_viewcode`);
+		setSearchParams(encodeURIComponent(k.trim()));
+		setCodeContent(abuseCellIdViewCode);
+		setModalVisible(true);
+	};
+
+	const downloadAbuseTSData = (k) => {
+		console.log("downloadAbuseTSData", k);
+		setLoading(true);
+		axios
+			.get(`/download/cells/abuse_timeseries/${k}`)
+			.then(({ data }) => {
+				console.log("downloadAbuseTSData", data);
 				var a = document.createElement("a");
 				var blob = new Blob([data], { type: "text/csv" });
 				a.href = window.URL.createObjectURL(blob);
@@ -180,7 +208,10 @@ const DashboardFilterBar = (props) => {
 				<Space>
 					<Button
 						type="primary"
-						onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+						onClick={() => {
+							audit(`${props.testType}_dash_cellId_search`);
+							handleSearch(selectedKeys, confirm, dataIndex);
+						}}
 						icon={<SearchOutlined />}
 						size="small"
 						style={{ width: 90 }}
@@ -299,6 +330,21 @@ const DashboardFilterBar = (props) => {
 			dataIndex: "cell_id",
 			width: 100,
 			...getColumnSearchProps("cell_id"),
+		},
+		{
+			title: "Time Series",
+			key: "timeSeriesDownload",
+			render: (text, record) => (
+				<Space size="middle">
+					<Button type="link" onClick={() => downloadAbuseTSData(record.cell_id)}>
+						Download
+					</Button>
+					<Button type="link" title="View Code" onClick={(e) => viewAbuseTSCode(record.cell_id)}>
+						<FaCode />
+					</Button>
+				</Space>
+			),
+			width: 100,
 		},
 		{
 			title: "Delete",

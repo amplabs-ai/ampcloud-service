@@ -229,9 +229,9 @@ Archive Operator
 
 class ArchiveOperator:
     url = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
-    engine = create_engine(url, poolclass=NullPool)
+    engine = create_engine(url, pool_size=500, pool_timeout=1200)
     Model.metadata.create_all(engine)
-    executor = ThreadPoolExecutor(100)
+    executor = ThreadPoolExecutor(500)
 
     def __init__(self, config={}):
         pass
@@ -295,6 +295,16 @@ class ArchiveOperator:
             CycleStats.e_c.label(OUTPUT_LABELS.CHARGE_ENERGY.value),
             CycleStats.e_d.label(OUTPUT_LABELS.DISCHARGE_ENERGY.value)).filter(
                     CycleStats.cell_id == cell_id, CycleStats.email == email).order_by('cycle_index').statement
+        return pd.read_sql(sql, self.session.bind).round(DEGREE)
+
+    def get_df_abuse_ts_with_cell_id(self, cell_id, email):
+        sql = self.session.query(
+            AbuseTimeSeries.test_time, AbuseTimeSeries.axial_d, AbuseTimeSeries.axial_f, AbuseTimeSeries.v,
+            AbuseTimeSeries.pos_terminal_temperature, AbuseTimeSeries.neg_terminal_temperature,
+            AbuseTimeSeries.left_bottom_temperature, AbuseTimeSeries.right_bottom_temperature,
+            AbuseTimeSeries.above_punch_temperature, AbuseTimeSeries.below_punch_temperature,
+            AbuseTimeSeries.norm_d, AbuseTimeSeries.strain).filter(
+                    AbuseTimeSeries.cell_id == cell_id, AbuseTimeSeries.email == email).order_by('index').statement
         return pd.read_sql(sql, self.session.bind).round(DEGREE)
 
     # CELL

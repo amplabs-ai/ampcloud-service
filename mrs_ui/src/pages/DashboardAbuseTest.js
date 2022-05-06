@@ -6,7 +6,7 @@ import axios from "axios";
 import ViewCodeModal from "../components/ViewCodeModal";
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../chartConfig/initialConfigs";
-import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
+import { FaLinkedin, FaEnvelope, FaLink, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import HelmetMetaData from "../components/HelmetMetaData";
 import { ShareAltOutlined } from "@ant-design/icons";
@@ -14,6 +14,10 @@ import { toPng, toBlob } from "html-to-image";
 import Cookies from "js-cookie";
 import { enterFullscreenOption, exitFullscreenOption } from "../chartConfig/chartFullScreenOption";
 import { useSearchParams } from "react-router-dom";
+import { audit } from "../auditAction/audit";
+
+const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
+const REDIRECT_URI = process.env.REACT_APP_LINKEDIN_REDIRECT_URI_DASH_ABUSE;
 
 const DashboardAbuseTest = () => {
 	const screen1 = useFullScreenHandle();
@@ -55,13 +59,18 @@ const DashboardAbuseTest = () => {
 		if ([...searchParamsForCode].length) {
 			let code = searchParamsForCode.get("code");
 			if (code) {
-				setShareLoadingMsg("creating post for you...");
+				setShareLoadingMsg(
+					<>
+						<Title level={4}>Creating Post for you...</Title>
+						<br></br>
+						<Spin size="large" />
+					</>
+				);
 				console.log("code", code);
-
 				// send code to backend
-				let shareText = `I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
+				let shareText = `I just created a Abuse Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/abuse-test?mail=${Cookies.get(
 					"userId"
-				)} @materialscience #amplabs #batterytechnology #batterydata #materialsscience #researchers`;
+				)} #amplabs #batterytechnology #batterydata #materialsscience #researchers #voltafoundation #batterybits #batterybrunch`;
 				let img = localStorage.getItem("dashImage");
 				let parts = [b64toBlob(img?.split(",")[1], "image/png")];
 				let file = new File(parts, "dashboard.png", {
@@ -73,6 +82,7 @@ const DashboardAbuseTest = () => {
 				formData.append("code", code);
 				formData.append("file", file);
 				formData.append("shareText", shareText);
+				formData.append("dashboard", "abuse");
 
 				axios
 					.post("/dashboard/share-linkedin", formData, {
@@ -85,10 +95,24 @@ const DashboardAbuseTest = () => {
 						// post shared successfully
 						// get redirect url to post share and redirect
 						window.open("https://www.linkedin.com/embed/feed/update/" + response.data.records.id);
-						setShareLoadingMsg("");
+						setShareLoadingMsg(
+							<>
+								<FaCheckCircle size={60} className="text-success" />
+								<Title level={4}>Post Created successfully!</Title>
+								<Title level={5}>
+									Check it out at{" "}
+									<a href={"https://www.linkedin.com/embed/feed/update/" + response.data.records.id}>Link</a>
+								</Title>
+							</>
+						);
 					})
 					.catch((err) => {
-						setShareLoadingMsg("Something went wrong! Please refresh page & try again.");
+						setShareLoadingMsg(
+							<>
+								<FaExclamationCircle size={60} className="text-danger" />
+								<Title level={4}>"Something went wrong! Please refresh page & try again."</Title>
+							</>
+						);
 						console.log("linkedin share failed", err);
 					});
 			}
@@ -136,6 +160,17 @@ const DashboardAbuseTest = () => {
 		});
 		voltageChart.current.getEchartsInstance().one("finished", () => {
 			setChartsLoaded((prev) => ({ ...prev, voltage: true }));
+		});
+
+		// for auditing
+		forceAndDisplacementChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`abuse_dash_chart_forceAndDisplacement_dataZoom`);
+		});
+		testTempraturesChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`abuse_dash_chart_testTempratures_dataZoom`);
+		});
+		voltageChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`abuse_dash_chart_voltage_dataZoom`);
 		});
 	}, []);
 
@@ -409,6 +444,7 @@ const DashboardAbuseTest = () => {
 								title: "View Code",
 								icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 								onclick: function () {
+									audit(`abuse_dash_chart_${chartType}_viewcode`);
 									formatCode(code);
 								},
 							},
@@ -420,6 +456,7 @@ const DashboardAbuseTest = () => {
 								title: "Enter Fullscreen",
 								icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 								onclick: function () {
+									audit(`abuse_dash_chart_${chartType}_fullscreen`);
 									switch (chartType) {
 										case "testTempratures":
 											screen1.enter();
@@ -653,6 +690,7 @@ const DashboardAbuseTest = () => {
 						title: "View Code",
 						icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 						onclick: function () {
+							audit(`abuse_dash_chart_${chartType}_viewcode`);
 							formatCode(code);
 						},
 					},
@@ -664,6 +702,7 @@ const DashboardAbuseTest = () => {
 						title: "Enter Fullscreen",
 						icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 						onclick: function () {
+							audit(`abuse_dash_chart_${chartType}_fullscreen`);
 							switch (chartType) {
 								case "forceAndDisplacement":
 									screen1.enter();
@@ -737,7 +776,7 @@ const DashboardAbuseTest = () => {
 	};
 
 	const doShareDashboard = () => {
-		axios.get('/dashboard/share').then(r => console.log(r))
+		audit("abuse_dash_share");
 		console.log("share");
 		setMetaImageDash(null);
 		localStorage.setItem("dashImage", null);
@@ -783,8 +822,8 @@ const DashboardAbuseTest = () => {
 			response_type=code&
 			state=123456789&
 			scope=r_emailaddress%20r_liteprofile%20w_member_social&
-			client_id=77s04eexgpvevc
-			&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fdashboard
+			client_id=${CLIENT_ID}
+			&redirect_uri=${encodeURI(REDIRECT_URI)}
 		`,
 			"_self"
 		);
@@ -820,17 +859,13 @@ const DashboardAbuseTest = () => {
 						visible={shallShowShareDashModal || shareLoadingMsg}
 						footer={false}
 						onCancel={() => {
-							setShallShowShareDashModal(false)
-							setShareLoadingMsg('')
+							setShallShowShareDashModal(false);
+							setShareLoadingMsg("");
 						}}
 						style={{ maxHeight: "70%" }}
 					>
 						{shareLoadingMsg ? (
-							<div className="text-center">
-								<h4>{shareLoadingMsg}</h4>
-								<br></br>
-								<Spin size="large" />
-							</div>
+							<div className="text-center">{shareLoadingMsg}</div>
 						) : (
 							<div>
 								<div style={{ display: "flex" }}>
