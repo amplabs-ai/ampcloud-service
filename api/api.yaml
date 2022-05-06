@@ -449,6 +449,36 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+  /download/cells/abuse_timeseries/{cell_id}:
+    get:
+      summary: Download Abuse timeseries csv file for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: download_abuse_timeseries
+      parameters:
+        - name: userId
+          in: cookie
+          description: Email Id
+          required: true
+          schema:
+            type: string
+            format: email
+            example: test@test.com
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            example: SNL_Abuse
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
   /download/cells/cycle_data/{cell_id}:
     get:
       summary: Download Cycle csv file for a cell id.
@@ -798,6 +828,36 @@ paths:
           schema:
             type: string
             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /download/cells/abuse_timeseries_json/{cell_id}:
+    get:
+      summary: Get abuse timeseries data in json format for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_abuse_timeseries_json
+      parameters:
+        - name: userId
+          in: cookie
+          description: Email Id
+          required: true
+          schema:
+            type: string
+            format: email
+            example: test@test.com
+        - name: cell_id
+          in: path
+          description: Cell ID of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            example: SNL_Abuse
       tags:
         - Download
       responses:

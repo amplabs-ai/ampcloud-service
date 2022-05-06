@@ -118,3 +118,34 @@ def get_cycle_timeseries_json(cell_id):
     except Exception as err:
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
+
+
+def download_abuse_timeseries(cell_id):
+    print("=================")
+    try:
+        email = request.cookies.get("userId")
+        start_time = datetime.datetime.now()
+        df = download_abuse_timeseries_service(cell_id, email)
+        resp = make_response(df.to_csv(index=False))
+        resp.headers["Content-Disposition"] = "attachment; filename={}".format(
+            f"{cell_id}_abuse_timeseries.csv")
+        resp.headers["Content-Type"] = "text/csv"
+        end_time = datetime.datetime.now()
+        size = float(resp.content_length/1000)
+        logging.info("User {email} Action DOWNLOAD_ABUSE_TIMESERIES file {filename} size {size} type ABUSE_TIMESERIES download_time {time}".format(
+                email=email, filename=f"{cell_id}_abuse_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+        return resp
+    except Exception as err:
+        logging.error("User {email} Action DOWNLOAD_ABUSE_TIMESERIES error UNKNOWN".format(email=email))
+        logging.error(err)
+        return Response(500, "Failed").to_dict(), 500
+
+def get_abuse_timeseries_json(cell_id):
+    try:
+        email = request.cookies.get("userId")
+        df = download_abuse_timeseries_service(cell_id, email)
+        resp = df.to_dict('records')
+        return Response(200, "Records Retrieved", resp).to_dict(), 200
+    except Exception as err:
+        logging.error(err)
+        return Response(500, "Failed").to_dict(), 500

@@ -20,6 +20,10 @@ GA_API_HOST = ""
 AMPLABS_DB_URL = os.getenv('AMPLABS_PROD_DB_URL') if ENV == "production" \
                  else os.getenv('AMPLABS_DEV_DB_URL')
 
+LINKEDIN_CLIENT_ID = os.getenv('LINKEDIN_CLIENT_ID')
+LINKEDIN_CLIENT_SECRET = os.getenv('LINKEDIN_CLIENT_SECRET')
+LINKEDIN_REDIRECT_URI_DASH_CYCLE='https://www.amplabs.ai/dashboard/cycle-test'
+LINKEDIN_REDIRECT_URI_DASH_ABUSE='https://www.amplabs.ai/dashboard/abuse-test'
 class TEST_TYPE(Enum):
     ABUSE = "abuse"
     CYCLE = "cycle"

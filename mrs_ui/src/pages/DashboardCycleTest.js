@@ -4,6 +4,7 @@ import axios from "axios";
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../chartConfig/initialConfigs";
 import { enterFullscreenOption, exitFullscreenOption } from "../chartConfig/chartFullScreenOption";
+import { audit } from "../auditAction/audit";
 // ======= Components ==========
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import ViewCodeModal from "../components/ViewCodeModal";
@@ -11,7 +12,7 @@ import ViewCodeModal from "../components/ViewCodeModal";
 import sourceCode from "../chartConfig/chartSourceCode";
 // ====== styling components, icons... ========
 import { Result, Button, Alert, Modal, PageHeader, Card, Skeleton, message, Spin } from "antd";
-import { FaLinkedin, FaEnvelope, FaLink } from "react-icons/fa";
+import { FaLinkedin, FaEnvelope, FaLink, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { ShareAltOutlined } from "@ant-design/icons";
 // ====== dependencies =======
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
@@ -22,7 +23,11 @@ import Cookies from "js-cookie";
 import WorkerBuilder from "../worker/woker-builder";
 import Worker from "../worker/fibo.worker";
 import { useSearchParams } from "react-router-dom";
+import Title from "antd/lib/typography/Title";
 const instance = new WorkerBuilder(Worker);
+
+const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
+const REDIRECT_URI = process.env.REACT_APP_LINKEDIN_REDIRECT_URI_DASH_CYCLE;
 
 const DashboardCycleTest = () => {
 	// =========states=========
@@ -63,12 +68,18 @@ const DashboardCycleTest = () => {
 		if ([...searchParamsForCode].length) {
 			let code = searchParamsForCode.get("code");
 			if (code) {
-				setShareLoadingMsg("creating post for you...");
+				setShareLoadingMsg(
+					<>
+						<Title level={4}>Creating Post for you...</Title>
+						<br></br>
+						<Spin size="large" />
+					</>
+				);
 				console.log("code", code);
 				// send code to backend
 				let shareText = `I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/cycle-test?mail=${Cookies.get(
 					"userId"
-				)} @materialscience #amplabs #batterytechnology #batterydata #materialsscience #researchers`;
+				)} #amplabs #batterytechnology #batterydata #materialsscience #researchers #voltafoundation #batterybits #batterybrunch`;
 				let img = localStorage.getItem("dashImage");
 				let parts = [b64toBlob(img?.split(",")[1], "image/png")];
 				let file = new File(parts, "dashboard.png", {
@@ -80,6 +91,7 @@ const DashboardCycleTest = () => {
 				formData.append("code", code);
 				formData.append("file", file);
 				formData.append("shareText", shareText);
+				formData.append("dashboard", "cycle");
 
 				axios
 					.post("/dashboard/share-linkedin", formData, {
@@ -92,85 +104,29 @@ const DashboardCycleTest = () => {
 						// post shared successfully
 						// get redirect url to post share and redirect
 						window.open("https://www.linkedin.com/embed/feed/update/" + response.data.records.id);
-						setShareLoadingMsg("");
+						setShareLoadingMsg(
+							<>
+								<FaCheckCircle size={60} className="text-success" />
+								<Title level={4}>Post Created successfully!</Title>
+								<Title level={5}>
+									Check it out at{" "}
+									<a href={"https://www.linkedin.com/embed/feed/update/" + response.data.records.id}>Link</a>
+								</Title>
+							</>
+						);
 					})
 					.catch((err) => {
-						setShareLoadingMsg("Something went wrong! Please refresh page & try again.");
+						setShareLoadingMsg(
+							<>
+								<FaExclamationCircle size={60} className="text-danger" />
+								<Title level={4}>"Something went wrong! Please refresh page & try again."</Title>
+							</>
+						);
 						console.log("linkedin share failed", err);
 					});
-
-				// const params = {
-				// 	grant_type: "authorization_code",
-				// 	code: code,
-				// 	redirect_uri: "http://localhost:3000/dashboard",
-				// 	client_id: "77s04eexgpvevc",
-				// 	client_secret: "BZa81scPddNc7YNk",
-				// };
-				// const data = Object.keys(params)
-				// 	.map((key) => `${key}=${encodeURIComponent(params[key])}`)
-				// 	.join("&");
-				// console.log("dataaa", params);
-				// const options = {
-				// 	method: "POST",
-				// 	headers: { "content-type": "application/x-www-form-urlencoded" },
-				// 	data,
-				// 	baseURL: "https://www.linkedin.com",
-				// 	withCredentials: false,
-				// 	url: "/oauth/v2/accessToken",
-				// };
-				// axios(options).then((response) => {
-				// 	console.log("response token", response);
-				// 	let accessToken = response.data.access_token;
-				// 	// _getLinkedinUserDetails(accessToken);
-				// 	// _makeLinkedInPost(accessToken);
-				// });
 			}
 		}
 	}, []);
-
-	const _getLinkedinUserDetails = (accessToken) => {
-		const options = {
-			method: "get",
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-			},
-			baseURL: "https://api.linkedin.com/v2",
-			url: "/me",
-			withCredentials: false,
-		};
-		axios(options).then((response) => {
-			console.log("response token", response);
-		});
-	};
-
-	const _makeLinkedInPost = (accessToken) => {
-		const data = {
-			author: "urn:li:person:UoZAlTMGds",
-			lifecycleState: "PUBLISHED",
-			specificContent: {
-				"com.linkedin.ugc.ShareContent": {
-					shareCommentary: {
-						text: "Test Post",
-					},
-					shareMediaCategory: "NONE",
-				},
-			},
-			visibility: {
-				"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC",
-			},
-		};
-		const options = {
-			method: "POST",
-			headers: { "content-type": "application/x-www-form-urlencoded", Authorization: `Bearer ${accessToken}` },
-			data,
-			baseURL: "https://api.linkedin.com",
-			withCredentials: false,
-			url: "/v2/ugcPosts",
-		};
-		axios(options).then((response) => {
-			console.log("response after post", response);
-		});
-	};
 
 	useEffect(() => {
 		let check = true;
@@ -196,6 +152,20 @@ const DashboardCycleTest = () => {
 		});
 		cycleQtyByStepChart.current.getEchartsInstance().one("finished", () => {
 			setChartsLoaded((prev) => ({ ...prev, cycleQtyByStep: true }));
+		});
+
+		// for auditing
+		cycleIndexChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`cycle_dash_chart_cycleIndex_dataZoom`);
+		});
+		timeSeriesChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`cycle_dash_chart_timeSeries_dataZoom`);
+		});
+		efficiencyChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`cycle_dash_chart_efficiency_dataZoom`);
+		});
+		cycleQtyByStepChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`cycle_dash_chart_cycleQtyByStep_dataZoom`);
 		});
 	}, []);
 
@@ -380,15 +350,15 @@ const DashboardCycleTest = () => {
 			response_type=code&
 			state=123456789&
 			scope=r_emailaddress%20r_liteprofile%20w_member_social&
-			client_id=77s04eexgpvevc
-			&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fdashboard
+			client_id=${CLIENT_ID}
+			&redirect_uri=${encodeURI(REDIRECT_URI)}
 		`,
 			"_self"
 		);
 	};
 
 	const doShareDashboard = () => {
-		axios.get("/dashboard/share").then((r) => console.log(r));
+		audit("cycle_dash_share");
 		console.log("share");
 		setMetaImageDash(null);
 		localStorage.setItem("dashImage", null);
@@ -564,6 +534,7 @@ const DashboardCycleTest = () => {
 								title: "View Code",
 								icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 								onclick: function () {
+									audit(`cycle_dash_chart_${chartType}_viewcode`);
 									formatCode(code);
 								},
 							},
@@ -572,6 +543,7 @@ const DashboardCycleTest = () => {
 								title: "Enter Fullscreen",
 								icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 								onclick: function () {
+									audit(`cycle_dash_chart_${chartType}_fullscreen`);
 									switch (chartType) {
 										case "cycleIndex":
 											screen1.enter();
@@ -845,6 +817,7 @@ const DashboardCycleTest = () => {
 						title: "View Code",
 						icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 						onclick: function () {
+							audit(`cycle_dash_chart_${chartType}_viewcode`);
 							formatCode(code);
 						},
 					},
@@ -853,6 +826,7 @@ const DashboardCycleTest = () => {
 						title: "Enter Fullscreen",
 						icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 						onclick: function () {
+							audit(`cycle_dash_chart_${chartType}_fullscreen`);
 							switch (chartType) {
 								case "cycleIndex":
 									screen1.enter();
@@ -970,11 +944,7 @@ const DashboardCycleTest = () => {
 						style={{ maxHeight: "70%" }}
 					>
 						{shareLoadingMsg ? (
-							<div className="text-center">
-								<h4>{shareLoadingMsg}</h4>
-								<br></br>
-								<Spin size="large" />
-							</div>
+							<div className="text-center">{shareLoadingMsg}</div>
 						) : (
 							<div>
 								<div style={{ display: "flex" }}>
@@ -1001,6 +971,7 @@ const DashboardCycleTest = () => {
 												"userId"
 											)}`}
 											target="_blank"
+											rel="noreferrer"
 										>
 											<FaEnvelope size={70} />
 										</a>

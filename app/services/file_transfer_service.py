@@ -153,3 +153,10 @@ def download_cycle_data_service(cell_id, email):
     df.insert(2, OUTPUT_LABELS.END_TIME.value, None)
     ao.release_session()
     return df
+
+def download_abuse_timeseries_service(cell_id, email):
+    ao = ArchiveOperator()
+    ao.set_session()
+    data = ao.get_df_abuse_ts_with_cell_id(cell_id, email)
+    ao.release_session()
+    return data

@@ -4,9 +4,8 @@
   align-items: center;
   /* margin: 75px; */
   position: relative;
-  height: 100vh;
-  margin-top: 3rem;
-
+  height: auto;
+  margin-top: 75px;
 }
 
 @media only screen and (max-width: 600px) {

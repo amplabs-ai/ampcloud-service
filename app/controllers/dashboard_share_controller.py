@@ -1,14 +1,19 @@
 
 import json
 import logging
-from response import Response
+from app.archive_constants import LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI_DASH_ABUSE, LINKEDIN_REDIRECT_URI_DASH_CYCLE
+from app.response import Response
 from flask import request
 import requests
+import urllib.parse
 
-def dashboard_share():
+def dashboard_audit():
     try:
         email = request.cookies.get('userId')
-        logging.info("User {} Action SHARE_DASHBOARD".format(email))
+        print('request.data', request.args.to_dict())
+        args = request.args.to_dict()
+        logTxt = 'User {} Action ' + args.get('action').upper()
+        logging.info(logTxt.format(email))
         return Response(200, "Success").to_dict(), 200
     except Exception as err:
         logging.error(err)
@@ -23,9 +28,15 @@ def dashboard_share_linkedin():
         print(shareImageFile)
         authCode = params.get('code')
         shareText = params.get('shareText')
+        dashboard = params.get("dashboard")
+        redirectUri = ''
+        if dashboard == 'cycle':
+            redirectUri = urllib.parse.quote(LINKEDIN_REDIRECT_URI_DASH_CYCLE, safe='')
+        if dashboard == 'abuse':
+            redirectUri = urllib.parse.quote(LINKEDIN_REDIRECT_URI_DASH_ABUSE, safe='')
 
         # get access_token from code
-        url = "https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=" + authCode + "&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&client_id=77s04eexgpvevc&client_secret=BZa81scPddNc7YNk"
+        url = "https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=" + authCode + "&redirect_uri=" + redirectUri + "&client_id=" + LINKEDIN_CLIENT_ID + "&client_secret=" + LINKEDIN_CLIENT_SECRET
         payload={}
         response = requests.request("POST", url, data=payload)
         print('access_token', response.text)
