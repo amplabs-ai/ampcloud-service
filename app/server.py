@@ -8,7 +8,7 @@ from app.exception_handler import *
 from app.model import Model
 from flask_cors import CORS
 from flask_compress import Compress
-from app.controllers.dashboard_share_controller import dashboard_audit, dashboard_share, dashboard_share_linkedin
+from app.controllers.dashboard_share_controller import dashboard_audit, dashboard_share_linkedin
 import logging
 # from celery import Celery 
 
@@ -26,7 +26,7 @@ app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(ProblemException, problem_exception)
-# CORS(app.app, origins=["http://www.amplabs.ai"], supports_credentials=True)
+# CORS(app.app, origins=["http://localhost:3000"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 

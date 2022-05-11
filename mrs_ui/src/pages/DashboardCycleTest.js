@@ -40,6 +40,7 @@ const DashboardCycleTest = () => {
 		timeSeries: false,
 		efficiency: false,
 		cycleQtyByStep: false,
+		cycleQtyByStepWithCapacity: false,
 	});
 	const [chartData, setChartData] = useState({});
 	const [internalServerError, setInternalServerError] = useState("");
@@ -51,6 +52,7 @@ const DashboardCycleTest = () => {
 		timeSeries: false,
 		efficiency: false,
 		cycleQtyByStep: false,
+		cycleQtyByStepWithCapacity: false,
 	});
 	const [stepFromFilter, setStepFromFilter] = useState("");
 	const [shareDisabled, setShareDisabled] = useState(true);
@@ -61,6 +63,7 @@ const DashboardCycleTest = () => {
 	const screen2 = useFullScreenHandle();
 	const screen3 = useFullScreenHandle();
 	const screen4 = useFullScreenHandle();
+	const screen5 = useFullScreenHandle();
 
 	const [searchParamsForCode] = useSearchParams();
 
@@ -110,7 +113,13 @@ const DashboardCycleTest = () => {
 								<Title level={4}>Post Created successfully!</Title>
 								<Title level={5}>
 									Check it out at{" "}
-									<a href={"https://www.linkedin.com/embed/feed/update/" + response.data.records.id}>Link</a>
+									<a
+										href={"https://www.linkedin.com/embed/feed/update/" + response.data.records.id}
+										target="_blank"
+										rel="noreferrer"
+									>
+										Link
+									</a>
 								</Title>
 							</>
 						);
@@ -137,6 +146,7 @@ const DashboardCycleTest = () => {
 		});
 		if (check) {
 			setShareDisabled(false);
+			// setDisableSelection(false);
 		}
 	}, [chartsLoaded]);
 
@@ -153,6 +163,9 @@ const DashboardCycleTest = () => {
 		cycleQtyByStepChart.current.getEchartsInstance().one("finished", () => {
 			setChartsLoaded((prev) => ({ ...prev, cycleQtyByStep: true }));
 		});
+		cycleQtyByStepWithCapacityChart.current.getEchartsInstance().one("finished", () => {
+			setChartsLoaded((prev) => ({ ...prev, cycleQtyByStepWithCapacity: true }));
+		});
 
 		// for auditing
 		cycleIndexChart.current.getEchartsInstance().on("dataZoom", () => {
@@ -165,6 +178,9 @@ const DashboardCycleTest = () => {
 			audit(`cycle_dash_chart_efficiency_dataZoom`);
 		});
 		cycleQtyByStepChart.current.getEchartsInstance().on("dataZoom", () => {
+			audit(`cycle_dash_chart_cycleQtyByStep_dataZoom`);
+		});
+		cycleQtyByStepWithCapacityChart.current.getEchartsInstance().on("dataZoom", () => {
 			audit(`cycle_dash_chart_cycleQtyByStep_dataZoom`);
 		});
 	}, []);
@@ -221,6 +237,17 @@ const DashboardCycleTest = () => {
 						cycleQtyByStepChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
 					}
 					break;
+				case "cycleQtyByStepWithCapacityChart":
+					if (state) {
+						cycleQtyByStepWithCapacityChart.current.getEchartsInstance().setOption(enterFullscreenOption);
+						cycleQtyByStepWithCapacityChart.current.ele.style.height = window.screen.width < 600 ? "50%" : "80%";
+						cycleQtyByStepWithCapacityChart.current.ele.style.marginTop = window.screen.width < 600 ? "10%" : "5%";
+					} else {
+						cycleQtyByStepWithCapacityChart.current.getEchartsInstance().setOption(exitFullscreenOption);
+						cycleQtyByStepWithCapacityChart.current.ele.style.marginTop = "0%";
+						cycleQtyByStepWithCapacityChart.current.ele.style.height = window.screen.width < 600 ? "15rem" : "24rem";
+					}
+					break;
 				default:
 					break;
 			}
@@ -233,6 +260,7 @@ const DashboardCycleTest = () => {
 	const timeSeriesChart = useRef();
 	const efficiencyChart = useRef();
 	const cycleQtyByStepChart = useRef();
+	const cycleQtyByStepWithCapacityChart = useRef();
 	const dashboardRef = useRef(null);
 
 	// ========= handlers =========
@@ -259,6 +287,7 @@ const DashboardCycleTest = () => {
 		_fetchData(request, "timeSeries");
 		_fetchData(request, "efficiency");
 		_fetchData(request, "cycleQtyByStep");
+		_fetchData(request, "cycleQtyByStepWithCapacity");
 		return true;
 	};
 
@@ -297,7 +326,10 @@ const DashboardCycleTest = () => {
 		let promise2 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "timeSeries")));
 		let promise3 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "efficiency")));
 		let promise4 = new Promise((resolve) => resolve(_renderChartsAfterFilter(filteredChartData, "cycleQtyByStep")));
-		let responses = await Promise.all([promise1, promise2, promise3, promise4]);
+		let promise5 = new Promise((resolve) =>
+			resolve(_renderChartsAfterFilter(filteredChartData, "cycleQtyByStepWithCapacity"))
+		);
+		let responses = await Promise.all([promise1, promise2, promise3, promise4, promise5]);
 		for (let response of responses) {
 			setDisableSelection(false);
 		}
@@ -451,6 +483,23 @@ const DashboardCycleTest = () => {
 					sourceCode.cycleQtyByStepChart,
 				];
 				break;
+			case "cycleQtyByStepWithCapacity":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/cycleQuantitiesByStep`,
+					cycleQtyByStepWithCapacityChart,
+					{
+						mapToId: "ah",
+						title: "Capacity (Ah)",
+					},
+					{
+						mapToId: "v",
+						title: "Voltage (V)",
+					},
+					"Cycle Quantities by Step - Capacity",
+					"cycleQtyByStepWithCapacity",
+					sourceCode.cycleQtyByStepWithCapacityChart,
+				];
+				break;
 			default:
 				break;
 		}
@@ -459,7 +508,9 @@ const DashboardCycleTest = () => {
 		axios
 			.get(endpoint, request)
 			.then((result) => {
-				if (chartType === "cycleQtyByStep") {
+				if (chartType === "cycleQtyByStepWithCapacity") {
+					// let the filter selection enabled after last chart data is fetched
+					// so that user may filter chart even if all charts and not yet rendered
 					setDisableSelection(false);
 				}
 				if (typeof result.data == "string") {
@@ -557,6 +608,9 @@ const DashboardCycleTest = () => {
 										case "cycleQtyByStep":
 											screen4.enter();
 											break;
+										case "cycleQtyByStepWithCapacity":
+											screen5.enter();
+											break;
 										default:
 											break;
 									}
@@ -583,6 +637,9 @@ const DashboardCycleTest = () => {
 											break;
 										case "cycleQtyByStep":
 											screen4.exit();
+											break;
+										case "cycleQtyByStepWithCapacity":
+											screen5.exit();
 											break;
 										default:
 											break;
@@ -758,6 +815,23 @@ const DashboardCycleTest = () => {
 					sourceCode.cycleQtyByStepChart,
 				];
 				break;
+			case "cycleQtyByStepWithCapacity":
+				[endpoint, ref, xAxis, yAxis, chartTitle, chartId, code] = [
+					`/echarts/cycleQuantitiesByStep`,
+					cycleQtyByStepWithCapacityChart,
+					{
+						mapToId: "ah",
+						title: "Capacity (Ah)",
+					},
+					{
+						mapToId: "v",
+						title: "Voltage (V)",
+					},
+					"Cycle Quantities by Step - Capacity",
+					"cycleQtyByStepWithCapacity",
+					sourceCode.cycleQtyByStepWithCapacityChart,
+				];
+				break;
 			default:
 				break;
 		}
@@ -840,6 +914,9 @@ const DashboardCycleTest = () => {
 								case "cycleQtyByStep":
 									screen4.enter();
 									break;
+								case "cycleQtyByStepWithCapacity":
+									screen5.enter();
+									break;
 								default:
 									break;
 							}
@@ -866,6 +943,9 @@ const DashboardCycleTest = () => {
 									break;
 								case "cycleQtyByStep":
 									screen4.exit();
+									break;
+								case "cycleQtyByStepWithCapacity":
+									screen5.exit();
 									break;
 								default:
 									break;
@@ -1107,6 +1187,30 @@ const DashboardCycleTest = () => {
 												}}
 												showLoading
 												ref={cycleQtyByStepChart}
+												option={initialChartOptions}
+											/>
+										</div>
+									</div>
+								</FullScreen>
+							</div>
+							<div className="col-md-12 mt-2">
+								<FullScreen handle={screen5} onChange={reportChange}>
+									<div
+										data-id="cycleQtyByStepWithCapacityChart"
+										className="card shadow"
+										style={{ height: "100%", width: "100%" }}
+									>
+										<div className="card-body">
+											{chartLoadingError.cycleQtyByStepWithCapacity && (
+												<Alert message="Error loading chart!" type="error" showIcon />
+											)}
+											<ReactEcharts
+												style={{
+													width: "100%",
+													height: window.screen.width < 600 ? "15rem" : "24em",
+												}}
+												showLoading
+												ref={cycleQtyByStepWithCapacityChart}
 												option={initialChartOptions}
 											/>
 										</div>

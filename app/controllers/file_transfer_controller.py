@@ -34,9 +34,9 @@ def upload_file(tester):
             status[f"{email}|{data['cell_id']}"]['dataframes'].append(df)
             status[f"{email}|{data['cell_id']}"]['file_count'] -= 1
         if not status[f"{email}|{data['cell_id']}"]['file_count']:
-            status[f"{email}|{data['cell_id']}"]['progress']['steps']['READ FILE'] = True         
+            status[f"{email}|{data['cell_id']}"]['progress']['steps']['READ FILE'] = True
             threading.Thread(target = file_data_process_service, args = (data['cell_id'], email)).start()
-        
+
         end_time = datetime.datetime.now()
         processing_time = (end_time - start_time).total_seconds()*1000
         upload_time = processing_time + read_time
@@ -63,15 +63,15 @@ def download_cycle_timeseries(cell_id):
     try:
         email = request.cookies.get("userId")
         start_time = datetime.datetime.now()
-        df = download_cycle_timeseries_service(cell_id, email)
+        df = download_cycle_timeseries_service(cell_id[0], email)
         resp = make_response(df.to_csv(index=False))
         resp.headers["Content-Disposition"] = "attachment; filename={}".format(
-            f"{cell_id}_cycle_timeseries.csv")
+            f"{cell_id[0]}_cycle_timeseries.csv")
         resp.headers["Content-Type"] = "text/csv"
         end_time = datetime.datetime.now()
         size = float(resp.content_length/1000)
         logging.info("User {email} Action DOWNLOAD_CYCLE_TIMESERIES file {filename} size {size} type CYCLE_TIMESERIES download_time {time}".format(
-                email=email, filename=f"{cell_id}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+                email=email, filename=f"{cell_id[0]}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
         return resp
     except Exception as err:
         logging.error("User {email} Action DOWNLOAD_CYCLE_TIMESERIES error UNKNOWN".format(email=email))
@@ -83,15 +83,15 @@ def download_cycle_data(cell_id):
     try:
         email = request.cookies.get("userId")
         start_time = datetime.datetime.now()
-        df = download_cycle_data_service(cell_id, email)
+        df = download_cycle_data_service(cell_id[0], email)
         resp = make_response(df.to_csv(index=False))
         resp.headers["Content-Disposition"] = "attachment; filename={}".format(
-            f"{cell_id}_cycle_data.csv")
+            f"{cell_id[0]}_cycle_data.csv")
         resp.headers["Content-Type"] = "text/csv"
         end_time = datetime.datetime.now()
         size = float(resp.content_length/1000)
         logging.info("User {email} Action DOWNLOAD_CYCLE_DATA file {filename} size {size} type CYCLE_DATA download_time {time}".format(
-                email=email, filename=f"{cell_id}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+                email=email, filename=f"{cell_id[0]}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
         return resp
     except Exception as err:
         logging.error("User {email} Action DOWNLOAD_CYCLE_DATA error UNKNOWN".format(email=email))
@@ -101,7 +101,7 @@ def download_cycle_data(cell_id):
 def get_cycle_data_json(cell_id):
     try:
         email = request.cookies.get("userId")
-        df = download_cycle_data_service(cell_id, email)
+        df = download_cycle_data_service(cell_id[0], email)
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200
     except Exception as err:
@@ -112,7 +112,7 @@ def get_cycle_data_json(cell_id):
 def get_cycle_timeseries_json(cell_id):
     try:
         email = request.cookies.get("userId")
-        df = download_cycle_timeseries_service(cell_id, email)
+        df = download_cycle_timeseries_service(cell_id[0], email)
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200
     except Exception as err:
@@ -125,15 +125,15 @@ def download_abuse_timeseries(cell_id):
     try:
         email = request.cookies.get("userId")
         start_time = datetime.datetime.now()
-        df = download_abuse_timeseries_service(cell_id, email)
+        df = download_abuse_timeseries_service(cell_id[0], email)
         resp = make_response(df.to_csv(index=False))
         resp.headers["Content-Disposition"] = "attachment; filename={}".format(
-            f"{cell_id}_abuse_timeseries.csv")
+            f"{cell_id[0]}_abuse_timeseries.csv")
         resp.headers["Content-Type"] = "text/csv"
         end_time = datetime.datetime.now()
         size = float(resp.content_length/1000)
         logging.info("User {email} Action DOWNLOAD_ABUSE_TIMESERIES file {filename} size {size} type ABUSE_TIMESERIES download_time {time}".format(
-                email=email, filename=f"{cell_id}_abuse_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+                email=email, filename=f"{cell_id[0]}_abuse_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
         return resp
     except Exception as err:
         logging.error("User {email} Action DOWNLOAD_ABUSE_TIMESERIES error UNKNOWN".format(email=email))
@@ -143,7 +143,7 @@ def download_abuse_timeseries(cell_id):
 def get_abuse_timeseries_json(cell_id):
     try:
         email = request.cookies.get("userId")
-        df = download_abuse_timeseries_service(cell_id, email)
+        df = download_abuse_timeseries_service(cell_id[0], email)
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200
     except Exception as err:

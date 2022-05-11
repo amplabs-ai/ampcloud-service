@@ -34,9 +34,8 @@ export const AuthProvider = ({ children }) => {
 	const logout = () => {
 		axios.get("/logout").then((res) => {
 			console.log("logout", res);
+			setUser(null);
 		});
-		Cookies.remove("userId");
-		setUser(null);
 	};
 
 	return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;

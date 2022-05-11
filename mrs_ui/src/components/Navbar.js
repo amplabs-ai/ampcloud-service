@@ -27,7 +27,14 @@ const Navbar = () => {
 	const userProfileMenu = (
 		<Menu>
 			<Menu.Item key="logout">
-				<Link className="nav-link" onClick={() => auth.logout()} to="/">
+				<Link
+					className="nav-link"
+					onClick={(e) => {
+						e.preventDefault();
+						auth.logout();
+					}}
+					to="/"
+				>
 					Sign-out
 				</Link>
 			</Menu.Item>
@@ -80,6 +87,11 @@ const Navbar = () => {
 										Home
 									</Link>
 								</li> */}
+								<li className="nav-item">
+									<Link className="nav-link" to="/plotter">
+										Plot
+									</Link>
+								</li>
 								<li className="nav-item">
 									<Dropdown overlay={uploadMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
