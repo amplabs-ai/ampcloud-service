@@ -88,7 +88,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
-  /cells/{cell_id}:
+  /cells:
     get:
       summary: Fetches metadata for given cell id for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
@@ -105,13 +105,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell Id
+          explode: true
           required: true
-          style: simple
+          style: form
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       responses:
         "200":
           description: Successfull
@@ -133,14 +136,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to delete
           required: true
-          style: simple
-          explode: false
+          style: form
+          explode: true
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       responses:
         "200":
           description: Successfull
@@ -176,7 +181,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /cells/tests/{test}/meta/{cell_id}:
+  /cells/tests/{test}/meta:
     get:
       summary: Fetches test metadata of testname for a cell id
       x-openapi-router-controller: app.controllers.test_metadata_controller
@@ -193,14 +198,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to get
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
         - name: test
           in: path
           description: Test Name of the resource to get
@@ -222,7 +229,7 @@ paths:
         Data sent in this request will be used by the succeeding upload file request.
 
          **For uploading cycle test file following form fields are useed:**
-         
+
          - Required
            - cell_id
            - file_count
@@ -239,9 +246,9 @@ paths:
            - soc_min
            - crate_c
            - crate_d
-         
+
          **For uploading abuse test file following form fields are useed:**
-         
+
          - Required
            - cell_id
            - file_count
@@ -258,7 +265,7 @@ paths:
            - nail_speed
            - indentor
            - v_init
-           
+
          **Note: Must be logged in before sending this request**
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: init_file_upload
@@ -389,7 +396,7 @@ paths:
         "500":
           description: Something went wrong
 
-  /upload/cells/status/{cell_id}:
+  /upload/cells/status:
     get:
       summary: Check upload status for the file sent via uplaod request.
       x-openapi-router-controller: app.controllers.status_check_controller
@@ -404,14 +411,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Upload
       responses:
@@ -419,7 +428,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
-  /download/cells/cycle_timeseries/{cell_id}:
+  /download/cells/cycle_timeseries:
     get:
       summary: Download Cycle timeseries csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
@@ -434,14 +443,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to get
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -449,7 +460,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /download/cells/abuse_timeseries/{cell_id}:
+  /download/cells/abuse_timeseries:
     get:
       summary: Download Abuse timeseries csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
@@ -464,14 +475,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to get
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_Abuse
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -479,7 +492,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /download/cells/cycle_data/{cell_id}:
+  /download/cells/cycle_data:
     get:
       summary: Download Cycle csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
@@ -494,14 +507,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to get
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -775,7 +790,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
-  /download/cells/cycle_data_json/{cell_id}:
+  /download/cells/cycle_data_json:
     get:
       summary: Get cycle data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
@@ -790,14 +805,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to get
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -805,7 +822,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /download/cells/cycle_timeseries_json/{cell_id}:
+  /download/cells/cycle_timeseries_json:
     get:
       summary: Get cycle timeseries data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
@@ -820,14 +837,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to get
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:
@@ -835,7 +854,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /download/cells/abuse_timeseries_json/{cell_id}:
+  /download/cells/abuse_timeseries_json:
     get:
       summary: Get abuse timeseries data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
@@ -850,14 +869,16 @@ paths:
             format: email
             example: test@test.com
         - name: cell_id
-          in: path
+          in: query
           description: Cell ID of the resource to get
+          explode: true
           required: true
-          style: simple
-          explode: false
+          style: form
           schema:
-            type: string
-            example: SNL_Abuse
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
       tags:
         - Download
       responses:

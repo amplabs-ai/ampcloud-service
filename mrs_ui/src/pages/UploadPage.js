@@ -246,9 +246,13 @@ const UploadPage = () => {
 
 	const getStatus = (cellId) => {
 		let errorCount = 0;
+		let params = new URLSearchParams();
+		params.append("cell_id", cellId);
 		let intervalId = setInterval(() => {
 			axios
-				.get(`/upload/cells/status/${cellId}`)
+				.get(`/upload/cells/status`, {
+					params: params,
+				})
 				.then((res) => {
 					console.log("status", res.data.records);
 					if (res.data.records) {

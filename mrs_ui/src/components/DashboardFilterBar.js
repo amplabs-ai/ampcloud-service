@@ -71,8 +71,12 @@ const DashboardFilterBar = (props) => {
 
 	const handleCellDelete = (record) => {
 		console.log("delete", record.key);
+		let params = new URLSearchParams();
+		params.append("cell_id", record.cell_id);
 		axios
-			.delete(`/cells/${record.cell_id}`)
+			.delete(`/cells`, {
+				params: params,
+			})
 			.then(() => {
 				setCellIds(cellIds.filter((item) => item.key !== record.key));
 				setSelectedRows(selectedRows.filter((item) => item.key !== record.key));
@@ -115,8 +119,12 @@ const DashboardFilterBar = (props) => {
 	const downloadCycleData = (k) => {
 		console.log("downloadCycleData", k);
 		setLoading(true);
+		let params = new URLSearchParams();
+		params.append("cell_id", k);
 		axios
-			.get(`/download/cells/cycle_data/${k}`)
+			.get(`/download/cells/cycle_data`, {
+				params: params,
+			})
 			.then(({ data }) => {
 				console.log("downloadcycledata", data);
 				var a = document.createElement("a");
@@ -148,8 +156,12 @@ const DashboardFilterBar = (props) => {
 	const downloadTimeSeriesData = (k) => {
 		console.log("downloadTimeSeriesData", k);
 		setLoading(true);
+		let params = new URLSearchParams();
+		params.append("cell_id", k);
 		axios
-			.get(`/download/cells/cycle_timeseries/${k}`)
+			.get(`/download/cells/cycle_timeseries`, {
+				params: params,
+			})
 			.then(({ data }) => {
 				console.log("downloadTimeSeriesData", data);
 				var a = document.createElement("a");
@@ -174,8 +186,12 @@ const DashboardFilterBar = (props) => {
 	const downloadAbuseTSData = (k) => {
 		console.log("downloadAbuseTSData", k);
 		setLoading(true);
+		let params = new URLSearchParams();
+		params.append("cell_id", k);
 		axios
-			.get(`/download/cells/abuse_timeseries/${k}`)
+			.get(`/download/cells/abuse_timeseries`, {
+				params: params,
+			})
 			.then(({ data }) => {
 				console.log("downloadAbuseTSData", data);
 				var a = document.createElement("a");

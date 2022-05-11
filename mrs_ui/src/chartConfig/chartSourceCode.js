@@ -1,5 +1,5 @@
 const sourceCode = {
-  cycleIndexChart: `
+	cycleIndexChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -8,7 +8,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -54,7 +54,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  timeSeriesChart: `
+	timeSeriesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -63,7 +63,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -110,7 +110,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  efficiencyChart: `
+	efficiencyChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -119,7 +119,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -166,7 +166,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  cycleQtyByStepChart: `
+	cycleQtyByStepChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -175,7 +175,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -203,7 +203,7 @@ def get_amplabs_chartdata():
     return None
 
 def plot_chart(df):
-    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Volateg (V)"}, title = "Cycle Quantities by step")
+    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Voltage (V)"}, title = "Cycle Quantities by step")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)
@@ -221,7 +221,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  compareByCycleTimeChart: `
+	cycleQtyByStepWithCapacityChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -230,7 +230,62 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
+import json
+import urllib.error
+import urllib.request
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata():
+    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}"
+    user = "{1}"
+    httprequest = urllib.request.Request(
+            url, method="GET"
+        )
+    httprequest.add_header("Cookie", f"userId={user}")
+
+    try:
+        with urllib.request.urlopen(httprequest) as httpresponse:
+            response = json.loads(httpresponse.read())
+            return response
+    except urllib.error.HTTPError as e:
+        print(e)
+    return None
+
+def plot_chart(df):
+    fig = px.line(df, x="ah", y="v", color="series", labels={"ah":"Capacity (Ah)", "v":"Voltage (V)"}, title = "Cycle Quantities by step - Capacity")
+    fig.update_traces(mode="markers+lines", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+response = get_amplabs_chartdata()
+
+if response:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    plot_chart(df)
+    `,
+	compareByCycleTimeChart: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -277,7 +332,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  forceAndDisplacementChart: `
+	forceAndDisplacementChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -286,7 +341,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -333,7 +388,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  testTempraturesChart: `
+	testTempraturesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -342,7 +397,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request
@@ -389,7 +444,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  voltageChart: `
+	voltageChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -398,7 +453,7 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
-# Useful for fetching data from the web 
+# Useful for fetching data from the web
 import json
 import urllib.error
 import urllib.request

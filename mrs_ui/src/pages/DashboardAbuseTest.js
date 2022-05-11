@@ -101,7 +101,7 @@ const DashboardAbuseTest = () => {
 								<Title level={4}>Post Created successfully!</Title>
 								<Title level={5}>
 									Check it out at{" "}
-									<a href={"https://www.linkedin.com/embed/feed/update/" + response.data.records.id}>Link</a>
+									<a href={"https://www.linkedin.com/embed/feed/update/" + response.data.records.id} target="_blank" rel="noreferrer">Link</a>
 								</Title>
 							</>
 						);

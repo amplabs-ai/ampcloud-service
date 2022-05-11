@@ -10,7 +10,7 @@ def get_testmeta(test):
     if test == TEST_TYPE.CYCLE.value:
         test_model = CycleMeta
     if test == TEST_TYPE.ABUSE.value:
-        test_model = AbuseMeta      
+        test_model = AbuseMeta
     status, detail, *records = get_testmeta_service(test_model, email)
     return Response(status, detail, records).to_dict(), status
 
@@ -20,5 +20,5 @@ def get_testmeta_by_cell_id(test, cell_id):
         table = CycleMeta
     if test == TEST_TYPE.ABUSE.value:
         table = AbuseMeta
-    status, detail, *records = get_testmeta_by_cell_id_service(cell_id, table, email)
+    status, detail, *records = get_testmeta_by_cell_id_service(cell_id[0], table, email)
     return Response(status, detail, records).to_dict(), status

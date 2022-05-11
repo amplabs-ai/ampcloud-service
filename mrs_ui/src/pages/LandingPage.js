@@ -124,8 +124,8 @@ const LandingPage = () => {
 			) : (
 				<div className="row">
 					<animated.div className="col-md-8 p-2" style={aboutAnim}>
-						<div style={{ display: "flex", alignItems: "center", height: "100%" }}>
-							{/* <h1 className="display-4 text-center mb-3">About</h1> */}
+						<div>
+							<h1 className="display-4 text-center mb-3">About</h1>
 							<p className="para" style={{ lineHeight: "1.6" }}>
 								Tools for scientists, researchers, and engineers to analyze, publish, and collaborate in order to
 								reinvent our energy systems.
@@ -175,7 +175,7 @@ const LandingPage = () => {
 							Please provide your email address to get started.
 						</p>
 					</animated.div>
-					<div className="row">
+					{/* <div className="row">
 						<div className="col-md-3 col-sm-12 text-center pt-2">
 							<img className="mb-4" style={{ height: "50px" }} src={num1} alt="imgg" />
 							<h3 className="h5 mb-2 fw-light">Upload data</h3>
@@ -209,7 +209,7 @@ const LandingPage = () => {
 							/>
 							<p>Share your work and collaborate.</p>
 						</div>
-					</div>
+					</div> */}
 				</div>
 			)}
 		</div>
