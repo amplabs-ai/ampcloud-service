@@ -121,7 +121,6 @@ def get_cycle_timeseries_json(cell_id):
 
 
 def download_abuse_timeseries(cell_id):
-    print("=================")
     try:
         email = request.cookies.get("userId")
         start_time = datetime.datetime.now()
