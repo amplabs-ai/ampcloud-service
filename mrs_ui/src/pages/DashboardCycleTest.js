@@ -518,6 +518,7 @@ const DashboardCycleTest = () => {
 				} else {
 					result = result.data;
 				}
+				console.log(`${chartType} data`, result.records[0]);
 				setChartData((prev) => {
 					return { ...prev, [chartId]: result.records[0] };
 				});

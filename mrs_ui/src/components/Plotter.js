@@ -12,7 +12,7 @@ for (let i = 10; i < 36; i++) {
 	children.push(<Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>);
 }
 
-function toggle_full_screen() {
+const toggle_full_screen = () => {
 	if (
 		(document.fullScreenElement && document.fullScreenElement !== null) ||
 		(!document.mozFullScreen && !document.webkitIsFullScreen)
@@ -43,7 +43,7 @@ function toggle_full_screen() {
 			document.msExitFullscreen();
 		}
 	}
-}
+};
 
 const Plotter = () => {
 	const plottingChart = useRef(null);
@@ -72,27 +72,35 @@ const Plotter = () => {
 		setSelectedXaxis(value);
 	};
 
+	const _createSeries = () => {
+		let x = [];
+		selectedYaxes.map((y) => {
+			x.push({
+				name: y,
+				type: "scatter",
+				encode: {
+					x: selectedXaxis,
+					y: y,
+				},
+			});
+		});
+		return x;
+	};
+
 	const doHandlePlot = () => {
 		if (!data) {
+			message.error("No data uploaded!");
 			message.error("No data uploaded!");
 			return;
 		} else if (!selectedXaxis) {
 			message.error("Please Select X-Axis!");
+			message.error("Please Select X-Axis!");
 			return;
 		} else if (!selectedYaxes.length) {
 			message.error("Please Select Y-Axis!");
+			message.error("Please Select Y-Axis!");
 			return;
 		}
-		plottingChart.current.getEchartsInstance();
-		// create series
-		let allSeries = [];
-		selectedYaxes.map((series) => {
-			allSeries.push({
-				name: series,
-				type: "line",
-				data: data[series],
-			});
-		});
 		plottingChart.current.getEchartsInstance().dispatchAction({
 			type: "restore",
 		});
@@ -102,14 +110,16 @@ const Plotter = () => {
 			},
 			tooltip: {
 				trigger: "axis",
+				axisPointer: { type: "cross" },
+			},
+			dataset: {
+				source: data,
 			},
 			legend: {
 				data: selectedYaxes,
 			},
 			xAxis: {
-				type: "value",
 				boundaryGap: false,
-				data: data[selectedXaxis],
 				name: selectedXaxis,
 				scale: true,
 				nameLocation: "middle",
@@ -119,31 +129,13 @@ const Plotter = () => {
 				},
 			},
 			yAxis: {
-				type: "value",
 				scale: true,
 			},
-			series: allSeries,
+			series: _createSeries(),
 			toolbox: {
 				show: true,
 			},
 		});
-	};
-
-	const _createData = (data) => {
-		let newData = {};
-		let headers = Object.keys(data[0]);
-		setAvailableCol(headers);
-		headers.forEach((h) => {
-			newData[h] = [];
-		});
-		data.forEach((d) => {
-			headers.map((h) => {
-				newData[h].push(d[h]);
-			});
-		});
-		console.log(newData);
-		setData(newData);
-		// return data;
 	};
 
 	const fileUploadHandler = (info) => {
@@ -151,16 +143,32 @@ const Plotter = () => {
 		setFileName(info.file.name);
 		if (info.fileList.length) {
 			papa.parse(info.file.originFileObj, {
-				header: true,
+				// header: true,
 				skipEmptyLines: true,
 				dynamicTyping: true,
 				complete: function (results) {
 					console.log("parsed", results.data);
-					_createData(results.data);
+					setAvailableCol(results.data[0]);
+					setData(results.data);
 				},
 			});
 		}
 	};
+
+	// const dynamicSort = (property) => {
+	// 	var sortOrder = 1;
+	// 	if (property[0] === "-") {
+	// 		sortOrder = -1;
+	// 		property = property.substr(1);
+	// 	}
+	// 	return function (a, b) {
+	// 		/* next line works with strings and numbers,
+	// 		 * and you may want to customize it to your needs
+	// 		 */
+	// 		var result = a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
+	// 		return result * sortOrder;
+	// 	};
+	// };
 
 	const removeFile = (e) => {
 		console.log("onRemove");
@@ -169,17 +177,17 @@ const Plotter = () => {
 
 	return (
 		<div style={{ marginTop: "4rem" }} className="mx-3">
-			{/* <div className='p-2' style={{ display: "flex", flexDirection: "row-reverse" }}>
-        <Tooltip title='Full-Screen'>
-          <Button
-            type='primary'
-            shape='circle'
-            onClick={() => toggle_full_screen()}
-            icon={<FullscreenOutlined />}
-            size='large'
-          />
-        </Tooltip>
-      </div> */}
+			{/* <div className="p-2" style={{ display: "flex", flexDirection: "row-reverse" }}>
+				<Tooltip title="Full-Screen">
+					<Button
+						type="primary"
+						shape="circle"
+						onClick={() => toggle_full_screen()}
+						icon={<FullscreenOutlined />}
+						size="large"
+					/>
+				</Tooltip>
+			</div> */}
 			<div className="my-3 row">
 				<div className="col-md-6">
 					<Dragger
@@ -243,10 +251,10 @@ const Plotter = () => {
 					</div>
 				</div>
 			</div>
-			<Divider style={{ marginTop: "50px" }} />
+			<Divider style={{ backgroundColor: "#D3D3D3", marginTop: "50px" }} />
 			<div>
 				<ReactEcharts
-					style={{ width: "90vw", height: "500px" }}
+					style={{ width: "90vw", height: "600px" }}
 					ref={plottingChart}
 					option={{
 						legend: {
@@ -274,11 +282,6 @@ const Plotter = () => {
 								dataZoom: {
 									show: true,
 								},
-								magicType: {
-									show: true,
-									type: ["line", "bar", "stack"],
-								},
-								brush: {},
 							},
 						},
 					}}
