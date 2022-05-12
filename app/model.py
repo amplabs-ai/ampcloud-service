@@ -280,7 +280,7 @@ class ArchiveOperator:
             CycleTimeSeries.cell_temperature.label(
                 OUTPUT_LABELS.CELL_TEMPERATURE.value)).filter(
                     CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).order_by('cycle_index','test_time').statement
-        return pd.read_sql(sql, self.session.bind).round(DEGREE)
+        return pd.read_sql(sql, self.session.bind)
 
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
         sql = self.session.query(
@@ -295,7 +295,7 @@ class ArchiveOperator:
             CycleStats.e_c.label(OUTPUT_LABELS.CHARGE_ENERGY.value),
             CycleStats.e_d.label(OUTPUT_LABELS.DISCHARGE_ENERGY.value)).filter(
                     CycleStats.cell_id == cell_id, CycleStats.email == email).order_by('cycle_index').statement
-        return pd.read_sql(sql, self.session.bind).round(DEGREE)
+        return pd.read_sql(sql, self.session.bind)
 
     def get_df_abuse_ts_with_cell_id(self, cell_id, email):
         sql = self.session.query(
@@ -305,7 +305,7 @@ class ArchiveOperator:
             AbuseTimeSeries.above_punch_temperature, AbuseTimeSeries.below_punch_temperature,
             AbuseTimeSeries.norm_d, AbuseTimeSeries.strain).filter(
                     AbuseTimeSeries.cell_id == cell_id, AbuseTimeSeries.email == email).order_by('index').statement
-        return pd.read_sql(sql, self.session.bind).round(DEGREE)
+        return pd.read_sql(sql, self.session.bind)
 
     # CELL
 

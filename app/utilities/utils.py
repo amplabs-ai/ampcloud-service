@@ -101,6 +101,7 @@ def calc_cycle_stats(df_t, cell_id = None, email = None):
     :param df_t: cycle timeseries data frame.
     :return: tuple of dataframes of calculated stats and timeseries data
     """
+    df_t = df_t.sort_values(by =[LABEL.CYCLE_INDEX.value, LABEL.TEST_TIME.value]).reset_index(drop=True)
     df_t[LABEL.CYCLE_TIME.value] = 0
 
     no_cycles = int(df_t[LABEL.CYCLE_INDEX.value].max())
