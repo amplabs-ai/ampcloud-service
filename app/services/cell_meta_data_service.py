@@ -1,15 +1,24 @@
 import logging
 import pandas as pd
-from app.archive_constants import RESPONSE_MESSAGE
+from app.archive_constants import RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO
 from app.model import ArchiveOperator
 
 
 def get_cellmeta_service(email, test):
+
+    def add_type(row, key, value):
+        row[key] = value
+        return row
+
     try:
         ao = ArchiveOperator()
         ao.set_session()
         archive_cells = ao.get_all_cell_meta(email, test)
-        records = [cell.to_dict() for cell in archive_cells]
+        records = [add_type(cell.to_dict(), "type", "private") for cell in archive_cells]
+        archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
+        records.extend([add_type(cell.to_dict(), "type", "public/battery-archive") for cell in archive_cells_ba])
+        archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
+        records.extend([add_type(cell.to_dict(), "type", "public/data.matr.io") for cell in archive_cells_dm])
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -34,9 +43,9 @@ def delete_cell_service(cell_id, email):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        # if not ao.get_all_cell_meta_with_id(cell_id, email):
-        #     logging.warn("User {email} action DELETE cell_id {cell_id} do not exixts")
-        #     return 400, RESPONSE_MESSAGE['CELL_ID_NOT_EXISTS'].format(cell_id)
+        if not ao.get_all_cell_meta_with_id(cell_id, email):
+            logging.warn("User {email} action DELETE cell_id {cell_id} do not exixts")
+            return 400, RESPONSE_MESSAGE['CELL_ID_NOT_EXISTS'].format(cell_id)
         ao.remove_cell_from_archive(cell_id, email)
         # ao.commit()
         logging.info("User {email} action DELETE cell_id {cell_id}".format(email=email, cell_id=cell_id))

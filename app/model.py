@@ -13,7 +13,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
 from sqlalchemy.sql.sqltypes import TIMESTAMP, FLOAT
 from app.archive_constants import (AMPLABS_DB_URL, DEGREE, OUTPUT_LABELS,
-                               ARCHIVE_TABLE, DB_URL)
+                               ARCHIVE_TABLE, DB_URL, BATTERY_ARCHIVE, DATA_MATR_IO)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from app.queries import *
@@ -279,7 +279,7 @@ class ArchiveOperator:
             CycleTimeSeries.env_temperature.label(OUTPUT_LABELS.ENV_TEMPERATURE.value),
             CycleTimeSeries.cell_temperature.label(
                 OUTPUT_LABELS.CELL_TEMPERATURE.value)).filter(
-                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email == email).order_by('cycle_index','test_time').statement
+                    CycleTimeSeries.cell_id == cell_id, CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO])).order_by('cycle_index','test_time').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
@@ -294,7 +294,7 @@ class ArchiveOperator:
             CycleStats.ah_d.label(OUTPUT_LABELS.DISCHARGE_CAPACITY.value),
             CycleStats.e_c.label(OUTPUT_LABELS.CHARGE_ENERGY.value),
             CycleStats.e_d.label(OUTPUT_LABELS.DISCHARGE_ENERGY.value)).filter(
-                    CycleStats.cell_id == cell_id, CycleStats.email == email).order_by('cycle_index').statement
+                    CycleStats.cell_id == cell_id, CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO])).order_by('cycle_index').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_abuse_ts_with_cell_id(self, cell_id, email):

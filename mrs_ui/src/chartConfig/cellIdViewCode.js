@@ -16,7 +16,7 @@ import urllib.request
 import pandas as pd
 
 def get_amplabs_data(cell_id):
-    url = "https://www.amplabs.ai/download/cells/cycle_data_json/{}".format(cell_id)
+    url = "https://www.amplabs.ai/download/cells/cycle_data_json?cell_id={}".format(cell_id)
     user = "{1}"
     httprequest = urllib.request.Request(
             url, method="GET"
@@ -57,7 +57,7 @@ import urllib.request
 import pandas as pd
 
 def get_amplabs_data(cell_id):
-    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json/{}".format(cell_id)
+    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json?cell_id={}".format(cell_id)
     user = "{1}"
     httprequest = urllib.request.Request(
             url, method="GET"
