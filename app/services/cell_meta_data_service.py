@@ -15,13 +15,10 @@ def get_cellmeta_service(email, test):
         ao.set_session()
         archive_cells = ao.get_all_cell_meta(email, test)
         records = [add_type(cell.to_dict(), "type", "private") for cell in archive_cells]
-        if email != BATTERY_ARCHIVE:
-            archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
-            records.extend([add_type(cell.to_dict(), "type", "public/battery-archive") for cell in archive_cells_ba])
-        
-        if email != DATA_MATR_IO:
-            archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
-            records.extend([add_type(cell.to_dict(), "type", "public/data.matr.io") for cell in archive_cells_dm])
+        archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
+        records.extend([add_type(cell.to_dict(), "type", "public/battery-archive") for cell in archive_cells_ba])
+        archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
+        records.extend([add_type(cell.to_dict(), "type", "public/data.matr.io") for cell in archive_cells_dm])
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
