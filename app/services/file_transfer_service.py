@@ -1,6 +1,6 @@
 import pandas as pd
 from app import archive_constants
-from app.archive_constants import OUTPUT_LABELS, RESPONSE_MESSAGE, TEST_TYPE, TESTER
+from app.archive_constants import BATTERY_ARCHIVE, DATA_MATR_IO, OUTPUT_LABELS, RESPONSE_MESSAGE, TEST_TYPE, TESTER
 from app.model import AbuseMeta, AbuseTimeSeries, CellMeta, CycleMeta, ArchiveOperator, CycleStats, CycleTimeSeries
 from app.utilities.file_reader import read_generic, read_maccor, read_arbin, read_ornlabuse, read_snlabuse
 from app.utilities.utils import calc_abuse_stats, status, calc_cycle_stats, sort_timeseries
@@ -9,19 +9,17 @@ import logging
 
 def init_file_upload_service(email, data):
     cell_id = data.get('cell_id')
-    # try:
-    #     ao = ArchiveOperator()
-    #     ao.set_session()
-    #     if ao.get_all_cell_meta_with_id(cell_id, email, data.get('test_type')):
-    #         return 400, RESPONSE_MESSAGE['CELL_ID_EXISTS'].format(cell_id)
-    # except ValueError as err:
-    #     print(err)
-    #     return 400, "Unsupported value"
-    # except Exception as err:
-    #     print(err)
-    #     return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
-    # finally:
-    #     ao.release_session()
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        if email not in {BATTERY_ARCHIVE, DATA_MATR_IO} and (ao.get_all_cell_meta_with_id(cell_id, BATTERY_ARCHIVE) or \
+                ao.get_all_cell_meta_with_id(cell_id, DATA_MATR_IO)):
+            return 400, RESPONSE_MESSAGE['PUBLIC_CELL_ID_EXISTS'].format(cell_id)
+    except Exception as err:
+        print(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()
     test_type = data.get('test_type')
     cell_metadata = pd.DataFrame([{
             "cell_id": data.get('cell_id'),

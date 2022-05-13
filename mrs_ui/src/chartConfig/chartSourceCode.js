@@ -1,5 +1,5 @@
 const sourceCode = {
-	cycleIndexChart: `
+  cycleIndexChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -54,7 +54,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	timeSeriesChart: `
+  timeSeriesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -110,7 +110,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	efficiencyChart: `
+  efficiencyChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -166,7 +166,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	cycleQtyByStepChart: `
+  cycleQtyByStepChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -203,7 +203,7 @@ def get_amplabs_chartdata():
     return None
 
 def plot_chart(df):
-    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Tiime (s)", "v":"Voltage (V)"}, title = "Cycle Quantities by step")
+    fig = px.line(df, x="cycle_time", y="v", color="series", labels={"cycle_time":"Cycle Time (s)", "v":"Voltage (V)"}, title = "Cycle Quantities by step")
     fig.update_traces(mode="markers+lines", hovertemplate=None)
     fig.update_layout(hovermode="x")
     pio.write_image(fig, file='./cycleQtyByStepChart.png', format="png", scale=1, width=1200, height=800)
@@ -221,7 +221,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	cycleQtyByStepWithCapacityChart: `
+  cycleQtyByStepWithCapacityChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -276,7 +276,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	compareByCycleTimeChart: `
+  compareByCycleTimeChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -332,7 +332,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	forceAndDisplacementChart: `
+  forceAndDisplacementChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -388,7 +388,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	testTempraturesChart: `
+  testTempraturesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -444,7 +444,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	voltageChart: `
+  voltageChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido

@@ -16,6 +16,10 @@ LINKEDIN_CLIENT_SECRET = 'hGAIpqZh5swxgM6v'
 LINKEDIN_REDIRECT_URI_DASH_CYCLE='https://www.amplabs.ai/dashboard/cycle-test'
 LINKEDIN_REDIRECT_URI_DASH_ABUSE='https://www.amplabs.ai/dashboard/abuse-test'
 
+# Public Database emails:
+BATTERY_ARCHIVE = "info@batteryarchive.org"
+DATA_MATR_IO = "data.matr.io@tri.global"
+
 class TEST_TYPE(Enum):
     ABUSE = "abuse"
     CYCLE = "cycle"
@@ -142,7 +146,7 @@ class LABEL(Enum):
     FILE_TYPE = "file_type"
 
 RESPONSE_MESSAGE = {
-    "CELL_ID_EXISTS": "Cell id {} already exists",
+    "PUBLIC_CELL_ID_EXISTS": "Cell id {} already exists in public dataset",
     "CELL_ID_NOT_EXISTS": "Cell id {} does not exists",
     "CELL_ID_NOT_BLANK": "Cell id must not be blank",
     "CELL_METADATA_ADDED": "Metadata for cell id {} added successfully",
