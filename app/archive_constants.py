@@ -150,7 +150,7 @@ class LABEL(Enum):
     FILE_TYPE = "file_type"
 
 RESPONSE_MESSAGE = {
-    "PUBLIC_CELL_ID_EXISTS": "Cell id {} already exists in public dataset",
+    "RESERVED_PUBLIC_CELL_ID": "Cell id {} is reserved",
     "CELL_ID_NOT_EXISTS": "Cell id {} does not exists",
     "CELL_ID_NOT_BLANK": "Cell id must not be blank",
     "CELL_METADATA_ADDED": "Metadata for cell id {} added successfully",

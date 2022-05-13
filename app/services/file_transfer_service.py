@@ -14,7 +14,7 @@ def init_file_upload_service(email, data):
         ao.set_session()
         if email not in {BATTERY_ARCHIVE, DATA_MATR_IO} and (ao.get_all_cell_meta_with_id(cell_id, BATTERY_ARCHIVE) or \
                 ao.get_all_cell_meta_with_id(cell_id, DATA_MATR_IO)):
-            return 400, RESPONSE_MESSAGE['PUBLIC_CELL_ID_EXISTS'].format(cell_id)
+            return 400, RESPONSE_MESSAGE['RESERVED_PUBLIC_CELL_ID'].format(cell_id)
     except Exception as err:
         print(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
