@@ -1,5 +1,6 @@
 from enum import Enum, auto
 
+ENV = "development"
 SLASH = "/"
 
 DEGREE = 3
@@ -10,6 +11,9 @@ LIVE_DB_URL = "<your-db-string>"
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
+# Amplabs DB
+AMPLABS_DB_URL = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "development" \
+                 else "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
 # linkedin share constants
 LINKEDIN_CLIENT_ID = '78opgrui0xx0ng'
 LINKEDIN_CLIENT_SECRET = 'hGAIpqZh5swxgM6v'

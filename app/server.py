@@ -1,3 +1,4 @@
+from app.archive_constants import AMPLABS_DB_URL
 import connexion
 from connexion import ProblemException
 import os
@@ -19,7 +20,7 @@ logging.basicConfig(filename="logs/audit.log",
 
 app = connexion.FlaskApp(__name__)
 app.add_api('../api/api.yaml', options={'swagger_url': '/api'})
-app.app.config['DATABASE_URI'] = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
+app.app.config['DATABASE_URI'] = AMPLABS_DB_URL
 # READ CONFIG from env file
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)

@@ -12,7 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
 from sqlalchemy.sql.sqltypes import TIMESTAMP, FLOAT
-from app.archive_constants import (DEGREE, OUTPUT_LABELS,
+from app.archive_constants import (AMPLABS_DB_URL, DEGREE, OUTPUT_LABELS,
                                ARCHIVE_TABLE, DB_URL, BATTERY_ARCHIVE, DATA_MATR_IO)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -228,7 +228,7 @@ Archive Operator
 
 
 class ArchiveOperator:
-    url = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
+    url = AMPLABS_DB_URL
     engine = create_engine(url, pool_size=500, pool_timeout=1200)
     Model.metadata.create_all(engine)
     executor = ThreadPoolExecutor(500)
