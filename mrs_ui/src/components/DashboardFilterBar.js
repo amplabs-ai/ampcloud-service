@@ -30,44 +30,74 @@ const DashboardFilterBar = (props) => {
 	const [searchText, setSearchText] = useState("");
 	const [searchedColumn, setSearchedColumn] = useState("");
 
+	const [cellDirInfo, setCellDirInfo] = useState([]);
+
+	const _initializeFilterBar = (data) => {
+		let cellIdData = [];
+		if (data.length) {
+			data.forEach((cellId, i) => {
+				cellIdData.push({
+					key: i,
+					cell_id: cellId.cell_id,
+				});
+			});
+			console.log(cellIdData);
+			setCellIds([...cellIdData]);
+			setSelectedRowKeys(cellIdData.map((c) => c.key));
+			setSelectedRows([...cellIdData]);
+			setTableLoading(false);
+			props.onFilterChange([...cellIdData], props.testType === "abuseTest" ? sample : step);
+		} else {
+			// error
+			console.log("no data found!");
+			props.onFilterChange([], props.testType === "abuseTest" ? sample : step);
+			setTableLoading(false);
+		}
+	};
+
 	useEffect(() => {
 		let endpoint = props.testType === "abuseTest" ? "/cells/abuse/meta" : "/cells/cycle/meta";
 		console.log("endpointt", endpoint);
-		axios
-			.get(endpoint)
-			.then((response) => {
-				console.log("cell ids", response);
-				let cellIdData = [];
-				let data = response.data.records[0];
-				if (data.length) {
-					data.forEach((cellId, i) => {
-						cellIdData.push({
-							key: i,
-							cell_id: cellId.cell_id,
-						});
-					});
-					console.log(cellIdData);
-					setCellIds([...cellIdData]);
-					setSelectedRowKeys(cellIdData.map((c) => c.key));
-					setSelectedRows([...cellIdData]);
-					setTableLoading(false);
-					props.onFilterChange([...cellIdData], props.testType === "abuseTest" ? sample : step);
-				} else {
-					// error
-					console.log("no data found!");
-					props.onFilterChange([], props.testType === "abuseTest" ? sample : step);
-					setTableLoading(false);
-				}
-			})
-			.catch((err) => {
-				console.log("get cellId err", err);
-				props.internalServerErrorFound("500");
+		let data;
+		if (props.testType === "cycleTest") {
+			// temp wrap in object
+			let x = [];
+			props.cellData.map((c) => {
+				x.push({ cell_id: c });
 			});
-		// const filterTitle = document.createElement("span");
-		// filterTitle.innerHTML = "Select Filter ";
-		// filterTitle.className = "ms-1";
-		// document.querySelector(".ant-table-container table > thead > tr:first-child th:first-child").append(filterTitle);
+			data = x;
+			_initializeFilterBar(data);
+		} else if (props.testType === "abuseTest") {
+			axios
+				.get(endpoint)
+				.then((response) => {
+					console.log("cell ids abuse", response);
+					data = response.data.records[0];
+					_initializeFilterBar(data);
+				})
+				.catch((err) => {
+					console.log("get cellId err", err);
+					props.internalServerErrorFound("500");
+				});
+		}
 	}, []);
+
+	const _cleanCellIds = (cellIds) => {
+		let x = [];
+		cellIds.map((k) => { 
+			x.push({ cell_id: k.substring(k.indexOf("_") + 1) });
+		});
+		return x;
+	};
+
+	useEffect(() => {
+		let data;
+		if (props.testType === "cycleTest") {
+			setCellDirInfo(props.cellData);
+			data = _cleanCellIds(props.cellData);
+			_initializeFilterBar(data);
+		}
+	}, [props.cellData]);
 
 	const handleCellDelete = (record) => {
 		console.log("delete", record.key);
@@ -330,8 +360,11 @@ const DashboardFilterBar = (props) => {
 					<div className="filter-bar-delete-column">
 						<Popconfirm title="Sure to delete?" onConfirm={() => handleCellDelete(record)}>
 							<Space size="middle">
-								<Button icon={<FaRegTrashAlt />} type="text" disabled={props.disableSelection}></Button>
-								{/* <FaRegTrashAlt style={{ cursor: "pointer" }} /> */}
+								<Button
+									icon={<FaRegTrashAlt />}
+									type="text"
+									disabled={props.disableSelection || _checkIsReadOnly(record)}
+								></Button>
 							</Space>
 						</Popconfirm>
 					</div>
@@ -339,6 +372,14 @@ const DashboardFilterBar = (props) => {
 			width: 100,
 		},
 	];
+
+	const _checkIsReadOnly = (record) => {
+		// cellDirInfo
+		console.log("readonly", record);
+		return cellDirInfo.find((c) => {
+			return record.cell_id === c.substring(c.indexOf("_") + 1) && c.split("_", 1)[0].includes("public");
+		});
+	};
 
 	const abuseTestColumns = [
 		{

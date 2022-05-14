@@ -28,6 +28,7 @@
     "react-scripts": "5.0.0",
     "react-spring": "^9.4.4",
     "react-syntax-highlighter": "^15.5.0",
+    "simplebar-react": "^2.3.7",
     "typewriter-effect": "^2.18.2",
     "web-vitals": "^2.1.4"
   },
