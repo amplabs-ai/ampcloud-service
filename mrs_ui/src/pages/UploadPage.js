@@ -17,6 +17,8 @@ const UploadPage = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 
+	console.log("location.state", location.state?.name);
+
 	const [pageType, setPageType] = useState("cycle-test");
 	const [files, setFiles] = useState([]);
 	const [uploadProgress, setUploadProgress] = useState({});
@@ -209,6 +211,8 @@ const UploadPage = () => {
 					doFileUpload(cellMetadata.cell_id);
 				} else if (response.status === 400) {
 					console.log(response);
+					message.error(response.data.detail);
+					message.error(response.data.detail);
 				}
 			})
 			.catch((error) => {

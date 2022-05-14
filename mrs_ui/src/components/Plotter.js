@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
 import papa from "papaparse";
 import ReactEcharts from "echarts-for-react";
-import { Upload, message, Input, Tooltip, Button, Select, Divider, Form } from "antd";
-import { InboxOutlined, FileTextOutlined, FullscreenOutlined } from "@ant-design/icons";
+import { Upload, message, Button, Select, Divider, Form } from "antd";
+import { InboxOutlined, FileTextOutlined } from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 
 const { Dragger } = Upload;
 const { Option } = Select;
@@ -12,46 +13,17 @@ for (let i = 10; i < 36; i++) {
 	children.push(<Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>);
 }
 
-const toggle_full_screen = () => {
-	if (
-		(document.fullScreenElement && document.fullScreenElement !== null) ||
-		(!document.mozFullScreen && !document.webkitIsFullScreen)
-	) {
-		if (document.documentElement.requestFullScreen) {
-			document.documentElement.requestFullScreen();
-		} else if (document.documentElement.mozRequestFullScreen) {
-			/* Firefox */
-			document.documentElement.mozRequestFullScreen();
-		} else if (document.documentElement.webkitRequestFullScreen) {
-			/* Chrome, Safari & Opera */
-			document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-		} else if (document.msRequestFullscreen) {
-			/* IE/Edge */
-			document.documentElement.msRequestFullscreen();
-		}
-	} else {
-		if (document.cancelFullScreen) {
-			document.cancelFullScreen();
-		} else if (document.mozCancelFullScreen) {
-			/* Firefox */
-			document.mozCancelFullScreen();
-		} else if (document.webkitCancelFullScreen) {
-			/* Chrome, Safari and Opera */
-			document.webkitCancelFullScreen();
-		} else if (document.msExitFullscreen) {
-			/* IE/Edge */
-			document.msExitFullscreen();
-		}
-	}
-};
-
 const Plotter = () => {
+	const navigate = useNavigate();
+
 	const plottingChart = useRef(null);
 	const [data, setData] = useState(null);
 	const [availableCol, setAvailableCol] = useState([]);
 	const [selectedXaxis, setSelectedXaxis] = useState(null);
 	const [selectedYaxes, setSelectedYaxes] = useState([]);
 	const [fileName, setFileName] = useState("");
+
+	const [file, setFile] = useState(null);
 
 	const handleYAxisSelect = (value) => {
 		console.log(value);
@@ -173,6 +145,12 @@ const Plotter = () => {
 	const removeFile = (e) => {
 		console.log("onRemove");
 		setData(null);
+		setAvailableCol([]);
+		setSelectedXaxis(null);
+		setSelectedYaxes([]);
+		plottingChart.current.getEchartsInstance().dispatchAction({
+			type: "restore",
+		});
 	};
 
 	return (
@@ -216,6 +194,7 @@ const Plotter = () => {
 										onChange={handleXAxisChange}
 										defaultValue={null}
 										style={{ width: 120 }}
+										value={selectedXaxis}
 										placeholder="Select X-Axis"
 									>
 										{availableCol.map((c, i) => (
@@ -233,6 +212,7 @@ const Plotter = () => {
 										placeholder="Please select Y Axes"
 										onSelect={handleYAxisSelect}
 										onDeselect={handleYAxisDeselect}
+										value={selectedYaxes}
 									>
 										{availableCol.map((c, i) => (
 											<Option key={i + Math.random()} value={c}>
@@ -251,7 +231,18 @@ const Plotter = () => {
 					</div>
 				</div>
 			</div>
-			<Divider style={{ backgroundColor: "#D3D3D3", marginTop: "50px" }} />
+			<Divider style={{ marginTop: "50px" }} orientation="right">
+				{/* <Button
+					size="small"
+					type="primary"
+					style={{ float: "right" }}
+					onClick={() => {
+						navigate("/upload/cycle-test", { state: { id: 1, name: "sabaoon" } });
+					}}
+				>
+					Add to database
+				</Button> */}
+			</Divider>
 			<div>
 				<ReactEcharts
 					style={{ width: "90vw", height: "600px" }}

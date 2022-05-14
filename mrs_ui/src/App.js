@@ -8,8 +8,6 @@ import LandingPage from "./pages/LandingPage";
 import Navbar from "./components/Navbar";
 import UploadPage from "./pages/UploadPage";
 import PageNotFound from "./pages/PageNotFound";
-import DashboardAbuseTest from "./pages/DashboardAbuseTest";
-import DashboardCycleTest from "./pages/DashboardCycleTest";
 import ProcessUpload from "./components/ProcessUpload";
 import PlotterPage from "./pages/PlotterPage";
 

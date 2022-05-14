@@ -5,15 +5,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
 import styles from "./LandingPage.module.css";
-import { FaArrowRight, FaHandsHelping, FaLongArrowAltRight, FaNewspaper, FaSearch } from "react-icons/fa";
+import { FaArrowRight } from "react-icons/fa";
 import { useSpring, animated } from "react-spring";
-import Typewriter from "typewriter-effect";
-import num1 from "../assets/icons/numbers-1.svg";
-import num2 from "../assets/icons/numbers-2.svg";
-import num3 from "../assets/icons/numbers-3.svg";
-import pic1 from "../assets/uploadPage.png";
-import pic2 from "../assets/dashboardPage.png";
-import pic3 from "../assets/sharePage.png";
 
 const LandingPage = () => {
 	const navigate = useNavigate();
@@ -101,7 +94,7 @@ const LandingPage = () => {
 				})
 				.catch((err) => {
 					setErrorMsg("Something went wrong. Please try again!");
-					setBtnLoading(true);
+					setBtnLoading(false);
 				});
 		}
 	};
