@@ -17,7 +17,7 @@ const UploadPage = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	console.log("location.state", location.state?.name);
+	console.log("location.state", location.state?.file);
 
 	const [pageType, setPageType] = useState("cycle-test");
 	const [files, setFiles] = useState([]);
@@ -373,6 +373,7 @@ const UploadPage = () => {
 
 									<div className="py-2">
 										<DropFileInput
+											preloadFile={location.state?.file || null}
 											onFileChange={(files) => onFileChange(files)}
 											fileUploadHandler={fileUploadHandler}
 											uploadProgress={uploadProgress}

@@ -50,6 +50,9 @@ const DashboardFilterBar = (props) => {
 		} else {
 			// error
 			console.log("no data found!");
+			setCellIds([]);
+			setSelectedRowKeys([]);
+			setSelectedRows([]);
 			props.onFilterChange([], props.testType === "abuseTest" ? sample : step);
 			setTableLoading(false);
 		}
@@ -84,7 +87,7 @@ const DashboardFilterBar = (props) => {
 
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
-		cellIds.map((k) => { 
+		cellIds.map((k) => {
 			x.push({ cell_id: k.substring(k.indexOf("_") + 1) });
 		});
 		return x;
@@ -93,6 +96,7 @@ const DashboardFilterBar = (props) => {
 	useEffect(() => {
 		let data;
 		if (props.testType === "cycleTest") {
+			console.log("in useEffect", props.cellData);
 			setCellDirInfo(props.cellData);
 			data = _cleanCellIds(props.cellData);
 			_initializeFilterBar(data);
@@ -100,7 +104,8 @@ const DashboardFilterBar = (props) => {
 	}, [props.cellData]);
 
 	const handleCellDelete = (record) => {
-		console.log("delete", record.key);
+		setLoading(true);
+		console.log("delete", record);
 		let params = new URLSearchParams();
 		params.append("cell_id", record.cell_id);
 		axios
@@ -108,14 +113,18 @@ const DashboardFilterBar = (props) => {
 				params: params,
 			})
 			.then(() => {
+				setLoading(false);
 				setCellIds(cellIds.filter((item) => item.key !== record.key));
-				setSelectedRows(selectedRows.filter((item) => item.key !== record.key));
+				let records = selectedRows.filter((item) => item.key !== record.key);
+				setSelectedRows(records);
 				setSelectedRowKeys(selectedRowKeys.filter((item) => item !== record.key));
-				props.onCellIdChange(selectedRows.filter((item) => item.key !== record.key));
+				props.onCellIdChange(records);
+				props.onCellDelete(record);
 				message.success("Cell Id Deleted!");
 				message.success("Cell Id Deleted!");
 			})
 			.catch((err) => {
+				setLoading(false);
 				message.error("Error deleting Cell Id");
 				message.error("Error deleting Cell Id");
 			});

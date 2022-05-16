@@ -35,9 +35,25 @@ const DropFileInput = (props) => {
 
   const [fileName, setFileName] = useState("data.csv");
 
+  useEffect(() => {
+    if (props.preloadFile) {
+      onFileDrop(props.preloadFile);
+      window.scrollTo(
+        0,
+        document.body.scrollHeight || document.documentElement.scrollHeight
+      );
+    }
+  }, [props.preloadFile]);
+
   const onFileDrop = (e) => {
-    let fileName = e.target.files[0].name;
-    let actualFile = e.target.files[0];
+    let fileName, actualFile;
+    if (e.target) {
+      fileName = e.target.files[0].name;
+      actualFile = e.target.files[0];
+    } else {
+      fileName = e.name;
+      actualFile = e;
+    }
     if (props.pageType !== "cycle-test") {
       props.onFileChange([actualFile]);
       console.log("[[actualFile]]", [actualFile]);
@@ -47,7 +63,7 @@ const DropFileInput = (props) => {
       // Parsing file data
       let data = [];
       let newFile = null;
-      Papa.parse(e.target.files[0], {
+      Papa.parse(actualFile, {
         header: true,
         skipEmptyLines: true,
         fastMode: true,

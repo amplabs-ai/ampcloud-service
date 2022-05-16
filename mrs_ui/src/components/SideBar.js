@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Button, Col, Input, Row, Tree, Layout, Divider, Spin } from "antd";
+import { Button, Input, Tree, Layout, Spin, Empty, Result } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import axios from "axios";
-import Text from "antd/lib/typography/Text";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
 
@@ -89,9 +88,11 @@ const SideBar = (props) => {
 	const [filteredTreeData, setFilteredTreeData] = useState([]);
 	const [treeData, setTreeData] = useState([]);
 	const [checkedCellIds, setCheckedCellIds] = useState([]);
-	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false);
+	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false); 
+	const [error, setError] = useState(null);
 
 	useEffect(() => {
+		setIsCelldataLoaded(false);
 		let endpoint = props.testType === "abuse-test" ? "/cells/abuse/meta" : "/cells/cycle/meta";
 		console.log("endpointt", endpoint);
 		axios
@@ -110,8 +111,9 @@ const SideBar = (props) => {
 			})
 			.catch((err) => {
 				console.log("get cellId err", err);
+				setError(err);
 			});
-	}, []);
+	}, [props.refresh]);
 
 	const findObjectAndParents = (item, title) => {
 		if (item.title.toLowerCase().includes(title.toLowerCase()) || !title) {
@@ -170,7 +172,7 @@ const SideBar = (props) => {
 				style={{
 					position: "sticky",
 					overflow: "auto",
-					height: "90vh",
+					height: "100%",
 					left: 0,
 					top: 80,
 					bottom: 0,
@@ -179,11 +181,13 @@ const SideBar = (props) => {
 					borderRadius: "5px",
 					marginRight: "5px",
 				}}
+				collapsedWidth={50}
 				width={300}
 				theme="light"
 			>
-				<SimpleBarReact style={{ maxHeight: 500 }}>
+				<SimpleBarReact style={{ maxHeight: "90vh" }}>
 					<Button
+						style={{ float: "right" }}
 						onClick={() => {
 							setSideBarCollapse(!sideBarCollapse);
 						}}
@@ -195,23 +199,19 @@ const SideBar = (props) => {
 					) : (
 						<>
 							<Search className="py-2" placeholder="Search" onChange={(e) => onChange(e)} />
-							<Row justify="space-around" className="pb-3">
-								<Col>
-									<Button type="primary" onClick={() => onEdit()}>
-										Edit
-									</Button>
-								</Col>
-								<Col>
+							<div className="row justify-content-around pb-3">
+								<div className="col-4">
 									<Button type="primary" onClick={() => onClear()}>
 										Clear
 									</Button>
-								</Col>
-								<Col>
+								</div>
+								<div className="col-4">
 									<Button type="primary" onClick={() => onLoad()}>
 										Load
 									</Button>
-								</Col>
-							</Row>
+								</div>
+							</div>
+							{error ? <Result status="warning" extra={<p>Error loading data!</p>} /> : null}
 							<div style={{ minHeight: "100%" }}>
 								{isCelldataLoaded ? (
 									<>
