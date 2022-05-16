@@ -90,6 +90,11 @@ const Plotter = () => {
 			legend: {
 				data: selectedYaxes,
 			},
+			grid: {
+				left: "5%",
+				right: "15%",
+				containLabel: true,
+			},
 			xAxis: {
 				boundaryGap: false,
 				name: selectedXaxis,
@@ -112,6 +117,7 @@ const Plotter = () => {
 
 	const fileUploadHandler = (info) => {
 		console.log("info", info);
+		setFile(info.file.originFileObj);
 		setFileName(info.file.name);
 		if (info.fileList.length) {
 			papa.parse(info.file.originFileObj, {
@@ -232,20 +238,21 @@ const Plotter = () => {
 				</div>
 			</div>
 			<Divider style={{ marginTop: "50px" }} orientation="right">
-				{/* <Button
+				<Button
 					size="small"
 					type="primary"
 					style={{ float: "right" }}
 					onClick={() => {
-						navigate("/upload/cycle-test", { state: { id: 1, name: "sabaoon" } });
+						navigate("/upload/cycle-test", { state: { file: file } });
 					}}
+					disabled={!file}
 				>
 					Add to database
-				</Button> */}
+				</Button>
 			</Divider>
-			<div>
+			<div className="card shadow p-2">
 				<ReactEcharts
-					style={{ width: "90vw", height: "600px" }}
+					style={{ width: "95vw", height: "600px" }}
 					ref={plottingChart}
 					option={{
 						legend: {
@@ -256,7 +263,7 @@ const Plotter = () => {
 							orient: "vertical",
 						},
 						grid: {
-							left: "0%",
+							left: "5%",
 							right: "15%",
 							containLabel: true,
 						},
