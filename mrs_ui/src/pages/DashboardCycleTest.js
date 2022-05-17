@@ -22,9 +22,10 @@ import HelmetMetaData from "../components/HelmetMetaData";
 import Cookies from "js-cookie";
 
 import WorkerBuilder from "../worker/woker-builder";
-import Worker from "../worker/dashboardFilter.worker";
+import Worker from "../worker/worker";
 import { useSearchParams } from "react-router-dom";
 import Title from "antd/lib/typography/Title";
+import EditCellData from "../components/EditCellData";
 
 const instance = new WorkerBuilder(Worker);
 
@@ -61,6 +62,7 @@ const DashboardCycleTest = () => {
 	const [shareDisabled, setShareDisabled] = useState(true);
 	const [shareLoadingMsg, setShareLoadingMsg] = useState("");
 	const [cellDataOnLoad, setCellDataOnLoad] = useState([]);
+	const [cellDataOnEdit, setCellDataOnEdit] = useState([]);
 	const [shallRefreshSideBar, setShallRefreshSideBar] = useState(false);
 	const [loading, setLoading] = useState(false);
 
@@ -192,8 +194,13 @@ const DashboardCycleTest = () => {
 	}, []);
 
 	const handleLoadCellIds = (checkedCellIds) => {
-		console.log("hmmm", checkedCellIds);
+		console.log("handleLoadCellIds", checkedCellIds);
 		setCellDataOnLoad([...checkedCellIds]);
+	};
+
+	const handleEditCellIds = (checkedCellIds) => {
+		console.log("handleEditCellIds", checkedCellIds);
+		// setCellDataOnEdit([...checkedCellIds]);
 	};
 
 	const reportChange = useCallback(
@@ -334,13 +341,7 @@ const DashboardCycleTest = () => {
 
 	const handleCellIdChange = async (selectedCellIds) => {
 		setLoading(true);
-		// instance.postMessage({
-		// 	chartData,
-		// 	selectedCellIds,
-		// });
-		// console.log("navigator.hardwareConcurrency", navigator.hardwareConcurrency);
 		console.log("selected cellIds", selectedCellIds);
-
 		let params = new URLSearchParams();
 		selectedCellIds.forEach((cellId) => {
 			params.append("cell_id", cellId.cell_id);
@@ -382,6 +383,7 @@ const DashboardCycleTest = () => {
 		// let responses = await Promise.all([promise1, promise2, promise3, promise4, promise5]);
 		// for (let response of responses) {
 		// 	setDisableSelection(false);
+		// 	setLoading(false);
 		// }
 	};
 
@@ -1160,154 +1162,167 @@ const DashboardCycleTest = () => {
 					></PageHeader>
 					{/* <img src={metaImageDash} alt="Broken" /> */}
 					<Layout hasSider>
-						<SideBar testType="cycle-test" onLoadCellIds={handleLoadCellIds} refresh={shallRefreshSideBar} />
+						<SideBar
+							testType="cycle-test"
+							onLoadCellIds={handleLoadCellIds}
+							onEditCellIds={handleEditCellIds}
+							refresh={shallRefreshSideBar}
+						/>
 						<Layout className="site-layout" style={{ marginLeft: "auto" }}>
 							<Content>
-								<DashboardFilterBar
-									testType="cycleTest"
-									onFilterChange={handleFilterChange}
-									onCellIdChange={handleCellIdChange}
-									onCellDelete={handleCellDelete}
-									internalServerErrorFound={internalServerErrorFound}
-									disableSelection={disableSelection}
-									cellData={cellDataOnLoad}
-								/>
-								<ViewCodeModal
-									code={codeContent}
-									modalVisible={modalVisible}
-									setModalVisible={setModalVisible}
-									searchParams={searchParams}
-								/>
-								{loading ? (
-									<div className="text-center mt-5">
-										<Spin size="large" />
+								{cellDataOnEdit && cellDataOnEdit.length ? (
+									<div>
+										<EditCellData />
 									</div>
 								) : (
-									<div ref={dashboardRef}>
-										<div className="row pb-5">
-											<div className="col-md-6 mt-2">
-												{/* <input type="file" onChange={(e) => setMetaImageDash(e.target.files[0])} /> */}
-												<FullScreen handle={screen1} onChange={reportChange}>
-													<div
-														data-id="cycleIndexChart"
-														className="card shadow"
-														style={{ height: "100%", width: "100%" }}
-													>
-														<div className="card-body">
-															{chartLoadingError.cycleIndex && (
-																<Alert message="Error loading chart!" type="error" showIcon />
-															)}
-															<ReactEcharts
-																style={{
-																	width: "100%",
-																	height: window.screen.width < 600 ? "15rem" : "24em",
-																}}
-																// showLoading
-																ref={cycleIndexChart}
-																option={initialChartOptions}
-															/>
-														</div>
-													</div>
-												</FullScreen>
+									<>
+										<DashboardFilterBar
+											testType="cycleTest"
+											onFilterChange={handleFilterChange}
+											onCellIdChange={handleCellIdChange}
+											onCellDelete={handleCellDelete}
+											internalServerErrorFound={internalServerErrorFound}
+											disableSelection={disableSelection}
+											cellData={cellDataOnLoad}
+										/>
+										<ViewCodeModal
+											code={codeContent}
+											modalVisible={modalVisible}
+											setModalVisible={setModalVisible}
+											searchParams={searchParams}
+										/>
+										{loading ? (
+											<div className="text-center mt-5">
+												<Spin size="large" />
 											</div>
-											<div className="col-md-6 mt-2">
-												<FullScreen handle={screen3} onChange={reportChange}>
-													<div
-														data-id="efficiencyChart"
-														className="card shadow"
-														style={{ height: "100%", width: "100%" }}
-													>
-														<div className="card-body">
-															{chartLoadingError.efficiency && (
-																<Alert message="Error loading chart!" type="error" showIcon />
-															)}
-															<ReactEcharts
-																style={{
-																	width: "100%",
-																	height: window.screen.width < 600 ? "15rem" : "24em",
-																}}
-																// showLoading
-																ref={efficiencyChart}
-																option={initialChartOptions}
-															/>
-														</div>
+										) : (
+											<div ref={dashboardRef}>
+												<div className="row pb-5">
+													<div className="col-md-6 mt-2">
+														{/* <input type="file" onChange={(e) => setMetaImageDash(e.target.files[0])} /> */}
+														<FullScreen handle={screen1} onChange={reportChange}>
+															<div
+																data-id="cycleIndexChart"
+																className="card shadow"
+																style={{ height: "100%", width: "100%" }}
+															>
+																<div className="card-body">
+																	{chartLoadingError.cycleIndex && (
+																		<Alert message="Error loading chart!" type="error" showIcon />
+																	)}
+																	<ReactEcharts
+																		style={{
+																			width: "100%",
+																			height: window.screen.width < 600 ? "15rem" : "24em",
+																		}}
+																		// showLoading
+																		ref={cycleIndexChart}
+																		option={initialChartOptions}
+																	/>
+																</div>
+															</div>
+														</FullScreen>
 													</div>
-												</FullScreen>
-											</div>
-											<div className="col-md-6 mt-2">
-												<FullScreen handle={screen2} onChange={reportChange}>
-													<div
-														data-id="timeSeriesChart"
-														className="card shadow"
-														style={{ height: "100%", width: "100%" }}
-													>
-														<div className="card-body">
-															{chartLoadingError.timeSeries && (
-																<Alert message="Error loading chart!" type="error" showIcon />
-															)}
-															<ReactEcharts
-																style={{
-																	width: "100%",
-																	height: window.screen.width < 600 ? "15rem" : "24em",
-																}}
-																// showLoading
-																ref={timeSeriesChart}
-																option={initialChartOptions}
-															/>
-														</div>
+													<div className="col-md-6 mt-2">
+														<FullScreen handle={screen3} onChange={reportChange}>
+															<div
+																data-id="efficiencyChart"
+																className="card shadow"
+																style={{ height: "100%", width: "100%" }}
+															>
+																<div className="card-body">
+																	{chartLoadingError.efficiency && (
+																		<Alert message="Error loading chart!" type="error" showIcon />
+																	)}
+																	<ReactEcharts
+																		style={{
+																			width: "100%",
+																			height: window.screen.width < 600 ? "15rem" : "24em",
+																		}}
+																		// showLoading
+																		ref={efficiencyChart}
+																		option={initialChartOptions}
+																	/>
+																</div>
+															</div>
+														</FullScreen>
 													</div>
-												</FullScreen>
-											</div>
-											<div className="col-md-6 mt-2">
-												<FullScreen handle={screen4} onChange={reportChange}>
-													<div
-														data-id="cycleQtyByStepChart"
-														className="card shadow"
-														style={{ height: "100%", width: "100%" }}
-													>
-														<div className="card-body">
-															{chartLoadingError.cycleQtyByStep && (
-																<Alert message="Error loading chart!" type="error" showIcon />
-															)}
-															<ReactEcharts
-																style={{
-																	width: "100%",
-																	height: window.screen.width < 600 ? "15rem" : "24em",
-																}}
-																// showLoading
-																ref={cycleQtyByStepChart}
-																option={initialChartOptions}
-															/>
-														</div>
+													<div className="col-md-6 mt-2">
+														<FullScreen handle={screen2} onChange={reportChange}>
+															<div
+																data-id="timeSeriesChart"
+																className="card shadow"
+																style={{ height: "100%", width: "100%" }}
+															>
+																<div className="card-body">
+																	{chartLoadingError.timeSeries && (
+																		<Alert message="Error loading chart!" type="error" showIcon />
+																	)}
+																	<ReactEcharts
+																		style={{
+																			width: "100%",
+																			height: window.screen.width < 600 ? "15rem" : "24em",
+																		}}
+																		// showLoading
+																		ref={timeSeriesChart}
+																		option={initialChartOptions}
+																	/>
+																</div>
+															</div>
+														</FullScreen>
 													</div>
-												</FullScreen>
-											</div>
-											<div className="col-md-12 mt-2">
-												<FullScreen handle={screen5} onChange={reportChange}>
-													<div
-														data-id="cycleQtyByStepWithCapacityChart"
-														className="card shadow"
-														style={{ height: "100%", width: "100%" }}
-													>
-														<div className="card-body">
-															{chartLoadingError.cycleQtyByStepWithCapacity && (
-																<Alert message="Error loading chart!" type="error" showIcon />
-															)}
-															<ReactEcharts
-																style={{
-																	width: "100%",
-																	height: window.screen.width < 600 ? "15rem" : "24em",
-																}}
-																// showLoading
-																ref={cycleQtyByStepWithCapacityChart}
-																option={initialChartOptions}
-															/>
-														</div>
+													<div className="col-md-6 mt-2">
+														<FullScreen handle={screen4} onChange={reportChange}>
+															<div
+																data-id="cycleQtyByStepChart"
+																className="card shadow"
+																style={{ height: "100%", width: "100%" }}
+															>
+																<div className="card-body">
+																	{chartLoadingError.cycleQtyByStep && (
+																		<Alert message="Error loading chart!" type="error" showIcon />
+																	)}
+																	<ReactEcharts
+																		style={{
+																			width: "100%",
+																			height: window.screen.width < 600 ? "15rem" : "24em",
+																		}}
+																		// showLoading
+																		ref={cycleQtyByStepChart}
+																		option={initialChartOptions}
+																	/>
+																</div>
+															</div>
+														</FullScreen>
 													</div>
-												</FullScreen>
+													<div className="col-md-12 mt-2">
+														<FullScreen handle={screen5} onChange={reportChange}>
+															<div
+																data-id="cycleQtyByStepWithCapacityChart"
+																className="card shadow"
+																style={{ height: "100%", width: "100%" }}
+															>
+																<div className="card-body">
+																	{chartLoadingError.cycleQtyByStepWithCapacity && (
+																		<Alert message="Error loading chart!" type="error" showIcon />
+																	)}
+																	<ReactEcharts
+																		style={{
+																			width: "100%",
+																			height: window.screen.width < 600 ? "15rem" : "24em",
+																		}}
+																		// showLoading
+																		ref={cycleQtyByStepWithCapacityChart}
+																		option={initialChartOptions}
+																	/>
+																</div>
+															</div>
+														</FullScreen>
+													</div>
+												</div>
 											</div>
-										</div>
-									</div>
+										)}
+									</>
 								)}
 							</Content>
 						</Layout>
