@@ -202,11 +202,11 @@ const SideBar = (props) => {
 						<>
 							<Search className="py-2" placeholder="Search" onChange={(e) => onChange(e)} />
 							<div className="row justify-content-around pb-3">
-								<div className="col-4">
-									<Button type="primary" onClick={() => onEdit()}>
-										Edit
-									</Button>
-								</div>
+// 								<div className="col-4">
+// 									<Button type="primary" onClick={() => onEdit()}>
+// 										Edit
+// 									</Button>
+// 								</div>
 								<div className="col-4">
 									<Button type="primary" onClick={() => onClear()}>
 										Clear
