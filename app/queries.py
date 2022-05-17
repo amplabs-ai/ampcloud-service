@@ -1,5 +1,6 @@
 EFFICIENCY_QUERY = """
 SELECT
+    r.cell_id,
     key || ': ' || r.cell_id as series,
     r.cycle_index,
     value
@@ -12,6 +13,7 @@ order by r.cell_id,r.cycle_index, key
 """
 ENERGY_AND_CAPACITY_DECAY_QUERY = """
 SELECT
+    r.cell_id,
     key || ': ' || r.cell_id as series,
     r.cycle_index,
     r.test_time,
@@ -26,6 +28,7 @@ order by r.cell_id,r.cycle_index, key
 CYCLE_QUANTITIES_BY_STEP_QUERY = """
 select * from 
 (SELECT
+    cell_id,
     cycle_time,
     v,  
     cycle_index,  
@@ -54,6 +57,7 @@ KEY || ' ' || cycle_index || ': ' || r.cell_id AS series_2,
               r.cycle_index,
               r.test_time,
               r.cycle_time,
+              r.cell_id,
               value
 FROM
   (SELECT cycle_timeseries.cell_id,
@@ -74,6 +78,7 @@ ABUSE_TEST_TEMPRATURES="""
 SELECT KEY || ': ' || r.cell_id AS series_1,
 KEY || ': ' || r.cell_id AS series_2,
               r.test_time,
+              r.cell_id,
               value
 FROM
   (SELECT abuse_timeseries.cell_id,
@@ -96,6 +101,7 @@ ORDER BY r.cell_id,
 """
 ABUSE_FORCE_AND_DISPLACEMENT="""
 SELECT KEY || ': ' || r.cell_id AS series,
+              r.cell_id,
               r.test_time,
               value
 FROM
@@ -115,6 +121,7 @@ ORDER BY r.cell_id,
 """
 ABUSE_VOLTAGE="""
 SELECT KEY || ': ' || r.cell_id AS series,
+              r.cell_id,
               r.test_time,
               value
 FROM

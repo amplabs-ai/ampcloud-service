@@ -12,12 +12,12 @@ def get_cycle_quantities_by_step_service(cell_id, step, email):
 
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series']):
-                series[row['series']] = []
-            series[row['series']].append(row)
+            if not series.get(f"{row['series']}||{row['cell_id']}"):
+                series[f"{row['series']}||{row['cell_id']}"] = []
+            series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value})
+            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -34,12 +34,12 @@ def get_energy_and_capacity_decay_service(cell_id, email):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series']):
-                series[row['series']] = []
-            series[row['series']].append(row)
+            if not series.get(f"{row['series']}||{row['cell_id']}"):
+                series[f"{row['series']}||{row['cell_id']}"] = []
+            series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value})
+            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -56,12 +56,12 @@ def get_efficiency_service(cell_id, email):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series']):
-                series[row['series']] = []
-            series[row['series']].append(row)
+            if not series.get(f"{row['series']}||{row['cell_id']}"):
+                series[f"{row['series']}||{row['cell_id']}"] = []
+            series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value})
+            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -78,12 +78,12 @@ def get_compare_by_cycle_time_service(cell_id, email):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series_2']):
-                series[row['series_2']] = []
-            series[row['series_2']].append(row)
+            if not series.get(f"{row['series_2']}||{row['cell_id']}"):
+                series[f"{row['series_2']}||{row['cell_id']}"] = []
+            series[f"{row['series_2']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value}) 
+            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -100,12 +100,12 @@ def get_force_and_displacement_service(cell_id, email, sample):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series']):
-                series[row['series']] = []
-            series[row['series']].append(row)
+            if not series.get(f"{row['series']}||{row['cell_id']}"):
+                series[f"{row['series']}||{row['cell_id']}"] = []
+            series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value}) 
+            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -122,12 +122,12 @@ def get_test_tempratures_service(cell_id, email, sample):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series_1']):
-                series[row['series_1']] = []
-            series[row['series_1']].append(row)
+            if not series.get(f"{row['series_1']}||{row['cell_id']}"):
+                series[f"{row['series_1']}||{row['cell_id']}"] = []
+            series[f"{row['series_1']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value}) 
+            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -144,12 +144,12 @@ def get_voltage_service(cell_id, email, sample):
         series = {}
         for row in archive_cells:
             row = dict(row)
-            if not series.get(row['series']):
-                series[row['series']] = []
-            series[row['series']].append(row)
+            if not series.get(f"{row['series']}||{row['cell_id']}"):
+                series[f"{row['series']}||{row['cell_id']}"] = []
+            series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value}) 
+            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value}) 
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
