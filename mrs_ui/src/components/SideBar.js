@@ -11,7 +11,7 @@ const { Sider } = Layout;
 const _generateTreeData = (data) => {
 	let x = [
 		{
-			title: "Amplabs",
+			title: "Battery Archive",
 			key: "amplabs",
 			children: [],
 		},
@@ -88,7 +88,7 @@ const SideBar = (props) => {
 	const [filteredTreeData, setFilteredTreeData] = useState([]);
 	const [treeData, setTreeData] = useState([]);
 	const [checkedCellIds, setCheckedCellIds] = useState([]);
-	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false); 
+	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false);
 	const [error, setError] = useState(null);
 
 	useEffect(() => {
@@ -161,7 +161,9 @@ const SideBar = (props) => {
 		props.onLoadCellIds([]);
 	};
 
-	const onEdit = () => {};
+	const onEdit = () => {
+		props.onEditCellIds(checkedCellIds);
+	};
 
 	return (
 		<>
@@ -200,6 +202,11 @@ const SideBar = (props) => {
 						<>
 							<Search className="py-2" placeholder="Search" onChange={(e) => onChange(e)} />
 							<div className="row justify-content-around pb-3">
+								<div className="col-4">
+									<Button type="primary" onClick={() => onEdit()}>
+										Edit
+									</Button>
+								</div>
 								<div className="col-4">
 									<Button type="primary" onClick={() => onClear()}>
 										Clear

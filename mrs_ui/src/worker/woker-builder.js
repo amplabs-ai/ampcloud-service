@@ -4,4 +4,4 @@ export default class WorkerBuilder extends Worker {
 		const blob = new Blob([`(${code})()`]);
 		return new Worker(URL.createObjectURL(blob));
 	}
-} 
+}
