@@ -314,13 +314,16 @@ class ArchiveOperator:
 
     def get_all_cell_meta_with_id(self, cell_id, email):
         return self.get_all_data_from_table_with_id(CellMeta, cell_id, email)
+    
+    def get_all_cell_meta_from_table_with_id(self, cell_id, email, test):
+        return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id), CellMeta.email == email, CellMeta.test == test).all()
 
     #TEST METADATA
     def get_all_test_metadata_from_table(self, test_model, email):
         return self.get_all_data_from_table_with_email(test_model, email)
 
     def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
-        return self.get_all_data_from_table_with_id(test_model, cell_id, email)
+        return self.session.query(test_model).filter(test_model.cell_id.in_(cell_id), test_model.email == email).all()
 
     #ECHARTS
 
@@ -474,6 +477,12 @@ class ArchiveOperator:
 
     def get_all_data_from_table_with_id(self, table, cell_id, email):
         return self.select_table_with_id(table, cell_id, email).all()
+    
+    def update_table_with_cell_id_email(self, table, cell_id, email, data):
+        self.session.query(table).filter(table.email == email, table.cell_id == cell_id).update(data)
+    
+    def update_table_with_index(self, table, index, data):
+        self.session.query(table).filter(table.index == index).update(data)
 
     # BASIC
 
