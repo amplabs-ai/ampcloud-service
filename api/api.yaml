@@ -88,7 +88,36 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
-  /cells:
+    patch:
+      summary: Fetches metadata for all cells for the email logged in.
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: update_cell_metadata
+      tags:
+        - Cell Meta
+      parameters:
+        - name: userId
+          in: cookie
+          description: Email Id
+          required: true
+          schema:
+            type: string
+            format: email
+            example: test@test.com
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
+  /cells/{test}/metaWithId:
     get:
       summary: Fetches metadata for given cell id for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
@@ -115,6 +144,15 @@ paths:
             items:
               type: string
               example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
       responses:
         "200":
           description: Successfull
@@ -181,7 +219,36 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /cells/tests/{test}/meta:
+    patch:
+      summary: Fetches test metadata of test.
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: update_test_metadata
+      tags:
+        - Test Meta
+      parameters:
+        - name: userId
+          in: cookie
+          description: Email Id
+          required: true
+          schema:
+            type: string
+            format: email
+            example: test@test.com
+        - name: test
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /cells/tests/{test}/metaWithId:
     get:
       summary: Fetches test metadata of testname for a cell id
       x-openapi-router-controller: app.controllers.test_metadata_controller

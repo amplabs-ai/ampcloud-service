@@ -9,9 +9,15 @@ def get_cells(test):
     status, detail, *records = get_cellmeta_service(email, test)
     return Response(status, detail, records).to_dict(), status
 
-def get_cell_with_id(cell_id):
+def get_cell_with_id(test, cell_id):
     email = request.cookies.get("userId")
-    status, detail, *records = get_cellmeta_with_id_service(cell_id[0], email)
+    status, detail, *records = get_cellmeta_with_id_service(cell_id, email, test)
+    return Response(status, detail, records).to_dict(), status
+
+def update_cell_metadata(test):
+    email = request.cookies.get("userId")
+    request_data = request.get_json()
+    status, detail, *records = update_cell_metadata_service(email, test, request_data)
     return Response(status, detail, records).to_dict(), status
 
 def delete_cell(cell_id):

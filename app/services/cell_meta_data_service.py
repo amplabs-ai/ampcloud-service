@@ -1,7 +1,8 @@
 import logging
 import pandas as pd
-from app.archive_constants import RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO
-from app.model import ArchiveOperator
+from sqlalchemy import text
+from app.archive_constants import ARCHIVE_TABLE, RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO, TEST_TYPE
+from app.model import AbuseMeta, AbuseTimeSeries, ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries
 
 
 def get_cellmeta_service(email, test):
@@ -26,11 +27,11 @@ def get_cellmeta_service(email, test):
     finally:
         ao.release_session()
 
-def get_cellmeta_with_id_service(cell_id, email):
+def get_cellmeta_with_id_service(cell_id, email, test):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        archive_cells = ao.get_all_cell_meta_with_id(cell_id, email)
+        archive_cells = ao.get_all_cell_meta_from_table_with_id(cell_id, email, test)
         records = [cell.to_dict() for cell in archive_cells]
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
@@ -38,6 +39,32 @@ def get_cellmeta_with_id_service(cell_id, email):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
+
+def update_cell_metadata_service(email, test, request_data):
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        for item in request_data:
+            cell_id = ao.session.query(CellMeta).filter(CellMeta.index == item['index']).first().cell_id
+            if not cell_id:
+                continue
+            ao.update_table_with_index(CellMeta, item['index'], item)
+            if test == TEST_TYPE.CYCLE.value:
+                if cell_id != item['cell_id']:
+                    ao.update_table_with_cell_id_email(CycleTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
+                    ao.update_table_with_cell_id_email(CycleStats, cell_id, email, {'cell_id': item['cell_id']})  
+            else:
+                if cell_id != item['cell_id']:
+                    ao.update_table_with_cell_id_email(AbuseTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
+        return 200, RESPONSE_MESSAGE['METADATA_UPDATED']
+    except Exception as err:
+        print(err)
+        logging.error("User {email} action UPDATE_CELL_METADATA error INTERNAL_SERVER_ERROR".format(email=email))
+        logging.error(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()  
+
 
 def delete_cell_service(cell_id, email):
     try:
