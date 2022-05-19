@@ -151,10 +151,11 @@ class LABEL(Enum):
 
 RESPONSE_MESSAGE = {
     "RESERVED_PUBLIC_CELL_ID": "Cell id {} is reserved",
+    "CELL_ID_EXISTS": "Cell id {} already exists",
     "CELL_ID_NOT_EXISTS": "Cell id {} does not exists",
     "CELL_ID_NOT_BLANK": "Cell id must not be blank",
     "CELL_METADATA_ADDED": "Metadata for cell id {} added successfully",
-    "CELL_METADATA_UPDATED": "Metadata for cell id {} updated successfully",
+    "METADATA_UPDATED": "Metadata updated successfully",
     "INTERNAL_SERVER_ERROR": "Internal server error",
     "RECORDS_RETRIEVED": "Records Retrieved",
     "CELL_METADATA_DELETED": "Cell id {} deleted successfully",

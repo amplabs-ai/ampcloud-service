@@ -44,17 +44,31 @@ def update_cell_metadata_service(email, test, request_data):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        query = "select index, cell_id from cell_metadata where test = '{}' and email = '{}'".format(test, email)
+        private_cell_ids = ao.session.execute(query) 
+        private_cell_ids_dict = dict()
+        for row in private_cell_ids:
+            private_cell_ids_dict[row.cell_id] = row.index
+        
+        edited_cell_ids = {}
+        for item in request_data:
+            try:
+                if private_cell_ids_dict[item['cell_id']] != item['index']:
+                    return 400, RESPONSE_MESSAGE['CELL_ID_EXISTS'].format(item['cell_id'])
+            except KeyError:
+                edited_cell_ids[item['cell_id']] = True
+
         for item in request_data:
             cell_id = ao.session.query(CellMeta).filter(CellMeta.index == item['index']).first().cell_id
             if not cell_id:
                 continue
             ao.update_table_with_index(CellMeta, item['index'], item)
             if test == TEST_TYPE.CYCLE.value:
-                if cell_id != item['cell_id']:
+                if edited_cell_ids.get(item['cell_id']):
                     ao.update_table_with_cell_id_email(CycleTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
                     ao.update_table_with_cell_id_email(CycleStats, cell_id, email, {'cell_id': item['cell_id']})  
             else:
-                if cell_id != item['cell_id']:
+                if edited_cell_ids.get(item['cell_id']):
                     ao.update_table_with_cell_id_email(AbuseTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
         return 200, RESPONSE_MESSAGE['METADATA_UPDATED']
     except Exception as err:
