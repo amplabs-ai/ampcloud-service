@@ -28,11 +28,20 @@ def get_cellmeta_service(email, test):
         ao.release_session()
 
 def get_cellmeta_with_id_service(cell_id, email, test):
+    def add_type(row):
+        row_dict = row.to_dict()
+        if row.email == BATTERY_ARCHIVE:
+            row_dict['type'] = "public/battery-archive"
+        elif row.email == DATA_MATR_IO:
+            row_dict['type'] = "public/data.matr.io"
+        else:
+            row_dict['type'] = "private" 
+        return row_dict
     try:
         ao = ArchiveOperator()
         ao.set_session()
         archive_cells = ao.get_all_cell_meta_from_table_with_id(cell_id, email, test)
-        records = [cell.to_dict() for cell in archive_cells]
+        records = [add_type(cell) for cell in archive_cells]
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)

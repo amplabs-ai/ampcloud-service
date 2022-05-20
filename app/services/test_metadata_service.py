@@ -1,4 +1,4 @@
-from app.archive_constants import RESPONSE_MESSAGE, TEST_TYPE
+from app.archive_constants import BATTERY_ARCHIVE, DATA_MATR_IO, RESPONSE_MESSAGE, TEST_TYPE
 from app.model import AbuseMeta, ArchiveOperator, CycleMeta
 import logging
 
@@ -17,11 +17,20 @@ def get_testmeta_service(test_model, email):
 
 
 def get_testmeta_by_cell_id_service(cell_id, test_model, email):
+    def add_type(row):
+        row_dict = row.to_dict()
+        if row.email == BATTERY_ARCHIVE:
+            row_dict['type'] = "public/battery-archive"
+        elif row.email == DATA_MATR_IO:
+            row_dict['type'] = "public/data.matr.io"
+        else:
+            row_dict['type'] = "private" 
+        return row_dict
     try:
         ao = ArchiveOperator()
         ao.set_session()
         test_meta = ao.get_all_test_metadata_from_table_with_id(cell_id, test_model, email)
-        records = [test.to_dict() for test in test_meta]   
+        records = [add_type(test) for test in test_meta]   
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
