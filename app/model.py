@@ -316,14 +316,14 @@ class ArchiveOperator:
         return self.get_all_data_from_table_with_id(CellMeta, cell_id, email)
     
     def get_all_cell_meta_from_table_with_id(self, cell_id, email, test):
-        return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id), CellMeta.email == email, CellMeta.test == test).all()
+        return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id), CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CellMeta.test == test).all()
 
     #TEST METADATA
     def get_all_test_metadata_from_table(self, test_model, email):
         return self.get_all_data_from_table_with_email(test_model, email)
 
     def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
-        return self.session.query(test_model).filter(test_model.cell_id.in_(cell_id), test_model.email == email).all()
+        return self.session.query(test_model).filter(test_model.cell_id.in_(cell_id), test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO])).all()
 
     #ECHARTS
 
