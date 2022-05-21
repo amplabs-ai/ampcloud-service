@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Input, Tree, Layout, Spin, Empty, Result } from "antd";
+import { Button, Input, Tree, Layout, Spin, Result } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import axios from "axios";
 import SimpleBarReact from "simplebar-react";
@@ -21,14 +21,13 @@ const _generateTreeData = (data) => {
 			children: [
 				{
 					title: "Capacity Degradation",
-					key: "1-0",
-					children: [
-						{
-							title: "2017-05-12",
-							key: "1-0-0",
-							children: [],
-						},
-					],
+					key: "capacity_degradation",
+					children: [],
+				},
+				{
+					title: "Closed-loop optimization",
+					key: "closed-loop_optimization",
+					children: [],
 				},
 			],
 		},
@@ -39,46 +38,97 @@ const _generateTreeData = (data) => {
 		},
 	];
 	let amplabsDirInfo = {};
+	let dataMatrIoDirInfo = {
+		capacityDegrad: {},
+		closeLoopOpt: {},
+	};
 	data.map((cellMeta) => {
 		let cellType = cellMeta.type + "_";
+		let cellId = cellMeta.cell_id;
 		switch (cellMeta.type) {
 			case "public/battery-archive":
-				let dirName = cellMeta.cell_id.split("_", 1)[0];
+				let dirName = cellId.split("_", 1)[0];
 				if (amplabsDirInfo[dirName] === undefined) {
 					x[0].children.push({
 						title: dirName,
 						key: dirName,
 						children: [
 							{
-								title: cellMeta.cell_id,
-								key: "cell_" + cellType + cellMeta.cell_id,
+								title: cellId,
+								key: "cell_" + cellType + cellId,
 							},
 						],
 					});
 					amplabsDirInfo[dirName] = x[0].children.length - 1;
 				} else {
 					x[0].children[amplabsDirInfo[dirName]].children.push({
-						title: cellMeta.cell_id,
-						key: "cell_" + cellType + cellMeta.cell_id,
+						title: cellId,
+						key: "cell_" + cellType + cellId,
 					});
 				}
 				break;
 			case "public/data.matr.io":
-				x[1].children[0].children[0].children.push({
-					title: cellMeta.cell_id,
-					key: "cell_" + cellType + cellMeta.cell_id,
+				console.log("datamatr");
+				let projectDirIndex;
+				let batchIndex;
+				if (cellId.includes("_oed_") || cellId.includes("_batch9_")) {
+					// project: close-loop optimization
+					projectDirIndex = 1;
+
+					let BatchNameCloseloop;
+
+					if (cellId.includes("_oed_")) {
+						BatchNameCloseloop = "Batch " + cellId.split("_")[1] + "_" + cellId.split("_")[2];
+					} else {
+						BatchNameCloseloop = "Batch9 (validation batch)";
+					}
+
+					if (dataMatrIoDirInfo.closeLoopOpt[BatchNameCloseloop] === undefined) {
+						x[1].children[projectDirIndex].children.push({
+							title: BatchNameCloseloop,
+							key: BatchNameCloseloop,
+							children: [],
+						});
+						dataMatrIoDirInfo.closeLoopOpt[BatchNameCloseloop] = 0;
+						batchIndex = 0;
+					} else {
+						batchIndex = dataMatrIoDirInfo.closeLoopOpt[BatchNameCloseloop];
+					}
+				} else {
+					// project: capacity degradation
+					projectDirIndex = 0;
+					let batchNameCapDeg = cellId.split("_", 1)[0];
+					if (dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] === undefined) {
+						x[1].children[projectDirIndex].children.push({
+							title: batchNameCapDeg,
+							key: batchNameCapDeg,
+							children: [],
+						});
+						dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] = x[1].children[projectDirIndex].children.length - 1;
+						// batchIndex = 0;
+					} else {
+					}
+					batchIndex = dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg];
+				}
+
+				x[1].children[projectDirIndex].children[batchIndex].children.push({
+					title: cellId,
+					key: "cell_" + cellType + cellId,
 				});
 				break;
 			case "private":
 				x[2].children.push({
-					title: cellMeta.cell_id,
-					key: "cell_" + cellType + cellMeta.cell_id,
+					title: cellId,
+					key: "cell_" + cellType + cellId,
 				});
 				break;
 			default:
 				break;
 		}
 	});
+	if (!x[2].children.length) {
+		x.splice(2, 1);
+	}
 	return x;
 };
 
@@ -159,6 +209,7 @@ const SideBar = (props) => {
 		setCheckedCellIds([]);
 		setFilteredTreeData(treeData);
 		props.onLoadCellIds([]);
+		props.onEditCellIds([]);
 	};
 
 	const onEdit = () => {
@@ -174,7 +225,7 @@ const SideBar = (props) => {
 				style={{
 					position: "sticky",
 					overflow: "auto",
-					height: "100%",
+					maxHeight: "85vh",
 					left: 0,
 					top: 80,
 					bottom: 0,
@@ -201,20 +252,22 @@ const SideBar = (props) => {
 					) : (
 						<>
 							<Search className="py-2" placeholder="Search" onChange={(e) => onChange(e)} />
-							<div className="row justify-content-around pb-3">
-// 								<div className="col-4">
-// 									<Button type="primary" onClick={() => onEdit()}>
-// 										Edit
-// 									</Button>
-// 								</div>
-								<div className="col-4">
-									<Button type="primary" onClick={() => onClear()}>
+							<div className="row justify-content-around pb-2">
+								<div className="col-md-6">
+									<Button type="primary" block onClick={() => onClear()}>
 										Clear
 									</Button>
 								</div>
-								<div className="col-4">
-									<Button type="primary" onClick={() => onLoad()}>
+								<div className="col-md-6">
+									<Button type="primary" block onClick={() => onLoad()}>
 										Load
+									</Button>
+								</div>
+							</div>
+							<div className="row pb-3">
+								<div className="col-md-12">
+									<Button type="primary" block onClick={() => onEdit()}>
+										View Metadata
 									</Button>
 								</div>
 							</div>

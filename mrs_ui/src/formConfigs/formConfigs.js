@@ -1,0 +1,17 @@
+export const inputType = {
+	ah: "number",
+	anode: "text",
+	cathode: "text",
+	cell_id: "text",
+	form_factor: "text",
+	index: "text",
+	key: "text",
+	source: "text",
+	test: "text",
+	tester: "text",
+	temperature: "number",
+	soc_max: "number",
+	soc_min: "number",
+	crate_c: "number",
+	crate_d: "number",
+};

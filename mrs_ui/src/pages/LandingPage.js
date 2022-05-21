@@ -123,6 +123,18 @@ const LandingPage = () => {
 								Tools for scientists, researchers, and engineers to analyze, publish, and collaborate in order to
 								reinvent our energy systems.
 							</p>
+							<div className="text-center">
+								<Button
+									type="primary"
+									size="large"
+									onClick={() => {
+										Cookies.set("userId", "public@amplabs.ai");
+										navigate("/dashboard/public");
+									}}
+								>
+									View Public Data
+								</Button>
+							</div>
 						</div>
 					</animated.div>
 					<animated.div style={formAnim} className={`col-md-4 p-4 shadow-sm ${styles.formSection}`}>
