@@ -195,12 +195,13 @@ const DashboardCycleTest = () => {
 
 	const handleLoadCellIds = (checkedCellIds) => {
 		console.log("handleLoadCellIds", checkedCellIds);
+		setCellDataOnEdit([]);
 		setCellDataOnLoad([...checkedCellIds]);
 	};
 
 	const handleEditCellIds = (checkedCellIds) => {
 		console.log("handleEditCellIds", checkedCellIds);
-		// setCellDataOnEdit([...checkedCellIds]);
+		setCellDataOnEdit([...checkedCellIds]);
 	};
 
 	const reportChange = useCallback(
@@ -398,6 +399,7 @@ const DashboardCycleTest = () => {
 		let responses = await Promise.all([promise1, promise2, promise3, promise4, promise5]);
 		for (let response of responses) {
 			setDisableSelection(false);
+			setShareDisabled(false);
 		}
 	};
 
@@ -1172,7 +1174,7 @@ const DashboardCycleTest = () => {
 							<Content>
 								{cellDataOnEdit && cellDataOnEdit.length ? (
 									<div>
-										<EditCellData />
+										<EditCellData cellIds={cellDataOnEdit} />
 									</div>
 								) : (
 									<>

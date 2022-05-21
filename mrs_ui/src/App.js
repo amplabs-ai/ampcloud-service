@@ -10,6 +10,7 @@ import UploadPage from "./pages/UploadPage";
 import PageNotFound from "./pages/PageNotFound";
 import ProcessUpload from "./components/ProcessUpload";
 import PlotterPage from "./pages/PlotterPage";
+import PublicDataDashboard from "./pages/PublicDataDashboard";
 
 function App() {
 	return (
@@ -46,7 +47,6 @@ function App() {
 								}
 							/>
 						</Route>
-
 						<Route
 							path="/dashboard"
 							element={
@@ -72,9 +72,9 @@ function App() {
 								}
 							/>
 						</Route>
-
 						<Route path="/uploadProgress" element={<ProcessUpload />}></Route>
 						<Route path="/plotter" element={<PlotterPage />}></Route>
+						<Route path="/dashboard/public" element={<PublicDataDashboard />} exact></Route>
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>
 				</AuthProvider>
