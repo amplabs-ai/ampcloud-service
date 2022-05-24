@@ -384,7 +384,6 @@ const DashboardFilterBar = (props) => {
 
 	const _checkIsReadOnly = (record) => {
 		// cellDirInfo
-		console.log("readonly", record);
 		return cellDirInfo.find((c) => {
 			return record.cell_id === c.substring(c.indexOf("_") + 1) && c.split("_", 1)[0].includes("public");
 		});

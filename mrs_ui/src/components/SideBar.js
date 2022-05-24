@@ -74,26 +74,23 @@ const _generateTreeData = (data) => {
 				if (cellId.includes("_oed_") || cellId.includes("_batch9_")) {
 					// project: close-loop optimization
 					projectDirIndex = 1;
-
-					let BatchNameCloseloop;
-
+					let batchNameCloseloop;
 					if (cellId.includes("_oed_")) {
-						BatchNameCloseloop = "Batch " + cellId.split("_")[1] + "_" + cellId.split("_")[2];
+						batchNameCloseloop = "Batch " + cellId.split("_")[1] + "_" + cellId.split("_")[2];
 					} else {
-						BatchNameCloseloop = "Batch9 (validation batch)";
+						batchNameCloseloop = "Batch9 (validation batch)";
 					}
-
-					if (dataMatrIoDirInfo.closeLoopOpt[BatchNameCloseloop] === undefined) {
+					if (dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] === undefined) {
 						x[1].children[projectDirIndex].children.push({
-							title: BatchNameCloseloop,
-							key: BatchNameCloseloop,
+							title: batchNameCloseloop,
+							key: batchNameCloseloop,
 							children: [],
 						});
-						dataMatrIoDirInfo.closeLoopOpt[BatchNameCloseloop] = 0;
-						batchIndex = 0;
+						dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] = x[1].children[projectDirIndex].children.length - 1;
+						// batchIndex = 0;
 					} else {
-						batchIndex = dataMatrIoDirInfo.closeLoopOpt[BatchNameCloseloop];
 					}
+					batchIndex = dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop];
 				} else {
 					// project: capacity degradation
 					projectDirIndex = 0;

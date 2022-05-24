@@ -1,9 +1,9 @@
 import React from "react";
 
-import { Modal, Button, Typography, message, Tooltip } from "antd";
-import { FaCode } from "react-icons/fa";
+import { Modal, Typography, message } from "antd";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import copyToClipboard from "../utility/copyToClipboard";
 
 import Cookies from "js-cookie";
 
@@ -18,25 +18,6 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 		}
 		return code;
 	};
-
-	function copyToClipboard(textToCopy) {
-		if (navigator.clipboard && window.isSecureContext) {
-			return navigator.clipboard.writeText(textToCopy);
-		} else {
-			let textArea = document.createElement("textarea");
-			textArea.value = textToCopy;
-			textArea.style.position = "fixed";
-			textArea.style.left = "-999999px";
-			textArea.style.top = "-999999px";
-			document.body.appendChild(textArea);
-			textArea.focus();
-			textArea.select();
-			return new Promise((res, rej) => {
-				document.execCommand("copy") ? res() : rej();
-				textArea.remove();
-			});
-		}
-	}
 
 	return (
 		<>

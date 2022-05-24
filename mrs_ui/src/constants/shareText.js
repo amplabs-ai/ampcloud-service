@@ -1,0 +1,2 @@
+export const LINKEDIN_SHARE_TEXT_CYCLE = `I just created a Cycle Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/cycle-test?mail={0} #amplabs #batterytechnology #batterydata #materialsscience #researchers #voltafoundation #batterybits #batterybrunch`;
+export const LINKEDIN_SHARE_TEXT_ABUSE = `I just created an Abuse Test dashboard on AmpLabs! Check it out at https://www.amplabs.ai/dashboard/abuse-test?mail={0} #amplabs #batterytechnology #batterydata #materialsscience #researchers #voltafoundation #batterybits #batterybrunch`;
