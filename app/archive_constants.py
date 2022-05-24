@@ -22,8 +22,8 @@ AMPLABS_DB_URL = os.getenv('AMPLABS_PROD_DB_URL') if ENV == "production" \
 
 LINKEDIN_CLIENT_ID = os.getenv('LINKEDIN_CLIENT_ID')
 LINKEDIN_CLIENT_SECRET = os.getenv('LINKEDIN_CLIENT_SECRET')
-LINKEDIN_REDIRECT_URI_DASH_CYCLE='https://www.amplabs.ai/dashboard/cycle-test'
-LINKEDIN_REDIRECT_URI_DASH_ABUSE='https://www.amplabs.ai/dashboard/abuse-test'
+LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard/cycle-test' if ENV == 'production' else 'http://localhost:3000/dashboard/cycle-test'
+LINKEDIN_REDIRECT_URI_DASH_ABUSE= 'https://www.amplabs.ai/dashboard/abuse-test' if ENV == 'production' else 'http://localhost:3000/dashboard/abuse-test'
 
 # Public Database emails:
 BATTERY_ARCHIVE = "info@batteryarchive.org"

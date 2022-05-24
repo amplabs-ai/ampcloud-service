@@ -21,11 +21,8 @@ def dashboard_audit():
 
 def dashboard_share_linkedin():
     try:
-        print('asdasdsda')
         params = request.form.to_dict()
         shareImageFile = request.files['file']
-        print(params)
-        print(shareImageFile)
         authCode = params.get('code')
         shareText = params.get('shareText')
         dashboard = params.get("dashboard")
@@ -39,10 +36,7 @@ def dashboard_share_linkedin():
         url = "https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=" + authCode + "&redirect_uri=" + redirectUri + "&client_id=" + LINKEDIN_CLIENT_ID + "&client_secret=" + LINKEDIN_CLIENT_SECRET
         payload={}
         response = requests.request("POST", url, data=payload)
-        print('access_token', response.text)
-        accessToken = json.loads(response.text).get('access_token')
-        # accessToken = 'AQU8T9KfPkbLa1aEccgQ0yKWtzoHM_F4BuX8_uvtpH_YbQWyXBAZGOgcVDJ1lgkpMfoXBbknwS4xstzazJxTwTfYYixtbFLhRS00iNv7TLOWF_ndUUvodY-lXX6jE4g0NNbh3WJ61HjfM86_iNbxWUVGb_aX5iOJ4yik3FNkaIYpZ9YWaduMviY5PZxXqsWALDLV9ziXhRPqgb0g3hLbomw2L3CIt325CFqBTfgKhljppYTwx5YfVOzzbFZIaFCfO1Y8VbYY8B4f8mpC0hPqu_GjUWUkQ8fSmAXKPKGnQJ9WInrM7eK2U7BQc-tB8Q3f2UwSiB5JhQowaWo8g7RRFl1tjUB-hA'
-
+        accessToken = json.loads(response.text).get('access_token') 
         # get user id from access_token
         url = "https://api.linkedin.com/v2/me"
         payload={}

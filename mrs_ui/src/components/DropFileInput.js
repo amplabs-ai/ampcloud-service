@@ -15,7 +15,7 @@ import {
   message,
 } from "antd";
 import { FaTimes } from "react-icons/fa";
-import { FaCloudUploadAlt, FaExclamationCircle } from "react-icons/fa";
+import { FaCloudUploadAlt } from "react-icons/fa";
 import Papa from "papaparse";
 
 const { Text } = Typography;
@@ -51,6 +51,7 @@ const DropFileInput = (props) => {
       fileName = e.target.files[0].name;
       actualFile = e.target.files[0];
     } else {
+      // for "add to db" btn on plotter
       fileName = e.name;
       actualFile = e;
     }
@@ -59,8 +60,8 @@ const DropFileInput = (props) => {
       console.log("[[actualFile]]", [actualFile]);
       setFileList([actualFile]);
     } else {
-      setShallShowFileValModal(true);
-      // Parsing file data
+      setShallShowFileValModal(true); // validation modal
+      // ======= Parsing file data =======
       let data = [];
       let newFile = null;
       Papa.parse(actualFile, {
@@ -76,9 +77,9 @@ const DropFileInput = (props) => {
             h.toLowerCase().includes("time")
           )
             return "test_time";
-          if (h.toLowerCase().includes("voltage")) return "voltage";
-          if (h.toLowerCase().includes("current")) return "current";
-          return h;
+          // if (h.toLowerCase().includes("voltage")) return "voltage";
+          // if (h.toLowerCase().includes("current")) return "current";
+          return h.toLowerCase();
         },
         dynamicTyping: true,
         step: function (results, parser) {
