@@ -6,3 +6,6 @@ def client_exception(error):
 
 def problem_exception(error):
     return Response(error.status, error.detail).to_dict(), error.status
+
+def unauthorized_exception(error):
+    return Response(error.code, "Unauthorized Access").to_dict(), error.code

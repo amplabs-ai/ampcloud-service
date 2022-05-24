@@ -1,11 +1,13 @@
 from app.services.auth_service import login_service
-from flask import make_response, request
+from app.utilities.with_authentication import with_authentication
+from flask import make_response, g
 from app.response import Response
 import logging
 
 
+@with_authentication()
 def login():
-    email = request.get_json().get('email')
+    email = g.user.data['email']
     if not email:
         return Response(200, "/").to_dict(), 200
     status, detail = login_service(email)
@@ -14,8 +16,9 @@ def login():
     logging.info("User {} Action LOGIN".format(email))
     return resp, status
 
+@with_authentication()
 def logout():
-    email = request.cookies.get('userId')
+    email = g.user.data['email']
     resp = make_response(Response(200,"Logout").to_dict())
     resp.delete_cookie('userId')
     if (not email):

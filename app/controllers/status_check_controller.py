@@ -1,12 +1,14 @@
 
-from flask import request
+from app.utilities.with_authentication import with_authentication
+from flask import request, g
 from app.response import Response
 from app.utilities.utils import status
 import logging
 
+@with_authentication()
 def get_status(cell_id):
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         status_map = status.get(f"{email}|{cell_id[0]}")
         if status_map:
             result = status_map['progress']
