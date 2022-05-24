@@ -3,16 +3,18 @@ import datetime
 import threading
 from app.services.file_transfer_service import *
 from app.utilities.utils import status
-from flask import make_response, request
+from app.utilities.with_authentication import with_authentication
+from flask import make_response, request, g
 from app.response import Response
 import logging
 import time
 
 lock = threading.Lock()
 
+@with_authentication()
 def init_file_upload():
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         data = request.form.to_dict()
         status, detail = init_file_upload_service(email, data)
         return Response(status, detail).to_dict(), status
@@ -20,10 +22,11 @@ def init_file_upload():
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
+@with_authentication()
 def upload_file(tester):
     try:
         start_time = datetime.datetime.now()
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         data = request.form.to_dict()
         file = request.files['file']
         df = file_data_read_service(tester, file)
@@ -58,10 +61,10 @@ def upload_file(tester):
         logging.error(err)
         return Response(500, "READ FILE FAILED").to_dict(), 500
 
-
+@with_authentication()
 def download_cycle_timeseries(cell_id):
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         start_time = datetime.datetime.now()
         df = download_cycle_timeseries_service(cell_id[0], email)
         resp = make_response(df.to_csv(index=False))
@@ -78,10 +81,10 @@ def download_cycle_timeseries(cell_id):
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
-
+@with_authentication()
 def download_cycle_data(cell_id):
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         start_time = datetime.datetime.now()
         df = download_cycle_data_service(cell_id[0], email)
         resp = make_response(df.to_csv(index=False))
@@ -98,9 +101,10 @@ def download_cycle_data(cell_id):
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
+@with_authentication()
 def get_cycle_data_json(cell_id):
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         df = download_cycle_data_service(cell_id[0], email)
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200
@@ -108,10 +112,10 @@ def get_cycle_data_json(cell_id):
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
-
+@with_authentication()
 def get_cycle_timeseries_json(cell_id):
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         df = download_cycle_timeseries_service(cell_id[0], email)
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200
@@ -119,10 +123,10 @@ def get_cycle_timeseries_json(cell_id):
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
-
+@with_authentication()
 def download_abuse_timeseries(cell_id):
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         start_time = datetime.datetime.now()
         df = download_abuse_timeseries_service(cell_id[0], email)
         resp = make_response(df.to_csv(index=False))
@@ -139,9 +143,10 @@ def download_abuse_timeseries(cell_id):
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
+@with_authentication()
 def get_abuse_timeseries_json(cell_id):
     try:
-        email = request.cookies.get("userId")
+        email = g.user.data['email']
         df = download_abuse_timeseries_service(cell_id[0], email)
         resp = df.to_dict('records')
         return Response(200, "Records Retrieved", resp).to_dict(), 200

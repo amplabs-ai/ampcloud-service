@@ -25,6 +25,7 @@ app.app.config['DATABASE_URI'] = AMPLABS_DB_URL
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
+app.add_error_handler(401, unauthorized_exception)
 app.add_error_handler(ProblemException, problem_exception)
 CORS(app.app, origins=["http://localhost:3000"], supports_credentials=True)
 Compress(app.app)

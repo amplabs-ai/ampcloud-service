@@ -2,11 +2,12 @@ from app.archive_constants import TEST_TYPE
 from app.model import AbuseMeta, CycleMeta
 from app.response import Response
 from app.services.test_metadata_service import *
-from flask import request
+from app.utilities.with_authentication import with_authentication
+from flask import request, g
 
-
+@with_authentication()
 def get_testmeta(test):
-    email = request.cookies.get("userId")
+    email = g.user.data['email']
     if test == TEST_TYPE.CYCLE.value:
         test_model = CycleMeta
     if test == TEST_TYPE.ABUSE.value:
@@ -14,14 +15,16 @@ def get_testmeta(test):
     status, detail, *records = get_testmeta_service(test_model, email)
     return Response(status, detail, records).to_dict(), status
 
+@with_authentication()
 def update_test_metadata(test):
-    email = request.cookies.get("userId")
+    email = g.user.data['email']
     request_data = request.get_json()
     status, detail, *records = update_test_metadata_service(email, test, request_data)
     return Response(status, detail, records).to_dict(), status
 
+@with_authentication()
 def get_testmeta_by_cell_id(test, cell_id):
-    email = request.cookies.get("userId")
+    email = g.user.data['email']
     if test == TEST_TYPE.CYCLE.value:
         table = CycleMeta
     if test == TEST_TYPE.ABUSE.value:

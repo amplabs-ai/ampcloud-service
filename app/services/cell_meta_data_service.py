@@ -76,9 +76,11 @@ def update_cell_metadata_service(email, test, request_data):
                 if edited_cell_ids.get(item['cell_id']):
                     ao.update_table_with_cell_id_email(CycleTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
                     ao.update_table_with_cell_id_email(CycleStats, cell_id, email, {'cell_id': item['cell_id']})  
+                    ao.update_table_with_cell_id_email(CycleMeta, cell_id, email, {'cell_id': item['cell_id']})   
             else:
                 if edited_cell_ids.get(item['cell_id']):
                     ao.update_table_with_cell_id_email(AbuseTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
+                    ao.update_table_with_cell_id_email(AbuseMeta, cell_id, email, {'cell_id': item['cell_id']})
         return 200, RESPONSE_MESSAGE['METADATA_UPDATED']
     except Exception as err:
         print(err)

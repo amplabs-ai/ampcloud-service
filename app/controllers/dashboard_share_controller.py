@@ -3,14 +3,15 @@ import json
 import logging
 from app.archive_constants import LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI_DASH_ABUSE, LINKEDIN_REDIRECT_URI_DASH_CYCLE
 from app.response import Response
-from flask import request
+from app.utilities.with_authentication import with_authentication
+from flask import request, g
 import requests
 import urllib.parse
 
+@with_authentication()
 def dashboard_audit():
     try:
-        email = request.cookies.get('userId')
-        print('request.data', request.args.to_dict())
+        email = g.user.data['email']
         args = request.args.to_dict()
         logTxt = 'User {} Action ' + args.get('action').upper()
         logging.info(logTxt.format(email))
@@ -19,6 +20,7 @@ def dashboard_audit():
         logging.error(err)
         return Response(500, "Internal Server Error").to_dict(), 500
 
+@with_authentication()
 def dashboard_share_linkedin():
     try:
         params = request.form.to_dict()
@@ -44,9 +46,7 @@ def dashboard_share_linkedin():
             'Authorization': 'Bearer ' + accessToken
         }
         response = requests.request("GET", url, headers=headers, data=payload)
-        print('user', response.text)
         json_data = json.loads(response.text)
-        print('user', json_data.get('id'))
         userId = json_data.get('id')  # UoZAlTMGds
 
         # image register
@@ -70,12 +70,9 @@ def dashboard_share_linkedin():
             'Content-Type': 'application/json',
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text)
         json_data = json.loads(response.text)
         uploadUrl = json_data.get('value').get('uploadMechanism').get('com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest').get('uploadUrl')
         assetLink = json_data.get('value').get('asset')
-        print('uploadUrl', uploadUrl)
-        print('assetLink', assetLink)
 
         # upload image binary
         url = uploadUrl
@@ -89,7 +86,6 @@ def dashboard_share_linkedin():
             'Content-Type': 'image/png'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        print('img upld', response.text)
 
         # make post
         url = "https://api.linkedin.com/v2/ugcPosts"
@@ -127,8 +123,6 @@ def dashboard_share_linkedin():
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-
-        print('img shared! ', response.text)
 
         return Response(200, "Success", json.loads(response.text)).to_dict(), 200
     except Exception as err:
