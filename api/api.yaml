@@ -336,15 +336,15 @@ paths:
          **Note: Must be logged in before sending this request**
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: init_file_upload
-      parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
+      # parameters:
+      # - name: userId
+      #   in: cookie
+      #   description: Email Id
+      #   required: true
+      #   schema:
+      #     type: string
+      #     format: email
+      #     example: test@test.com
       requestBody:
         content:
           multipart/form-data:
