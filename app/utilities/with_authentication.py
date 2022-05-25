@@ -11,12 +11,9 @@ def with_authentication():
         @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
-                magic = Magic(api_secret_key='secret')
-                did_token = parse_authorization_header_value(
+                issuer = parse_authorization_header_value(
                     request.headers.get('Authorization'),
                 )
-                magic.Token.validate(did_token)
-                issuer = magic.Token.get_issuer(did_token)
                 user = magic.User.get_metadata_by_issuer(
                     issuer,
                 )
