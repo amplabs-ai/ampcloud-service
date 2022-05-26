@@ -30,6 +30,7 @@ def get_energy_and_capacity_decay(cell_id):
     logging.info("User {email} Action CHART_PREPARATION_TIME data EACD size {size} fetch_time {fetch_time}".format(email=email, size=size, fetch_time=fetch_time))
     return Response(status, detail, records).to_dict(), status
 
+@with_authentication()
 def get_efficiency(cell_id):
     email = g.user.data['email']
     st = datetime.datetime.now()

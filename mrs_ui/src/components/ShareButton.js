@@ -12,6 +12,7 @@ import axios from "axios";
 import HelmetMetaData from "../components/HelmetMetaData";
 import { LINKEDIN_SHARE_TEXT_CYCLE } from "../constants/shareText";
 import { LINKEDIN_SHARE_TEXT_ABUSE } from "../constants/shareText";
+import { useAuth } from "../context/auth";
 
 const Title = Typography;
 const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
@@ -31,6 +32,7 @@ const ShareButton = (props, ref) => {
 	const [shareLoadingMsg, setShareLoadingMsg] = useState("");
 
 	const [searchParamsForCode, setSearchParamsForCode] = useSearchParams();
+	const { user } = useAuth(); // auth context
 
 	useEffect(() => {
 		if ([...searchParamsForCode].length) {
@@ -64,6 +66,7 @@ const ShareButton = (props, ref) => {
 					.post("/dashboard/share-linkedin", formData, {
 						headers: {
 							"Content-Type": "multipart/form-data",
+							Authorization: `Bearer ${user.iss}`,
 						},
 					})
 					.then((response) => {

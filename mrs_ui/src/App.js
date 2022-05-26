@@ -1,8 +1,7 @@
+import React from "react";
 import "./App.css";
-import { AuthProvider } from "./components/auth";
 import { BackTop } from "antd";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { RequireAuth } from "./components/RequireAuth";
 import DashboardPage from "./pages/DashboardPage";
 import LandingPage from "./pages/LandingPage";
 import Navbar from "./components/Navbar";
@@ -11,68 +10,51 @@ import PageNotFound from "./pages/PageNotFound";
 import ProcessUpload from "./components/ProcessUpload";
 import PlotterPage from "./pages/PlotterPage";
 import PublicDataDashboard from "./pages/PublicDataDashboard";
+import PrivateRoute from "./routes/PrivateRoute";
+import { AuthProvider } from "./context/auth.js";
+import RedirectRoute from "./routes/RedirectRoute";
 
-function App() {
+const App = () => {
 	return (
 		<>
-			<p>My Token = {window.token}</p>
 			<Router>
 				<AuthProvider>
+					<p>My Token = {window.token}</p>
 					<BackTop />
 					<Navbar />
 					<Routes>
-						<Route path="/" element={<LandingPage />} exact />
+						<Route
+							path="/"
+							element={
+								<RedirectRoute>
+									<LandingPage />
+								</RedirectRoute>
+							}
+							exact
+						/>
 						<Route
 							path="/upload"
 							element={
-								<RequireAuth>
+								<PrivateRoute>
 									<UploadPage />
-								</RequireAuth>
+								</PrivateRoute>
 							}
 						>
-							<Route
-								path="cycle-test"
-								element={
-									<RequireAuth>
-										<UploadPage />
-									</RequireAuth>
-								}
-							/>
-							<Route
-								path="abuse-test"
-								element={
-									<RequireAuth>
-										<UploadPage />
-									</RequireAuth>
-								}
-							/>
+							<Route path="cycle-test" element={<UploadPage />} />
+							<Route path="abuse-test" element={<UploadPage />} />
 						</Route>
 						<Route
 							path="/dashboard"
 							element={
-								<RequireAuth>
+								<PrivateRoute>
 									<DashboardPage />
-								</RequireAuth>
+								</PrivateRoute>
 							}
 						>
-							<Route
-								path="cycle-test"
-								element={
-									<RequireAuth>
-										<DashboardPage />
-									</RequireAuth>
-								}
-							/>
-							<Route
-								path="abuse-test"
-								element={
-									<RequireAuth>
-										<DashboardPage />
-									</RequireAuth>
-								}
-							/>
+							<Route path="cycle-test" element={<DashboardPage />} />
+							<Route path="abuse-test" element={<DashboardPage />} />
 						</Route>
-						<Route path="/uploadProgress" element={<ProcessUpload />}></Route>
+						{/* <Route path="/uploadProgress" element={<ProcessUpload />}></Route> */}
 						<Route path="/plotter" element={<PlotterPage />}></Route>
 						<Route path="/dashboard/public" element={<PublicDataDashboard />} exact></Route>
 						<Route path="*" element={<PageNotFound />} />
@@ -81,6 +63,6 @@ function App() {
 			</Router>
 		</>
 	);
-}
+};
 
 export default App;

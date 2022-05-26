@@ -11,6 +11,7 @@ def with_authentication():
         @wraps(f)
         def decorated_function(*args, **kwargs):
             try:
+                magic = Magic(api_secret_key="sk_live_846B42882F0F7630")
                 issuer = parse_authorization_header_value(
                     request.headers.get('Authorization'),
                 )
@@ -19,7 +20,7 @@ def with_authentication():
                 )
                 print(user.data['email'])
                 g.user = user
-            except Exception as e:
+            except Exception as e: 
                 abort(401)
 
             return f(*args, **kwargs)

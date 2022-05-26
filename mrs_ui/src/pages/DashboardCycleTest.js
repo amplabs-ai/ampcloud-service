@@ -12,6 +12,7 @@ import Worker from "../worker/worker";
 import EditCellData from "../components/EditCellData";
 import ShareButton from "../components/ShareButton";
 import DashboardChart from "../components/chart/DashboardChart";
+import { useAuth } from "../context/auth";
 // ====== utility ======
 const instance = new WorkerBuilder(Worker);
 const { Content } = Layout;
@@ -81,6 +82,8 @@ const DashboardCycleTest = () => {
 			}
 		};
 	}, []);
+
+	const { user } = useAuth(); // auth context
 
 	const handleLoadCellIds = (checkedCellIds) => {
 		console.log("handleLoadCellIds", checkedCellIds);
@@ -173,6 +176,9 @@ const DashboardCycleTest = () => {
 		}
 		let request = {
 			params: getSearchParams(cellIds, step),
+			headers: {
+				Authorization: `Bearer ${user.iss}`,
+			},
 		};
 		_fetchData("energyAndDecay", request);
 		_fetchData("efficiency", request);

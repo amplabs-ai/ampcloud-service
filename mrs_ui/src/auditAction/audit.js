@@ -1,5 +1,5 @@
 import axios from "axios";
-export const audit = (action) => {
+export const audit = (action, token) => {
 	console.log("audit", action);
 	axios
 		.get(`/dashboard/audit?action=${action}`)

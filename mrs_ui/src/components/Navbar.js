@@ -1,14 +1,14 @@
 import React from "react";
 import logo from "../images/amplabsLogo.png";
-import { Link } from "react-router-dom";
-import { Menu, Dropdown, Avatar } from "antd";
-import { useAuth } from "./auth";
-import { useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, Dropdown } from "antd";
 import { FaAngleDown } from "react-icons/fa";
+import { useAuth } from "../context/auth";
 
 const Navbar = () => {
-	const location = useLocation();
 	const auth = useAuth();
+	const navigate = useNavigate();
+
 	const uploadMenu = (
 		<Menu data-toggle="collapse" data-target=".navbar-collapse">
 			<Menu.Item key="cycleTest">
@@ -29,9 +29,10 @@ const Navbar = () => {
 			<Menu.Item key="logout">
 				<Link
 					className="nav-link"
-					onClick={(e) => {
+					onClick={async (e) => {
 						e.preventDefault();
-						auth.logout();
+						await auth.logout();
+						navigate("/", { replace: true });
 					}}
 					to="/"
 				>
@@ -62,36 +63,26 @@ const Navbar = () => {
 				<a className="navbar-brand" href="/">
 					<img style={{ maxWidth: "125px" }} src={logo} alt="AMPLABS" />
 				</a>
-				{auth.user && location.pathname !== "/" && (
-					<>
-						<button
-							className="navbar-toggler"
-							type="button"
-							data-bs-toggle="collapse"
-							data-bs-target="#navbarNav"
-							aria-controls="navbarNav"
-							aria-expanded="false"
-							aria-label="Toggle navigation"
-						>
-							<span className="navbar-toggler-icon"></span>
-						</button>
-
-						<div
-							className="collapse navbar-collapse justify-content-end"
-							// container
-							id="navbarNav"
-						>
-							<ul className="navbar-nav">
-								{/* <li className="nav-item">
-									<Link className="nav-link" to="/">
-										Home
-									</Link>
-								</li> */}
-								<li className="nav-item">
-									<Link className="nav-link" to="/plotter">
-										Plot
-									</Link>
-								</li>
+				<button
+					className="navbar-toggler"
+					type="button"
+					data-bs-toggle="collapse"
+					data-bs-target="#navbarNav"
+					aria-controls="navbarNav"
+					aria-expanded="false"
+					aria-label="Toggle navigation"
+				>
+					<span className="navbar-toggler-icon"></span>
+				</button>
+				<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+					<ul className="navbar-nav">
+						<li className="nav-item">
+							<Link className="nav-link" to="/plotter">
+								Plot
+							</Link>
+						</li>
+						{auth.user.isLoggedIn && (
+							<>
 								<li className="nav-item">
 									<Dropdown overlay={uploadMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
@@ -109,21 +100,14 @@ const Navbar = () => {
 								<li className="nav-item">
 									<Dropdown overlay={userProfileMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
-											{/* <Avatar
-												style={{
-													marginRight: "6px",
-												}}
-											>
-												U
-											</Avatar> */}
-											{auth.user} <FaAngleDown />
+											{auth.user.email} <FaAngleDown />
 										</Link>
 									</Dropdown>
 								</li>
-							</ul>
-						</div>
-					</>
-				)}
+							</>
+						)}
+					</ul>
+				</div>
 			</div>
 		</nav>
 	);

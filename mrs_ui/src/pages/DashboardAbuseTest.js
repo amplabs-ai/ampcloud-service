@@ -10,6 +10,7 @@ import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { enterFullscreenOption, exitFullscreenOption } from "../chartConfig/chartFullScreenOption";
 import { audit } from "../auditAction/audit";
 import ShareButton from "../components/ShareButton";
+import { useAuth } from "../context/auth";
 
 const DashboardAbuseTest = () => {
 	const screen1 = useFullScreenHandle();
@@ -40,6 +41,7 @@ const DashboardAbuseTest = () => {
 	const testTempraturesChart = useRef();
 	const voltageChart = useRef();
 	const dashboardRef = useRef(null);
+	const { user } = useAuth(); // auth context
 
 	useEffect(() => {
 		let check = true;
@@ -145,6 +147,9 @@ const DashboardAbuseTest = () => {
 		}
 		let request = {
 			params: _getParams(cellIds, sample),
+			headers: {
+				Authorization: `Bearer ${user.iss}`,
+			},
 		};
 		fetchData(request, "forceAndDisplacement");
 		fetchData(request, "testTempratures");
@@ -714,7 +719,7 @@ const DashboardAbuseTest = () => {
 						modalVisible={modalVisible}
 						setModalVisible={setModalVisible}
 						searchParams={searchParams}
-					/> 
+					/>
 					<div ref={dashboardRef}>
 						<div className="row pb-5">
 							<div className="col-md-12 mt-2">
