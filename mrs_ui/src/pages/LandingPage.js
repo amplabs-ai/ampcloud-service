@@ -1,20 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { Spin, Result, Button } from "antd";
-import { useAuth } from "../components/auth";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import Cookies from "js-cookie";
-import styles from "./LandingPage.module.css";
+import React, { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
+import { Button } from "antd";
+import { useNavigate } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
+import styles from "./LandingPage.module.css";
+import { useAuth } from "../context/auth";
 
 const LandingPage = () => {
-	const navigate = useNavigate();
 	const auth = useAuth();
+	console.log("from context", auth);
+	const navigate = useNavigate();
 	const [emailValue, setEmailValue] = useState("");
 	const [errorMsg, setErrorMsg] = useState("");
-	const [loading, setLoading] = useState(true);
-	const [internalServerError, setInternalServerError] = useState("");
 	const [btnLoading, setBtnLoading] = useState(false);
 	const aboutAnim = useSpring({
 		delay: 500,
@@ -28,34 +25,6 @@ const LandingPage = () => {
 		to: { x: 0, opacity: 1 },
 	});
 
-	useEffect(() => {
-		axios
-			.post(
-				"/login",
-				{
-					email: Cookies.get("userId"),
-				},
-				{
-					headers: {
-						"Content-Type": "application/json",
-					},
-					withCredentials: true,
-				}
-			)
-			.then((response) => {
-				console.log(response);
-				if (response.data.status === 200) {
-					// auth.login(emailValue);
-					setLoading(false);
-					navigate(response.data.detail); // , { replace: true }
-				}
-			})
-			.catch((err) => {
-				setLoading(false);
-				setInternalServerError("500");
-			});
-	}, []);
-
 	const validateEmail = (input) => {
 		let validRegex = /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/;
 		if (input.match(validRegex)) {
@@ -65,158 +34,82 @@ const LandingPage = () => {
 		}
 	};
 
-	const handleEmailSubmit = (e) => {
+	const handleEmailSubmit = async (e) => {
 		e.preventDefault();
 		if (!validateEmail(emailValue)) {
 			setErrorMsg("Please enter a valid email!");
 		} else {
 			setBtnLoading(true);
-			axios
-				.post(
-					"/login",
-					{
-						email: emailValue,
-					},
-					{
-						headers: {
-							"Content-Type": "application/json",
-						},
-						withCredentials: true,
-					}
-				)
-				.then((response) => {
-					console.log(response);
-					if (response.data.status === 200) {
-						auth.login(emailValue);
-						navigate(response.data.detail || "/upload"); // , { replace: true }
-					}
-					setBtnLoading(true);
-				})
-				.catch((err) => {
-					setErrorMsg("Something went wrong. Please try again!");
-					setBtnLoading(false);
-				});
+			try {
+				await auth.login(emailValue);
+				setBtnLoading(false);
+				// localStorage.setItem("token", res);
+				navigate("/dashboard", { replace: true });
+			} catch (error) {
+				setBtnLoading(false);
+				setErrorMsg("Unable to log in");
+				console.log("login err", error);
+			}
 		}
 	};
 
 	return (
 		<div className={styles.wrapper + " container"}>
-			{loading ? (
-				<Spin size="large" />
-			) : internalServerError ? (
-				<Result
-					status="500"
-					title="500"
-					subTitle="Sorry, something went wrong."
-					extra={
-						<Button type="primary" href="/">
-							Reload
-						</Button>
-					}
-				/>
-			) : (
-				<div className="row">
-					<animated.div className="col-md-8 p-2" style={aboutAnim}>
-						<div>
-							<h1 className="display-4 text-center mb-3">About</h1>
-							<p className="para" style={{ lineHeight: "1.6" }}>
-								Tools for scientists, researchers, and engineers to analyze, publish, and collaborate in order to
-								reinvent our energy systems.
-							</p>
-							<div className="text-center">
-								<Button
-									type="primary"
-									size="large"
-									onClick={() => {
-										Cookies.set("userId", "public@amplabs.ai");
-										navigate("/dashboard/public");
-									}}
-								>
-									View Public Data
-								</Button>
-							</div>
-						</div>
-					</animated.div>
-					<animated.div style={formAnim} className={`col-md-4 p-4 shadow-sm ${styles.formSection}`}>
-						<form onSubmit={(e) => handleEmailSubmit(e)}>
-							<div className="mb-3">
-								<label htmlFor="email" className="form-label">
-									Email address
-								</label>
-								<input
-									type="email"
-									className="form-control m-0"
-									id="email"
-									placeholder="Enter Email"
-									onChange={(e) => {
-										setErrorMsg("");
-										setEmailValue(e.target.value);
-									}}
-									required
-								/>
-								{errorMsg && (
-									<div className="form-text" style={{ color: "red" }}>
-										{errorMsg}
-									</div>
-								)}
-							</div>
-							<div className="text-center">
-								{/* <button type="submit" className="shadow-sm btn btn-outline-dark">
-									{btnLoading ? (
-										<Spin size="small" />
-									) : (
-										<span>
-											Continue <FaArrowRight />
-										</span>
-									)}
-								</button> */}
-
-								<Button htmlType="submit" type="primary" icon={<FaArrowRight />} size="large" loading={btnLoading}>
-									&nbsp;&nbsp;Continue
-								</Button>
-							</div>
-						</form>
-						<p className="py-2 fw-light mt-1 mb-0 text-muted" style={{ lineHeight: "1.6", fontSize: "0.9rem" }}>
-							Please provide your email address to get started.
+			<div className="row">
+				<animated.div className="col-md-8 p-2" style={aboutAnim}>
+					<div>
+						<h1 className="display-4 text-center mb-3">About</h1>
+						<p className="para" style={{ lineHeight: "1.6" }}>
+							Tools for scientists, researchers, and engineers to analyze, publish, and collaborate in order to reinvent
+							our energy systems.
 						</p>
-					</animated.div>
-					{/* <div className="row">
-						<div className="col-md-3 col-sm-12 text-center pt-2">
-							<img className="mb-4" style={{ height: "50px" }} src={num1} alt="imgg" />
-							<h3 className="h5 mb-2 fw-light">Upload data</h3>
-							<img
-								className="w-100"
-								src={pic1}
-								alt="imgg"
-								style={{ backgroundColor: "#ffffff", objectFit: "contain", height: "250px" }}
-							/>
-							<p>Upload files in csv</p>
+						<div className="text-center">
+							<Button
+								type="primary"
+								size="large"
+								onClick={() => {
+									navigate("/dashboard/public");
+								}}
+							>
+								View Public Data
+							</Button>
 						</div>
-						<div className="col-md-6 col-sm-12 text-center pt-2">
-							<img className="mb-4" style={{ height: "50px" }} src={num2} alt="imgg" />
-							<h3 className="h5 mb-2 fw-light">Analyze data</h3>
-							<img
-								className="w-100"
-								src={pic2}
-								alt="imgg"
-								style={{ backgroundColor: "#ffffff", objectFit: "contain", height: "250px" }}
+					</div>
+				</animated.div>
+				<animated.div style={formAnim} className={`col-md-4 p-4 shadow-sm ${styles.formSection}`}>
+					<form onSubmit={(e) => handleEmailSubmit(e)}>
+						<div className="mb-3">
+							<label htmlFor="email" className="form-label">
+								Email address
+							</label>
+							<input
+								type="email"
+								className="form-control m-0"
+								id="email"
+								placeholder="Enter Email"
+								onChange={(e) => {
+									setErrorMsg("");
+									setEmailValue(e.target.value);
+								}}
+								required
 							/>
-							<p>Visualize your data with tools to make you productive.</p>
+							{errorMsg && (
+								<div className="form-text" style={{ color: "red" }}>
+									{errorMsg}
+								</div>
+							)}
 						</div>
-						<div className="col-md-3 col-sm-12 text-center pt-2">
-							<img className="mb-4" style={{ height: "50px" }} src={num3} alt="imgg" />
-							<h3 className="h5 mb-2 fw-light">Share data</h3>
-							<img
-								className="w-100"
-								src={pic3}
-								alt="imgg"
-								style={{ backgroundColor: "#ffffff", objectFit: "contain", height: "250px" }}
-							/>
-							<p>Share your work and collaborate.</p>
+						<div className="text-center">
+							<Button htmlType="submit" type="primary" icon={<FaArrowRight />} size="large" loading={btnLoading}>
+								&nbsp;&nbsp;Continue
+							</Button>
 						</div>
-					</div> */}
-				</div>
-			)}
+					</form>
+					<p className="py-2 fw-light mt-1 mb-0 text-muted" style={{ lineHeight: "1.6", fontSize: "0.9rem" }}>
+						Please provide your email address to get started.
+					</p>
+				</animated.div>
+			</div>
 		</div>
 	);
 };

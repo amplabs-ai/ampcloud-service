@@ -4,6 +4,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import axios from "axios";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
+import { useAuth } from "../context/auth";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -137,13 +138,18 @@ const SideBar = (props) => {
 	const [checkedCellIds, setCheckedCellIds] = useState([]);
 	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false);
 	const [error, setError] = useState(null);
+	const { user } = useAuth(); // auth context
 
 	useEffect(() => {
 		setIsCelldataLoaded(false);
 		let endpoint = props.testType === "abuse-test" ? "/cells/abuse/meta" : "/cells/cycle/meta";
 		console.log("endpointt", endpoint);
 		axios
-			.get(endpoint)
+			.get(endpoint, {
+				headers: {
+					Authorization: `Bearer ${user.iss}`,
+				},
+			})
 			.then((res) => {
 				console.log("sidebar ", res);
 				if (res.status === 200 && res.data) {

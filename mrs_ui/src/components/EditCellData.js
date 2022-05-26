@@ -2,6 +2,7 @@ import { message, Modal, Spin } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import EditableTable from "./EditableTable";
+import { useAuth } from "../context/auth";
 
 const cellMetadataCol = [
 	{
@@ -108,6 +109,7 @@ const EditCellData = (props) => {
 	const [cellMetadata, setCellMetadata] = useState([]);
 	const [testMetadata, setTestMetadata] = useState([]);
 	const [shallShowLoad, setShallShowLoad] = useState(false);
+	const { user } = useAuth(); // auth context
 
 	useEffect(() => {
 		let params = new URLSearchParams();
@@ -118,6 +120,9 @@ const EditCellData = (props) => {
 		});
 		let request = {
 			params: params,
+			headers: {
+				Authorization: `Bearer ${user.iss}`,
+			},
 		};
 		setCellMetadata([]);
 		axios
@@ -170,9 +175,12 @@ const EditCellData = (props) => {
 				newData.push(item);
 			}
 		}
-
 		axios
-			.patch(endpoint, newData)
+			.patch(endpoint, newData, {
+				headers: {
+					Authorization: `Bearer ${user.iss}`,
+				},
+			})
 			.then((response) => {
 				let data = response; // .data.records[0]
 				console.log("edit api", data);

@@ -6,6 +6,7 @@ import ViewCodeModal from "./ViewCodeModal";
 import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../chartConfig/cellIdViewCode";
 import { audit } from "../auditAction/audit";
 import Highlighter from "react-highlight-words";
+import { useAuth } from "../context/auth";
 
 import { SearchOutlined } from "@ant-design/icons";
 
@@ -26,6 +27,7 @@ const DashboardFilterBar = (props) => {
 	const [sample, setSample] = useState(localStorage.getItem("sample") ? localStorage.getItem("sample") : 10);
 	const [loading, setLoading] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
+	const { user } = useAuth(); // auth context
 
 	const [searchText, setSearchText] = useState("");
 	const [searchedColumn, setSearchedColumn] = useState("");
@@ -72,7 +74,11 @@ const DashboardFilterBar = (props) => {
 			_initializeFilterBar(data);
 		} else if (props.testType === "abuseTest") {
 			axios
-				.get(endpoint)
+				.get(endpoint, {
+					headers: {
+						Authorization: `Bearer ${user.iss}`,
+					},
+				})
 				.then((response) => {
 					console.log("cell ids abuse", response);
 					data = response.data.records[0];
@@ -111,6 +117,9 @@ const DashboardFilterBar = (props) => {
 		axios
 			.delete(`/cells`, {
 				params: params,
+				headers: {
+					Authorization: `Bearer ${user.iss}`,
+				},
 			})
 			.then(() => {
 				setLoading(false);
@@ -163,6 +172,9 @@ const DashboardFilterBar = (props) => {
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
+				headers: {
+					Authorization: `Bearer ${user.iss}`,
+				},
 			})
 			.then(({ data }) => {
 				console.log("downloadcycledata", data);
@@ -200,6 +212,9 @@ const DashboardFilterBar = (props) => {
 		axios
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
+				headers: {
+					Authorization: `Bearer ${user.iss}`,
+				},
 			})
 			.then(({ data }) => {
 				console.log("downloadTimeSeriesData", data);
@@ -230,6 +245,9 @@ const DashboardFilterBar = (props) => {
 		axios
 			.get(`/download/cells/abuse_timeseries`, {
 				params: params,
+				headers: {
+					Authorization: `Bearer ${user.iss}`,
+				},
 			})
 			.then(({ data }) => {
 				console.log("downloadAbuseTSData", data);
