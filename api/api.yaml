@@ -2,9 +2,13 @@ openapi: "3.0.0"
 info:
   version: 1.0.0
   title: AmpLabs API
+
 paths:
   /healthcheck:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Health check
       x-openapi-router-controller: app.controllers.auth_controller
       operationId: health_check
@@ -15,8 +19,9 @@ paths:
           description: Successfull
   /cells/{test}/meta:
     get:
-      # security:
-      #   - BearerAuth: ["security"]
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches metadata for all cells for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: get_cells
@@ -60,6 +65,9 @@ paths:
           description: Something went wrong.
   /cells/{test}/metaWithId:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches metadata for given cell id for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: get_cell_with_id
@@ -117,6 +125,9 @@ paths:
           description: Internal Server Error
   /cells/tests/{test}/meta:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches test metadata of test.
       x-openapi-router-controller: app.controllers.test_metadata_controller
       operationId: get_testmeta
@@ -160,6 +171,9 @@ paths:
           description: Something went wrong
   /cells/tests/{test}/metaWithId:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches test metadata of testname for a cell id
       x-openapi-router-controller: app.controllers.test_metadata_controller
       operationId: get_testmeta_by_cell_id
@@ -374,6 +388,9 @@ paths:
           description: Something went wrong
   /download/cells/cycle_timeseries:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Download Cycle timeseries csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_timeseries
@@ -398,6 +415,9 @@ paths:
           description: Something went wrong
   /download/cells/abuse_timeseries:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Download Abuse timeseries csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_abuse_timeseries
@@ -422,6 +442,9 @@ paths:
           description: Something went wrong
   /download/cells/cycle_data:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Download Cycle csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_data
@@ -446,6 +469,9 @@ paths:
           description: Something went wrong
   /echarts/cycleQuantitiesByStep:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches cycle quantities by step query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_cycle_quantities_by_step
@@ -479,6 +505,9 @@ paths:
           description: Something went wrong
   /echarts/energyAndCapacityDecay:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches energy and capacity decay query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_energy_and_capacity_decay
@@ -503,6 +532,9 @@ paths:
           description: Something went wrong"
   /echarts/efficiency:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches efficiency query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_efficiency
@@ -527,6 +559,9 @@ paths:
           description: Something went wrong
   /echarts/compareByCycleTime:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches comapre cycle voltage and current query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_compare_by_cycle_time
@@ -551,6 +586,9 @@ paths:
           description: Something went wrong
   /echarts/forceAndDisplacement:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches force and displacement query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_force_and_displacement
@@ -586,6 +624,9 @@ paths:
           description: Something went wrong
   /echarts/testTempratures:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches test tempratures query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_test_tempratures
@@ -621,6 +662,9 @@ paths:
           description: Something went wrong
   /echarts/voltage:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Fetches voltage query results
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_voltage
@@ -656,6 +700,9 @@ paths:
           description: Something went wrong
   /download/cells/cycle_data_json:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Get cycle data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_cycle_data_json
@@ -680,6 +727,9 @@ paths:
           description: Something went wrong
   /download/cells/cycle_timeseries_json:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Get cycle timeseries data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_cycle_timeseries_json
@@ -704,6 +754,9 @@ paths:
           description: Something went wrong
   /download/cells/abuse_timeseries_json:
     get:
+      security:
+        - {}
+        - BearerAuth: []
       summary: Get abuse timeseries data in json format for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_abuse_timeseries_json
@@ -849,3 +902,10 @@ tags:
 servers:
   - url: https://www.amplabs.ai
     variables: {}
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      x-bearerInfoFunc: app.utilities.with_authentication.skip_default_auth

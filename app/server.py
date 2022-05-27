@@ -10,7 +10,7 @@ from flask_cors import CORS
 from flask_compress import Compress
 from app.controllers.dashboard_share_controller import dashboard_audit, dashboard_share_linkedin, dashboard_share_url
 import logging
-# from celery import Celery
+
 
 # Create and configure logger
 logging.basicConfig(filename="logs/audit.log",
@@ -47,14 +47,5 @@ def index(path):
 if __name__ == "__main__":
     engine_ = create_engine(app.app.config['DATABASE_URI'], echo=True)
     Model.metadata.create_all(engine_)
-
-    # @app.route("/")
-    # def my_index():
-    #     return render_template("index.html", flask_token="amplabs token")
-
-    # @app.route('/', defaults={'path': ''})
-    # @app.route('/<path:path>')
-    # def index(path):
-    #     return render_template('index.html')
 
     app.run(debug=True, host='0.0.0.0', port='4000')

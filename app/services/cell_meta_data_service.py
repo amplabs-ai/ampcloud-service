@@ -40,7 +40,7 @@ def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id:   
+        if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
