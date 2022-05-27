@@ -138,7 +138,7 @@ def file_data_process_service(cell_id, email):
 def download_cycle_timeseries_service(cell_id, email, dashboard_id = None):
     ao = ArchiveOperator()
     ao.set_session()
-    if dashboard_id:   
+    if dashboard_id and email != "public":   
         dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
         if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to):
             return 401, "Unauthorised Access"
@@ -152,7 +152,7 @@ def download_cycle_timeseries_service(cell_id, email, dashboard_id = None):
 def download_cycle_data_service(cell_id, email, dashboard_id = None):
     ao = ArchiveOperator()
     ao.set_session()
-    if dashboard_id:   
+    if dashboard_id and email != "public":   
         dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
         if not(dashboard_data) or \
             not (dashboard_data.is_public or email in dashboard_data.shared_to):
@@ -169,7 +169,7 @@ def download_cycle_data_service(cell_id, email, dashboard_id = None):
 def download_abuse_timeseries_service(cell_id, email, dashboard_id = None):
     ao = ArchiveOperator()
     ao.set_session()
-    if dashboard_id:   
+    if dashboard_id and email != "public":   
         dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
         if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to):
             return 401, "Unauthorised Access"

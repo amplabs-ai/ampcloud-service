@@ -27,3 +27,6 @@ def with_authentication(allow_public = None):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+def skip_default_auth(arg):
+    return dict()
