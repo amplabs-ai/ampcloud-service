@@ -10,9 +10,10 @@ from pympler.asizeof import asizeof
 
 @with_authentication()
 def get_cycle_quantities_by_step(cell_id, step):
-    email = g.user.data['email']
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
     st = datetime.datetime.now()
-    status, detail, *records = get_cycle_quantities_by_step_service(cell_id, step, email)
+    status, detail, *records = get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id)
     et = datetime.datetime.now()
     size = float(asizeof(records)/1000)
     fetch_time = (et-st).total_seconds()*1000
@@ -21,9 +22,10 @@ def get_cycle_quantities_by_step(cell_id, step):
 
 @with_authentication()
 def get_energy_and_capacity_decay(cell_id):
-    email = g.user.data['email']
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
     st = datetime.datetime.now()
-    status, detail, *records = get_energy_and_capacity_decay_service(cell_id, email)
+    status, detail, *records = get_energy_and_capacity_decay_service(cell_id, email, dashboard_id)
     et = datetime.datetime.now()
     size = float(asizeof(records)/1000)
     fetch_time = (et-st).total_seconds()*1000
@@ -32,9 +34,10 @@ def get_energy_and_capacity_decay(cell_id):
 
 @with_authentication()
 def get_efficiency(cell_id):
-    email = g.user.data['email']
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
     st = datetime.datetime.now()
-    status, detail, *records = get_efficiency_service(cell_id, email)
+    status, detail, *records = get_efficiency_service(cell_id, email, dashboard_id)
     et = datetime.datetime.now()
     size = float(asizeof(records)/1000)
     fetch_time = (et-st).total_seconds()*1000
@@ -43,9 +46,10 @@ def get_efficiency(cell_id):
 
 @with_authentication()
 def get_compare_by_cycle_time(cell_id):
-    email = g.user.data['email']
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
     st = datetime.datetime.now()
-    status, detail, *records = get_compare_by_cycle_time_service(cell_id, email)
+    status, detail, *records = get_compare_by_cycle_time_service(cell_id, email, dashboard_id)
     et = datetime.datetime.now()
     size = float(asizeof(records)/1000)
     fetch_time = (et-st).total_seconds()*1000
@@ -54,9 +58,10 @@ def get_compare_by_cycle_time(cell_id):
 
 @with_authentication()
 def get_force_and_displacement(cell_id, sample):
-    email = g.user.data['email']
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
     st = datetime.datetime.now()
-    status, detail, *records = get_force_and_displacement_service(cell_id, email, sample)
+    status, detail, *records = get_force_and_displacement_service(cell_id, email, sample, dashboard_id)
     et = datetime.datetime.now()
     size = float(asizeof(records)/1000)
     fetch_time = (et-st).total_seconds()*1000
@@ -65,9 +70,10 @@ def get_force_and_displacement(cell_id, sample):
 
 @with_authentication()
 def get_test_tempratures(cell_id, sample):
-    email = g.user.data['email']
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
     st = datetime.datetime.now()
-    status, detail, *records = get_test_tempratures_service(cell_id, email, sample)
+    status, detail, *records = get_test_tempratures_service(cell_id, email, sample, dashboard_id)
     et = datetime.datetime.now()
     size = float(asizeof(records)/1000)
     fetch_time = (et-st).total_seconds()*1000
@@ -76,9 +82,10 @@ def get_test_tempratures(cell_id, sample):
 
 @with_authentication()
 def get_voltage(cell_id, sample):
-    email = g.user.data['email']
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
     st = datetime.datetime.now()
-    status, detail, *records = get_voltage_service(cell_id, email, sample)
+    status, detail, *records = get_voltage_service(cell_id, email, sample, dashboard_id)
     et = datetime.datetime.now()
     size = float(asizeof(records)/1000)
     fetch_time = (et-st).total_seconds()*1000

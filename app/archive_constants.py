@@ -13,7 +13,7 @@ DEGREE = 3
 CELL_LIST_FILE_NAME = "cell_list.xlsx"
 TEST_DB_URL = "sqlite:///tests/test_data/db/bas-test.db"
 LIVE_DB_URL = "<your-db-string>"
-
+MAGIC_LINK_API_SECRET = "sk_live_846B42882F0F7630"
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
@@ -56,6 +56,7 @@ class ARCHIVE_TABLE(Enum):
     CYCLE_META = "cycle_metadata"
     CYCLE_STATS = "cycle_stats"
     CYCLE_TS = "cycle_timeseries"
+    SHARED_DASHBOARD = "shared_dashboard"
 
 
 class INP_LABELS(Enum):

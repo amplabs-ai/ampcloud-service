@@ -8,7 +8,7 @@ import logging
 @with_authentication()
 def get_status(cell_id):
     try:
-        email = g.user.data['email']
+        email = g.user
         status_map = status.get(f"{email}|{cell_id[0]}")
         if status_map:
             result = status_map['progress']

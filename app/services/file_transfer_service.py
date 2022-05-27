@@ -135,26 +135,47 @@ def file_data_process_service(cell_id, email):
         ao.release_session()
 
 
-def download_cycle_timeseries_service(cell_id, email):
+def download_cycle_timeseries_service(cell_id, email, dashboard_id = None):
     ao = ArchiveOperator()
     ao.set_session()
-    data = ao.get_df_cycle_ts_with_cell_id(cell_id, email)
+    if dashboard_id:   
+        dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+        if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to):
+            return 401, "Unauthorised Access"
+        else:
+            email = dashboard_data.shared_by
+            cell_id = cell_id if cell_id in dashboard_data.cell_id else None
+    df = ao.get_df_cycle_ts_with_cell_id(cell_id, email)
     ao.release_session()
-    return data
+    return 200, "Records Retrieved", df
 
-
-def download_cycle_data_service(cell_id, email):
+def download_cycle_data_service(cell_id, email, dashboard_id = None):
     ao = ArchiveOperator()
     ao.set_session()
+    if dashboard_id:   
+        dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+        if not(dashboard_data) or \
+            not (dashboard_data.is_public or email in dashboard_data.shared_to):
+            return 401, "Unauthorised Access"
+        else:
+            email = dashboard_data.shared_by
+            cell_id = cell_id if cell_id in dashboard_data.cell_id else None 
     df = ao.get_df_cycle_data_with_cell_id(cell_id, email)
     df.insert(1, OUTPUT_LABELS.START_TIME.value, None)
     df.insert(2, OUTPUT_LABELS.END_TIME.value, None)
     ao.release_session()
-    return df
+    return 200, "Records Retrieved", df
 
-def download_abuse_timeseries_service(cell_id, email):
+def download_abuse_timeseries_service(cell_id, email, dashboard_id = None):
     ao = ArchiveOperator()
     ao.set_session()
-    data = ao.get_df_abuse_ts_with_cell_id(cell_id, email)
+    if dashboard_id:   
+        dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+        if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to):
+            return 401, "Unauthorised Access"
+        else:
+            email = dashboard_data.shared_by
+            cell_id = cell_id if cell_id in dashboard_data.cell_id else None
+    df = ao.get_df_abuse_ts_with_cell_id(cell_id, email)
     ao.release_session()
-    return data
+    return 200, "Records Retrieved", df

@@ -3,15 +3,16 @@ import json
 import logging
 from app.archive_constants import LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI_DASH_ABUSE, LINKEDIN_REDIRECT_URI_DASH_CYCLE
 from app.response import Response
+from app.services.dashboard_share_service import dashboard_share_url_service
 from app.utilities.with_authentication import with_authentication
 from flask import request, g
 import requests
 import urllib.parse
 
-@with_authentication()
+@with_authentication(allow_public = True)
 def dashboard_audit():
     try:
-        email = g.user.data['email']
+        email = g.user
         args = request.args.to_dict()
         logTxt = 'User {} Action ' + args.get('action').upper()
         logging.info(logTxt.format(email))
@@ -19,6 +20,19 @@ def dashboard_audit():
     except Exception as err:
         logging.error(err)
         return Response(500, "Internal Server Error").to_dict(), 500
+
+@with_authentication()
+def dashboard_share_url():
+    try:
+        email = g.user
+        data = request.json
+        status, detail, *records = dashboard_share_url_service(data, email)
+        return Response(status, detail).to_dict(), status
+    except Exception as err:
+        print(err)
+        logging.error(err)
+        return Response(500, "Internal Server Error").to_dict(), 500
+
 
 @with_authentication()
 def dashboard_share_linkedin():

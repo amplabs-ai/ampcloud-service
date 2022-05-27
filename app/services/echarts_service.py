@@ -2,10 +2,16 @@ from app.archive_constants import RESPONSE_MESSAGE
 from app.model import ArchiveOperator
 import logging
 
-def get_cycle_quantities_by_step_service(cell_id, step, email):
+def get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data['shared_by']
         archive_cells = ao.get_all_data_from_CQBS_query(cell_id, step, email)
         records = []
         series = {}
@@ -25,10 +31,16 @@ def get_cycle_quantities_by_step_service(cell_id, step, email):
     finally:
         ao.release_session()
 
-def get_energy_and_capacity_decay_service(cell_id, email):
+def get_energy_and_capacity_decay_service(cell_id, email, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data['shared_by']
         archive_cells = ao.get_all_data_from_ECAD_query(cell_id, email)
         records = []
         series = {}
@@ -47,10 +59,16 @@ def get_energy_and_capacity_decay_service(cell_id, email):
     finally:
         ao.release_session()
 
-def get_efficiency_service(cell_id, email):
+def get_efficiency_service(cell_id, email, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data['shared_by']
         archive_cells = ao.get_all_data_from_Eff_query(cell_id, email)
         records = []
         series = {}
@@ -69,10 +87,16 @@ def get_efficiency_service(cell_id, email):
     finally:
         ao.release_session()
 
-def get_compare_by_cycle_time_service(cell_id, email):
+def get_compare_by_cycle_time_service(cell_id, email, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data['shared_by']
         archive_cells = ao.get_all_data_from_CCVC_query(cell_id, email)
         records = []
         series = {}
@@ -91,10 +115,16 @@ def get_compare_by_cycle_time_service(cell_id, email):
     finally:
         ao.release_session()
 
-def get_force_and_displacement_service(cell_id, email, sample):
+def get_force_and_displacement_service(cell_id, email, sample, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data['shared_by']
         archive_cells = ao.get_all_data_from_AFD_query(cell_id, email, sample)
         records = []
         series = {}
@@ -113,10 +143,16 @@ def get_force_and_displacement_service(cell_id, email, sample):
     finally:
         ao.release_session()
 
-def get_test_tempratures_service(cell_id, email, sample):
+def get_test_tempratures_service(cell_id, email, sample, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data['shared_by']
         archive_cells = ao.get_all_data_from_ATT_query(cell_id, email, sample)
         records = []
         series = {}
@@ -135,10 +171,16 @@ def get_test_tempratures_service(cell_id, email, sample):
     finally:
         ao.release_session()
 
-def get_voltage_service(cell_id, email, sample):
+def get_voltage_service(cell_id, email, sample, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data['shared_by']
         archive_cells = ao.get_all_data_from_AV_query(cell_id, email, sample)
         records = []
         series = {}

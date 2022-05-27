@@ -27,7 +27,7 @@ def get_cellmeta_service(email, test):
     finally:
         ao.release_session()
 
-def get_cellmeta_with_id_service(cell_id, email, test):
+def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id = None):
     def add_type(row):
         row_dict = row.to_dict()
         if row.email == BATTERY_ARCHIVE:
@@ -40,6 +40,13 @@ def get_cellmeta_with_id_service(cell_id, email, test):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id:   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+                return 401, "Unauthorised Access"
+            else:
+                email = dashboard_data.shared_by
+                test = dashboard_data.test
         archive_cells = ao.get_all_cell_meta_from_table_with_id(cell_id, email, test)
         records = [add_type(cell) for cell in archive_cells]
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
