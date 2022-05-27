@@ -16,13 +16,11 @@ import urllib.request
 import pandas as pd
 
 def get_amplabs_data(cell_id):
-    url = "https://www.amplabs.ai/download/cells/cycle_data_json?cell_id={}".format(cell_id)
-    user = "{1}"
+    url = "https://www.amplabs.ai/download/cells/cycle_data_json?cell_id={}{dashboard_id}".format(cell_id)
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
-
+    {bearer_token_header}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -32,7 +30,7 @@ def get_amplabs_data(cell_id):
     return None
 
 #Fetch Data from Amplabs API
-cell_id = "{0}"
+cell_id = "{cell_id}"
 response = get_amplabs_data(cell_id)
 
 if response:
@@ -57,13 +55,11 @@ import urllib.request
 import pandas as pd
 
 def get_amplabs_data(cell_id):
-    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json?cell_id={}".format(cell_id)
-    user = "{1}"
+    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json?cell_id={}{dashboard_id}".format(cell_id)
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
-
+    {bearer_token_header}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -73,7 +69,7 @@ def get_amplabs_data(cell_id):
     return None
 
 #Fetch Data from Amplabs API
-cell_id = "{0}"
+cell_id = "{cell_id}"
 response = get_amplabs_data(cell_id)
 
 if response:
@@ -99,13 +95,11 @@ import urllib.request
 import pandas as pd
 
 def get_amplabs_data(cell_id):
-    url = "https://www.amplabs.ai/download/cells/abuse_timeseries_json/{}".format(cell_id)
-    user = "{1}"
+    url = "https://www.amplabs.ai/download/cells/abuse_timeseries_json?cell_id={}{dashboard_id}".format(cell_id)
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
-
+    {bearer_token_header}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -115,7 +109,7 @@ def get_amplabs_data(cell_id):
     return None
 
 #Fetch Data from Amplabs API
-cell_id = "{0}"
+cell_id = "{cell_id}"
 response = get_amplabs_data(cell_id)
 
 if response:

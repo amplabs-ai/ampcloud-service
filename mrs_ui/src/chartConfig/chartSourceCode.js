@@ -19,13 +19,11 @@ import plotly.express as px
 import plotly.io as pio
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
-
+    {bearer_token_header}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -75,12 +73,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
+    {bearer_token_header}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -131,12 +128,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/efficiency?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/efficiency?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
+    {bearer_token_header}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -187,12 +183,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
+    {bearer_token_header}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -242,13 +237,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
-
+    {bearer_token_header}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -297,12 +290,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/compareByCycleTime?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/compareByCycleTime?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
+    {bearer_token_header}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -353,12 +345,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/forceAndDisplacement?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/forceAndDisplacement?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
+    {bearer_token_header}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -409,13 +400,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/testTempratures?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/testTempratures?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
-
+    {bearer_token_header}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -465,13 +454,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/voltage?{0}"
-    user = "{1}"
+    url = "https://www.amplabs.ai/echarts/voltage?{cell_id}{dashboard_id}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    httprequest.add_header("Cookie", f"userId={user}")
-
+    {bearer_token_header}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
