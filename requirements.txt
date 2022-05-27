@@ -17,3 +17,5 @@ celery
 flask-cors
 tables
 marshmallow
+flask-compress
+python-dotenv==0.20.0

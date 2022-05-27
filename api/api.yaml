@@ -13,67 +13,16 @@ paths:
       responses:
         "200":
           description: Successfull
-  /login:
-    post:
-      summary: Login (do login before trying any other request)
-      x-openapi-router-controller: app.controllers.auth_controller
-      operationId: login
-      tags:
-        - Auth
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-              example:
-                email: "test@test.com"
-
-      responses:
-        "200":
-          description: Successfull
-        "500":
-          description: Something went wrong
-  /logout:
-    get:
-      summary: Logout, clears the cookies set
-      x-openapi-router-controller: app.controllers.auth_controller
-      operationId: logout
-      # parameters:
-      #   - name: userId
-      #     in: cookie
-      #     description: Email Id
-      #     required: true
-      #     schema:
-      #       type: string
-      #       format: email
-      #       example: test@test.com
-      tags:
-        - Auth
-      responses:
-        "200":
-          description: Successfull
-        "500":
-          description: Something went wrong
   /cells/{test}/meta:
     get:
+      # security:
+      #   - BearerAuth: ["security"]
       summary: Fetches metadata for all cells for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: get_cells
       tags:
         - Cell Meta
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: test
           in: path
           description: test type
@@ -95,14 +44,6 @@ paths:
       tags:
         - Cell Meta
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: test
           in: path
           description: test type
@@ -125,14 +66,6 @@ paths:
       tags:
         - Cell Meta
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell Id
@@ -158,6 +91,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+  /cells:
     delete:
       summary: Delete all data for a cell from archive for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
@@ -165,14 +99,6 @@ paths:
       tags:
         - Cell Meta
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to delete
@@ -197,14 +123,6 @@ paths:
       tags:
         - Test Meta
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: test
           in: path
           description: Test Name of the resource to get
@@ -226,14 +144,6 @@ paths:
       tags:
         - Test Meta
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: test
           in: path
           description: Test Name of the resource to get
@@ -256,14 +166,6 @@ paths:
       tags:
         - Test Meta
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to get
@@ -336,15 +238,6 @@ paths:
          **Note: Must be logged in before sending this request**
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: init_file_upload
-      # parameters:
-      # - name: userId
-      #   in: cookie
-      #   description: Email Id
-      #   required: true
-      #   schema:
-      #     type: string
-      #     format: email
-      #     example: test@test.com
       requestBody:
         content:
           multipart/form-data:
@@ -421,14 +314,6 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: upload_file
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: tester
           in: path
           description: |
@@ -469,14 +354,6 @@ paths:
       x-openapi-router-controller: app.controllers.status_check_controller
       operationId: get_status
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -501,14 +378,6 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_timeseries
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to get
@@ -533,14 +402,6 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_abuse_timeseries
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to get
@@ -565,14 +426,6 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_data
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to get
@@ -599,14 +452,6 @@ paths:
       tags:
         - Echart - Get json data required for plotting
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -640,14 +485,6 @@ paths:
       tags:
         - Echart - Get json data required for plotting
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -672,14 +509,6 @@ paths:
       tags:
         - Echart - Get json data required for plotting
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -704,14 +533,6 @@ paths:
       tags:
         - Echart - Get json data required for plotting
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -736,14 +557,6 @@ paths:
       tags:
         - Echart - Get json data required for plotting
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -779,14 +592,6 @@ paths:
       tags:
         - Echart - Get json data required for plotting
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -822,14 +627,6 @@ paths:
       tags:
         - Echart - Get json data required for plotting
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID
@@ -863,14 +660,6 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_cycle_data_json
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to get
@@ -895,14 +684,6 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_cycle_timeseries_json
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to get
@@ -927,14 +708,6 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: get_abuse_timeseries_json
       parameters:
-        # - name: userId
-        #   in: cookie
-        #   description: Email Id
-        #   required: true
-        #   schema:
-        #     type: string
-        #     format: email
-        #     example: test@test.com
         - name: cell_id
           in: query
           description: Cell ID of the resource to get
@@ -1065,7 +838,6 @@ paths:
           description: unexpected error
 
 tags:
-  - name: Auth
   - name: Cell Meta
   - name: Test Meta
   - name: Upload

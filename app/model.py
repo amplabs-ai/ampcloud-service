@@ -11,7 +11,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
-from sqlalchemy.sql.sqltypes import TIMESTAMP, FLOAT
+from sqlalchemy.sql.sqltypes import TIMESTAMP, FLOAT, BOOLEAN
 from app.archive_constants import (AMPLABS_DB_URL, DEGREE, OUTPUT_LABELS,
                                ARCHIVE_TABLE, DB_URL, BATTERY_ARCHIVE, DATA_MATR_IO)
 from sqlalchemy import create_engine
@@ -218,6 +218,18 @@ class CycleTimeSeries(Model):
         }
 
 
+class SharedDashboard(Model):
+    __tablename__ = ARCHIVE_TABLE.SHARED_DASHBOARD.value
+    uuid = Column(TEXT, primary_key=True)
+    shared_by = Column(TEXT, nullable=False)
+    shared_to = Column(TEXT, nullable=False)
+    cell_id = Column(TEXT, nullable=False)
+    test = Column(TEXT, nullable=False)
+    step = Column(TEXT, nullable=True)
+    sample = Column(TEXT, nullable=True)
+    is_public = Column(BOOLEAN, nullable=False)
+
+
 """
 Archive Operator
 - Manages objects in Archive
@@ -384,6 +396,11 @@ class ArchiveOperator:
         else:
             return self.session.execute(
                 ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
+    
+
+    #DASHBOARD
+    def get_shared_dashboard_by_id(self, dashboard_id):
+        return self.session.execute(f"select * from shared_dashboard where uuid = '{dashboard_id}'").fetchone()
 
     #GA DB OPERATIONS
     def add_cell_to_db(self, cell):
