@@ -6,9 +6,6 @@ info:
 paths:
   /healthcheck:
     get:
-      security:
-        - {}
-        - BearerAuth: []
       summary: Health check
       x-openapi-router-controller: app.controllers.auth_controller
       operationId: health_check
@@ -43,6 +40,8 @@ paths:
         "500":
           description: Something went wrong.
     patch:
+      security:
+        - BearerAuth: []
       summary: Fetches metadata for all cells for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: update_cell_metadata
@@ -101,6 +100,8 @@ paths:
           description: Something went wrong.
   /cells:
     delete:
+      security:
+        - BearerAuth: []
       summary: Delete all data for a cell from archive for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: delete_cell
@@ -149,6 +150,8 @@ paths:
         "500":
           description: Something went wrong
     patch:
+      security:
+        - BearerAuth: []
       summary: Fetches test metadata of test.
       x-openapi-router-controller: app.controllers.test_metadata_controller
       operationId: update_test_metadata
@@ -207,6 +210,8 @@ paths:
           description: Something went wrong
   /upload/cells/initialize:
     post:
+      security:
+        - BearerAuth: []
       summary: Initialize upload file request (required to be sent before /upload/cells/{tester} request)
       description: |
         Data sent in this request will be used by the succeeding upload file request.
@@ -324,6 +329,8 @@ paths:
           description: Something went wrong
   /upload/cells/{tester}:
     post:
+      security:
+        - BearerAuth: []
       summary: Upload test file
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: upload_file
@@ -364,6 +371,8 @@ paths:
 
   /upload/cells/status:
     get:
+      security:
+        - BearerAuth: []
       summary: Check upload status for the file sent via uplaod request.
       x-openapi-router-controller: app.controllers.status_check_controller
       operationId: get_status

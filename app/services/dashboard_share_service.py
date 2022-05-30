@@ -25,3 +25,17 @@ def dashboard_share_url_service(data, email):
         return 500, "Internal Server Error"
     finally:
         ao.release_session()
+
+def dashboard_share_validate_id_service(email, dashboard_id):
+    ao = ArchiveOperator()
+    ao.set_session()   
+    try:
+        dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+        if dashboard_data:
+            return 200, "Valid Dashboard Id"
+        return 401, "Unauthorised Access"
+    except Exception as err:
+        logging.error(err)
+        return 500, "Internal Server Error"
+    finally:
+        ao.release_session()

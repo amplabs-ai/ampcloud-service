@@ -3,7 +3,7 @@ import json
 import logging
 from app.archive_constants import LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI_DASH_ABUSE, LINKEDIN_REDIRECT_URI_DASH_CYCLE
 from app.response import Response
-from app.services.dashboard_share_service import dashboard_share_url_service
+from app.services.dashboard_share_service import dashboard_share_url_service, dashboard_share_validate_id_service
 from app.utilities.with_authentication import with_authentication
 from flask import request, g
 import requests
@@ -142,3 +142,10 @@ def dashboard_share_linkedin():
     except Exception as err:
         logging.error(err)
         return Response(500, "Internal Server Error").to_dict(), 500
+
+@with_authentication()
+def dashboard_share_validate_id():
+    email = g.user
+    dashboard_id = request.args.to_dict().get('dashboard_id')
+    status, detail, *records = dashboard_share_validate_id_service(email, dashboard_id)
+    return Response(status, detail, records).to_dict(), status
