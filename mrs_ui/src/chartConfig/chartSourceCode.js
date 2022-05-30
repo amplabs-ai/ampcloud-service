@@ -19,11 +19,11 @@ import plotly.express as px
 import plotly.io as pio
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -73,11 +73,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -128,11 +128,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/efficiency?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/efficiency?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -183,11 +183,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -237,11 +237,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -290,11 +290,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/compareByCycleTime?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/compareByCycleTime?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -345,11 +345,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/forceAndDisplacement?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/forceAndDisplacement?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
 
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
@@ -400,11 +400,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/testTempratures?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/testTempratures?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())
@@ -454,11 +454,11 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/voltage?{cell_id}{dashboard_id}"
+    url = "https://www.amplabs.ai/echarts/voltage?{0}{2}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {bearer_token_header}
+    {1}
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
             response = json.loads(httpresponse.read())

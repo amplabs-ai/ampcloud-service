@@ -8,7 +8,7 @@ from app.exception_handler import *
 from app.model import Model
 from flask_cors import CORS
 from flask_compress import Compress
-from app.controllers.dashboard_share_controller import dashboard_audit, dashboard_share_linkedin, dashboard_share_url
+from app.controllers.dashboard_share_controller import dashboard_audit, dashboard_share_linkedin, dashboard_share_url, dashboard_share_validate_id
 import logging
 
 
@@ -21,8 +21,9 @@ logging.basicConfig(filename="logs/audit.log",
 app = connexion.FlaskApp(__name__)
 app.add_api('../api/api.yaml', options={'swagger_url': '/api'})
 app.app.config['DATABASE_URI'] = AMPLABS_DB_URL
-# READ CONFIG from env file
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
+
+#Error Handlers
 app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(401, unauthorized_exception)
@@ -31,6 +32,8 @@ CORS(app.app, origins=["http://localhost:3000"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 
+#Private Routes, not documented
+app.add_url_rule('/dashboard/share/validate-id', 'dashboard_share_validate_id', dashboard_share_validate_id, methods= ['POST'])
 app.add_url_rule('/dashboard/audit', 'dashboard_audit', dashboard_audit)
 app.add_url_rule('/dashboard/share-id', 'dashboard_share_url', dashboard_share_url, methods = ['POST'])
 app.add_url_rule('/dashboard/share-linkedin', 'dashboard_share_linkedin', dashboard_share_linkedin, methods = ['POST'])
