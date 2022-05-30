@@ -5,7 +5,7 @@ from app.archive_constants import ARCHIVE_TABLE, RESPONSE_MESSAGE, BATTERY_ARCHI
 from app.model import AbuseMeta, AbuseTimeSeries, ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries
 
 
-def get_cellmeta_service(email, test):
+def get_cellmeta_service(email, test, dashboard_id = None):
 
     def add_type(row, key, value):
         row[key] = value
@@ -14,6 +14,16 @@ def get_cellmeta_service(email, test):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if dashboard_id and email != "public":   
+            dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to):
+                return 401, "Unauthorised Access"
+            else:
+                cell_id = dashboard_data.cell_id.split(',')
+                archive_cells = ao.get_all_cell_meta_from_table_with_id(cell_id, email, test)
+                records = [cell.to_dict() for cell in archive_cells]
+                return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+
         archive_cells = ao.get_all_cell_meta(email, test)
         records = [add_type(cell.to_dict(), "type", "private") for cell in archive_cells]
         archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
