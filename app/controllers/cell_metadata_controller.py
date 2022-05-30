@@ -8,7 +8,8 @@ from app.response import Response
 @with_authentication(allow_public = True)
 def get_cells(test):
     email = g.user
-    status, detail, *records = get_cellmeta_service(email, test)
+    dashboard_id = request.args.to_dict().get('dashboard_id')
+    status, detail, *records = get_cellmeta_service(email, test, dashboard_id)
     return Response(status, detail, records).to_dict(), status
 
 @with_authentication(allow_public = True)
