@@ -1,16 +1,15 @@
 import React from "react";
-
 import { Modal, Typography, message } from "antd";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import copyToClipboard from "../utility/copyToClipboard";
-
-import Cookies from "js-cookie";
+import { useAuth } from "../context/auth";
 
 const { Text } = Typography;
 
 const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) => {
 	const codeString = code;
+	const { user } = useAuth();
 
 	const formatCode = (code, ...args) => {
 		for (let k in args) {
@@ -36,7 +35,9 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 					onClick={() => {
 						message.success("Copied to clipboard!");
 						message.success("Copied to clipboard!");
-						copyToClipboard(formatCode(codeString, searchParams, Cookies.get("userId")));
+						copyToClipboard(
+							formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${user.iss}")`)
+						);
 					}}
 					showLineNumbers={true}
 					wrapLines={true}
@@ -44,13 +45,15 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 					style={a11yLight}
 				>
 					{/* {codeString.replace("{queryParams}", searchParams)} */}
-					{formatCode(codeString, searchParams, Cookies.get("userId"))}
+					{formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${user.iss}")`)}
 				</SyntaxHighlighter>
 				<div className="d-flex flex-row-reverse mb-2">
 					<Text
 						type="secondary"
 						onClick={() => {
-							copyToClipboard(formatCode(codeString, searchParams, Cookies.get("userId")));
+							copyToClipboard(
+								formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${user.iss})"`)
+							);
 							// navigator.clipboard.writeText(
 							//   formatCode(codeString, searchParams, Cookies.get("userId"))
 							// );

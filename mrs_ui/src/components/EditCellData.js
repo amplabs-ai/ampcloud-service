@@ -111,7 +111,7 @@ const EditCellData = (props) => {
 	const [shallShowLoad, setShallShowLoad] = useState(false);
 	const { user } = useAuth(); // auth context
 
-	useEffect(() => {
+	const getData = () => {
 		let params = new URLSearchParams();
 		props.cellIds.map((k) => {
 			// if (k.split("_")[0] === "private") {
@@ -152,6 +152,10 @@ const EditCellData = (props) => {
 			.catch((err) => {
 				console.log("EditCell err", err);
 			});
+	};
+
+	useEffect(() => {
+		getData();
 	}, [props.cellIds]);
 
 	const handleSaveChanges = (data, type) => {
@@ -182,6 +186,8 @@ const EditCellData = (props) => {
 				},
 			})
 			.then((response) => {
+				props.onCellEdit();
+				getData();
 				let data = response; // .data.records[0]
 				console.log("edit api", data);
 				setShallShowLoad(false);
@@ -204,12 +210,14 @@ const EditCellData = (props) => {
 				columns={cellMetadataCol}
 				dataSource={cellMetadata}
 				title="Cell Metadata"
+				shallShowSaveBtn={!["public", "shared"].includes(props.type)}
 			/>
 			<EditableTable
 				onSave={(data) => handleSaveChanges(data, "test")}
 				columns={testMetadataCol}
 				dataSource={testMetadata}
 				title="Test Metadata"
+				shallShowSaveBtn={!["public", "shared"].includes(props.type)}
 			/>
 		</div>
 	);

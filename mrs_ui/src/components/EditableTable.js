@@ -138,7 +138,7 @@ const EditableTable = (props) => {
 	};
 
 	return (
-		<div>
+		<div className="p-1">
 			<Table
 				sticky={true}
 				title={() => <Title level={4}>{props.title}</Title>}
@@ -151,9 +151,11 @@ const EditableTable = (props) => {
 				columns={columns}
 				// rowKey="index"
 			/>
-			<Button onClick={handleMetadataSave} type="primary" className="my-1 shadow" style={{ float: "right" }}>
-				Save Changes
-			</Button>
+			{props.shallShowSaveBtn && (
+				<Button onClick={handleMetadataSave} type="primary" className="my-1 shadow" style={{ float: "right" }}>
+					Save Changes
+				</Button>
+			)}
 		</div>
 	);
 };

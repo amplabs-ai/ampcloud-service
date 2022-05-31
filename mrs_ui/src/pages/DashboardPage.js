@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { CycleDashProvider } from "../context/CycleDashContext";
 import DashboardAbuseTest from "./DashboardAbuseTest";
 import DashboardCycleTest from "./DashboardCycleTest";
 
@@ -18,7 +19,15 @@ const DashboardPage = () => {
 
 	return (
 		<div style={{ paddingTop: "1rem" }}>
-			{pageType === "cycle-test" ? <DashboardCycleTest /> : pageType === "abuse-test" ? <DashboardAbuseTest /> : ""}
+			{pageType === "cycle-test" ? (
+				<CycleDashProvider>
+					<DashboardCycleTest />
+				</CycleDashProvider>
+			) : pageType === "abuse-test" ? (
+				<DashboardAbuseTest />
+			) : (
+				""
+			)}
 		</div>
 	);
 };
