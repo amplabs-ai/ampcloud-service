@@ -190,16 +190,25 @@ const DashboardFilterBar = (props) => {
 			});
 	};
 
+	const getSearchParams = (cellId, dashboardId) => {
+		let params = new URLSearchParams();
+		params.append("cell_id", cellId);
+		if (dashboardId) {
+			params.append("dashboard_id", dashboardId);
+		}
+		return params.toString();
+	};
+
 	const viewCycleDataCode = (k) => {
-		audit(`cycle_dash_cellId__cycle_viewcode`);
-		setSearchParams(encodeURIComponent(k.trim()));
+		audit(`cycle_dash_cellId__cycle_viewcode`, user.iss);
+		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), props.dashboardId));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
-		audit(`cycle_dash_cellId__ts_viewcode`);
-		setSearchParams(encodeURIComponent(k.trim()));
+		audit(`cycle_dash_cellId__ts_viewcode`, user.iss);
+		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), props.dashboardId));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
 	};
@@ -231,8 +240,8 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const viewAbuseTSCode = (k) => {
-		audit(`abuse_dash_cellId__ts_viewcode`);
-		setSearchParams(encodeURIComponent(k.trim()));
+		audit(`abuse_dash_cellId__ts_viewcode`, user.iss);
+		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), props.dashboardId));
 		setCodeContent(abuseCellIdViewCode);
 		setModalVisible(true);
 	};
@@ -282,7 +291,7 @@ const DashboardFilterBar = (props) => {
 					<Button
 						type="primary"
 						onClick={() => {
-							audit(`${props.testType}_dash_cellId_search`);
+							audit(`${props.testType}_dash_cellId_search`, user.iss);
 							handleSearch(selectedKeys, confirm, dataIndex);
 						}}
 						icon={<SearchOutlined />}
@@ -459,6 +468,15 @@ const DashboardFilterBar = (props) => {
 		}),
 	};
 
+	const getColsToDisplay = (cols) => {
+		return cols.filter((col) => {
+			if (["shared", "public"].includes(props.type) && col.title === "Delete") {
+				return false;
+			}
+			return true;
+		});
+	};
+
 	return (
 		<div>
 			<Modal centered width="auto" visible={loading} closable={false} footer={null} maskClosable={false}>
@@ -514,7 +532,7 @@ const DashboardFilterBar = (props) => {
 						sticky={true}
 						loading={tableLoading}
 						style={{ marginTop: "10px" }}
-						columns={props.testType === "abuseTest" ? abuseTestColumns : columns}
+						columns={props.testType === "abuseTest" ? abuseTestColumns : getColsToDisplay(columns)}
 						dataSource={cellIds}
 						pagination={false}
 						scroll={{

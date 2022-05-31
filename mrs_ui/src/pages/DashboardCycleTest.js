@@ -23,7 +23,8 @@ let CHART_API_ENDPOINTS = {
 	cycleQtyByStep: "/echarts/cycleQuantitiesByStep",
 };
 
-const DashboardCycleTest = () => {
+const DashboardCycleTest = (props) => {
+	console.log("dashboardIddd", props.dashboardId);
 	// =========states=========
 	const [searchParams, setSearchParams] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);
@@ -60,6 +61,7 @@ const DashboardCycleTest = () => {
 		cycleQtyByStepWithCapacity: false,
 	});
 	const [cancelReqToken, setCancelReqToken] = useState({});
+	const [cellIdForShare, setCellIdForShare] = useState([]);
 	// ======= Hooks ==========
 	useEffect(() => {
 		let check = true;
@@ -91,7 +93,36 @@ const DashboardCycleTest = () => {
 		setCellDataOnLoad([...checkedCellIds]);
 		setChartData({});
 		setFilteredData({});
+		setCellIdForShare(checkedCellIds);
 	};
+
+	useEffect(() => {
+		if (props.dashboardId) {
+			console.log("useEffect dashId", props.dashboardId);
+			let config = {
+				method: "get",
+				url: `/cells/cycle/meta?dashboard_id=${props.dashboardId}`,
+				headers: {
+					Authorization: `Bearer ${user.iss}`,
+				},
+			};
+
+			axios(config)
+				.then(function (response) {
+					console.log(response.data.records[0]);
+					let data = response.data.records[0];
+					let cellIds = data.map((d) => {
+						return "share_" + d.cell_id;
+					});
+					setCellDataOnLoad([...cellIds]);
+				})
+				.catch(function (error) {
+					setInternalServerError(true);
+					console.log(error);
+				});
+		}
+		return () => {};
+	}, [props.dashboardId]);
 
 	const handleEditCellIds = (checkedCellIds) => {
 		console.log("handleEditCellIds", checkedCellIds);
@@ -105,7 +136,10 @@ const DashboardCycleTest = () => {
 	};
 
 	const handleCellDelete = (rec) => {
-		console.log("del rec", rec.cell_id);
+		setShallRefreshSideBar((prev) => !prev);
+	};
+
+	const refreshSideBarOnEdit = () => {
 		setShallRefreshSideBar((prev) => !prev);
 	};
 
@@ -164,6 +198,9 @@ const DashboardCycleTest = () => {
 			params.append("cell_id", cellId.cell_id);
 		});
 		params.append("step", step);
+		if (props.dashboardId) {
+			params.append("dashboard_id", props.dashboardId);
+		}
 		setStepFromFilter(step);
 		setSearchParams(params.toString());
 		return params;
@@ -188,6 +225,7 @@ const DashboardCycleTest = () => {
 
 	const handleCellIdChange = async (selectedCellIds) => {
 		console.log("selected cellIds", selectedCellIds);
+
 		setLoading(true);
 		getSearchParams(selectedCellIds, stepFromFilter);
 		setDisableSelection(true);
@@ -281,20 +319,33 @@ const DashboardCycleTest = () => {
 						style={{ marginTop: "0.8em" }}
 						ghost={true}
 						title="Cycle Test Dashboard"
-						extra={<ShareButton ref={dashboardRef} shareDisabled={shareDisabled} dashboard="cycle" />}
+						extra={
+							!["public", "shared"].includes(props.type) && !(cellDataOnEdit && cellDataOnEdit.length) ? (
+								<ShareButton
+									ref={dashboardRef}
+									cellIds={cellIdForShare}
+									shareDisabled={shareDisabled}
+									step={stepFromFilter}
+									sample={null}
+									dashboard="cycle"
+								/>
+							) : null
+						}
 					></PageHeader>
 					<Layout hasSider>
-						<SideBar
-							testType="cycle-test"
-							onLoadCellIds={handleLoadCellIds}
-							onEditCellIds={handleEditCellIds}
-							refresh={shallRefreshSideBar}
-						/>
+						{props.type === "shared" ? null : (
+							<SideBar
+								testType="cycle-test"
+								onLoadCellIds={handleLoadCellIds}
+								onEditCellIds={handleEditCellIds}
+								refresh={shallRefreshSideBar}
+							/>
+						)}
 						<Layout className="site-layout" style={{ marginLeft: "auto" }}>
 							<Content>
 								{cellDataOnEdit && cellDataOnEdit.length ? (
 									<div>
-										<EditCellData cellIds={cellDataOnEdit} />
+										<EditCellData cellIds={cellDataOnEdit} type={props.type} onCellEdit={refreshSideBarOnEdit} />
 									</div>
 								) : (
 									<>
@@ -312,6 +363,8 @@ const DashboardCycleTest = () => {
 											internalServerErrorFound={internalServerErrorFound}
 											disableSelection={disableSelection}
 											cellData={cellDataOnLoad}
+											type={props.type}
+											dashboardId={props.dashboardId}
 										/>
 										{loading ? (
 											<div className="text-center mt-5">

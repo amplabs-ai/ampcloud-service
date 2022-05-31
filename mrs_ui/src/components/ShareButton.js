@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { audit } from "../auditAction/audit";
-import { Button, Card, message, Modal, Skeleton, Spin, Typography } from "antd";
+import { Alert, Button, Card, message, Modal, Skeleton, Spin, Switch, Typography } from "antd";
 import { FaLinkedin, FaEnvelope, FaLink, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { ShareAltOutlined } from "@ant-design/icons";
 import { toBlob } from "html-to-image";
@@ -10,9 +10,9 @@ import copyToClipboard from "../utility/copyToClipboard";
 import b64toBlob from "../utility/b64ToBlob";
 import axios from "axios";
 import HelmetMetaData from "../components/HelmetMetaData";
-import { LINKEDIN_SHARE_TEXT_CYCLE } from "../constants/shareText";
-import { LINKEDIN_SHARE_TEXT_ABUSE } from "../constants/shareText";
+import { SHARE_TEXT } from "../constants/shareText";
 import { useAuth } from "../context/auth";
+import DashSharePrivate from "./DashSharePrivate";
 
 const Title = Typography;
 const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
@@ -30,6 +30,9 @@ const ShareButton = (props, ref) => {
 	const [metaImageDash, setMetaImageDash] = useState(null);
 	const [shallShowShareDashModal, setShallShowShareDashModal] = useState(false);
 	const [shareLoadingMsg, setShareLoadingMsg] = useState("");
+	const [shareType, setShareType] = useState("private");
+	const [loading, setLoading] = useState(false);
+	const [shareLink, setShareLink] = useState("");
 
 	const [searchParamsForCode, setSearchParamsForCode] = useSearchParams();
 	const { user } = useAuth(); // auth context
@@ -47,10 +50,7 @@ const ShareButton = (props, ref) => {
 				);
 				console.log("code", code);
 				// send code to backend
-				let shareText = formatString(
-					props.dashboard === "cycle" ? LINKEDIN_SHARE_TEXT_CYCLE : LINKEDIN_SHARE_TEXT_ABUSE,
-					Cookies.get("userId")
-				);
+				let shareText = formatString(SHARE_TEXT, props.dashboard, shareLink);
 				let img = localStorage.getItem("dashImage");
 				let parts = [b64toBlob(img?.split(",")[1], "image/png")];
 				let file = new File(parts, "dashboard.png", {
@@ -113,7 +113,7 @@ const ShareButton = (props, ref) => {
 	}, []);
 
 	const doShareDashboard = () => {
-		audit(`${props.dashboard}_dash_share`);
+		audit(`${props.dashboard}_dash_share`, user.iss);
 		setMetaImageDash(null);
 		localStorage.setItem("dashImage", null);
 		setShallShowShareDashModal(true);
@@ -145,6 +145,59 @@ const ShareButton = (props, ref) => {
 		);
 	};
 
+	const cleanCellIds = (cellIds) => {
+		let x = [];
+		cellIds.map((k) => {
+			x.push(k.substring(k.indexOf("_") + 1));
+		});
+		return x;
+	};
+
+	const onShareWithChange = (checked) => {
+		console.log("share with", checked);
+		checked ? setShareType("public") : setShareType("private");
+		if (checked) {
+			setLoading(true);
+			let data = JSON.stringify({
+				shared_to: [],
+				cell_id: cleanCellIds(props.cellIds),
+				test: props.dashboard,
+				step: props.step,
+				sample: props.sample,
+				is_public: true,
+			});
+
+			let config = {
+				method: "post",
+				url: "/dashboard/share-id",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${user.iss}`,
+				},
+				data: data,
+			};
+
+			console.log(config);
+
+			axios(config)
+				.then(function (response) {
+					setLoading(false);
+					console.log("dashboard share id res", response.data.detail);
+					setShareLink(
+						(process.env.REACT_APP_ENV === "production" ? process.env.REACT_APP_PROD_URI : "http://localhost:3000") +
+							`/dashboard/${props.dashboard}/share/` +
+							response.data.detail
+					);
+				})
+				.catch(function (error) {
+					setLoading(false);
+					console.log(error);
+					message.error("Error Generating Link! Please Try Again.");
+					message.error("Error Generating Link! Please Try Again.");
+				});
+		}
+	};
+
 	return (
 		<>
 			<HelmetMetaData image={metaImageDash}></HelmetMetaData>
@@ -157,63 +210,88 @@ const ShareButton = (props, ref) => {
 					setShallShowShareDashModal(false);
 					setShareLoadingMsg("");
 				}}
-				style={{ maxHeight: "70%" }}
+				// style={{ maxHeight: "70%" }}
+				style={{ marginTop: "100px" }}
+				width={700}
 			>
 				{shareLoadingMsg ? (
 					<div className="text-center">{shareLoadingMsg}</div>
 				) : (
 					<div>
-						<div style={{ display: "flex" }}>
-							<div style={{ width: "50%" }} className="text-center">
-								<button
-									className="btn btn-link"
-									onClick={(e) => {
-										e.preventDefault();
-										shareOnLinkedIn();
-									}}
-								>
-									<FaLinkedin size={70} />
-								</button>
-							</div>
-							<div style={{ width: "50%" }} className="text-center">
-								<a
-									title="Mail"
-									href={`mailto:?subject=Amplabs.ai - Dashboard&body=${formatString(
-										props.dashboard === "cycle" ? LINKEDIN_SHARE_TEXT_CYCLE : LINKEDIN_SHARE_TEXT_ABUSE,
-										Cookies.get("userId")
-									)}`}
-									target="_blank"
-									rel="noreferrer"
-								>
-									<FaEnvelope size={70} />
-								</a>
-							</div>
-							<div style={{ width: "50%" }} className="text-center">
-								<div
-									className="btn btn-link"
-									title="Direct Link"
-									onClick={(e) => {
-										e.preventDefault();
-										copyToClipboard(
-											`https://www.amplabs.ai/dashboard/${props.dashboard}-test?mail=${Cookies.get("userId")}`
-										);
-										message.success("Copied to clipboard!");
-										message.success("Copied to clipboard!");
-									}}
-								>
-									<FaLink size={60} />
+						<Alert className="mb-1" message="Loaded Cell Ids with step will be shared!" type="info" showIcon closable />
+						<span className="fw-bold ms-1">Type: </span>
+						<Switch checkedChildren="Public" unCheckedChildren="Private" onChange={onShareWithChange} />
+						{shareType === "public" ? (
+							loading ? (
+								<div>
+									<Spin />
 								</div>
-							</div>
-						</div>
+							) : (
+								<div style={{ display: "flex" }}>
+									<div style={{ width: "50%" }} className="text-center">
+										<button
+											className="btn btn-link"
+											onClick={(e) => {
+												e.preventDefault();
+												shareOnLinkedIn();
+											}}
+										>
+											<FaLinkedin size={70} />
+										</button>
+										<p>LinkedIn</p>
+									</div>
+									<div style={{ width: "50%" }} className="text-center">
+										<a
+											title="Mail"
+											href={`mailto:?subject=Amplabs.ai - Dashboard&body=${formatString(
+												SHARE_TEXT,
+												props.dashboard,
+												shareLink
+											)}`}
+											target="_blank"
+											rel="noreferrer"
+										>
+											<FaEnvelope size={80} />
+										</a>
+										<p>Email</p>
+									</div>
+									<div style={{ width: "50%" }} className="text-center">
+										<div
+											className="btn btn-link"
+											title="Direct Link"
+											onClick={(e) => {
+												e.preventDefault();
+												copyToClipboard(shareLink);
+												message.success("Copied to clipboard!");
+												message.success("Copied to clipboard!");
+											}}
+										>
+											<FaLink size={70} />
+										</div>
+										<p>Copy Direct Link</p>
+									</div>
+								</div>
+							)
+						) : (
+							<DashSharePrivate
+								step={props.step}
+								sample={props.sample}
+								dashboard={props.dashboard}
+								cellIds={cleanCellIds(props.cellIds)}
+							/>
+						)}
 						<Card
 							loading={!metaImageDash}
-							cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
+							// cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
 							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
 						>
-							{formatString(
-								props.dashboard === "cycle" ? LINKEDIN_SHARE_TEXT_CYCLE : LINKEDIN_SHARE_TEXT_ABUSE,
-								Cookies.get("userId")
+							{metaImageDash ? (
+								<img alt="dashboard screenshot" style={{ width: "100%" }} src={metaImageDash} />
+							) : (
+								<Skeleton.Image />
 							)}
+							<br />
+							{shareLink ? formatString(SHARE_TEXT, props.dashboard, shareLink) : null}
 						</Card>
 					</div>
 				)}

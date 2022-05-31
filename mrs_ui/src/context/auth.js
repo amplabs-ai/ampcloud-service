@@ -2,7 +2,9 @@ import { useState, createContext, useContext, useEffect } from "react";
 import { Spin } from "antd";
 import { Magic } from "magic-sdk";
 
-const magic = new Magic(process.env.REACT_APP_PK_KEY);
+const magic = new Magic(process.env.REACT_APP_PK_KEY, {
+	testMode: false, //process.env.REACT_APP_ENV === "production" ? false : true,
+});
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -26,13 +28,22 @@ export const AuthProvider = ({ children }) => {
 		if (isLoggedIn) {
 			const user = await magic.user.getMetadata();
 			console.log("user magic", user);
-			return cb({ isLoggedIn: true, email: user.email, iss: user.issuer });
+			return cb({
+				isLoggedIn: true,
+				email: user.email,
+				iss: user.issuer,
+				// process.env.REACT_APP_ENV === "production"
+				// 	? user.issuer
+				// 	: "did:ethr:0x272BDa85e8323e85644ceDFB08D1344206B85e1E",
+			}); // replace with user.issuer
 		}
 		return cb({ isLoggedIn: false });
 	};
 
 	const login = async (email) => {
-		await magic.auth.loginWithMagicLink({ email });
+		await magic.auth.loginWithMagicLink({
+			email: email, //process.env.REACT_APP_ENV === "production" ? email : "test+success@magic.link",
+		});
 		await checkUser(setUser);
 	};
 

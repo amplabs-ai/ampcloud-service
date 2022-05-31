@@ -14,12 +14,13 @@ def get_cellmeta_service(email, test, dashboard_id = None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to):
                 return 401, "Unauthorised Access"
             else:
                 cell_id = dashboard_data.cell_id.split(',')
+                email = dashboard_data.shared_by
                 archive_cells = ao.get_all_cell_meta_from_table_with_id(cell_id, email, test)
                 records = [cell.to_dict() for cell in archive_cells]
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
@@ -45,12 +46,12 @@ def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id = None):
         elif row.email == DATA_MATR_IO:
             row_dict['type'] = "public/data.matr.io"
         else:
-            row_dict['type'] = "private" 
+            row_dict['type'] = "private"
         return row_dict
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
@@ -71,11 +72,11 @@ def update_cell_metadata_service(email, test, request_data):
         ao = ArchiveOperator()
         ao.set_session()
         query = "select index, cell_id from cell_metadata where test = '{}' and email = '{}'".format(test, email)
-        private_cell_ids = ao.session.execute(query) 
+        private_cell_ids = ao.session.execute(query)
         private_cell_ids_dict = dict()
         for row in private_cell_ids:
             private_cell_ids_dict[row.cell_id] = row.index
-        
+
         edited_cell_ids = {}
         for item in request_data:
             try:
@@ -92,8 +93,8 @@ def update_cell_metadata_service(email, test, request_data):
             if test == TEST_TYPE.CYCLE.value:
                 if edited_cell_ids.get(item['cell_id']):
                     ao.update_table_with_cell_id_email(CycleTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
-                    ao.update_table_with_cell_id_email(CycleStats, cell_id, email, {'cell_id': item['cell_id']})  
-                    ao.update_table_with_cell_id_email(CycleMeta, cell_id, email, {'cell_id': item['cell_id']})   
+                    ao.update_table_with_cell_id_email(CycleStats, cell_id, email, {'cell_id': item['cell_id']})
+                    ao.update_table_with_cell_id_email(CycleMeta, cell_id, email, {'cell_id': item['cell_id']})
             else:
                 if edited_cell_ids.get(item['cell_id']):
                     ao.update_table_with_cell_id_email(AbuseTimeSeries, cell_id, email, {'cell_id': item['cell_id']})
@@ -105,7 +106,7 @@ def update_cell_metadata_service(email, test, request_data):
         logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
-        ao.release_session()  
+        ao.release_session()
 
 
 def delete_cell_service(cell_id, email):

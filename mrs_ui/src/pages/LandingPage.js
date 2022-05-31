@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 import { Button } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
 import styles from "./LandingPage.module.css";
 import { useAuth } from "../context/auth";
@@ -10,6 +10,7 @@ const LandingPage = () => {
 	const auth = useAuth();
 	console.log("from context", auth);
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [emailValue, setEmailValue] = useState("");
 	const [errorMsg, setErrorMsg] = useState("");
 	const [btnLoading, setBtnLoading] = useState(false);
@@ -44,7 +45,13 @@ const LandingPage = () => {
 				await auth.login(emailValue);
 				setBtnLoading(false);
 				// localStorage.setItem("token", res);
-				navigate("/dashboard", { replace: true });
+				if (location.state?.from) {
+					console.log("location.state.from", location.state.from);
+					navigate(location.state.from, { replace: true });
+				} else {
+					console.log("location.state.from /dash", location.state.from);
+					navigate("/dashboard/cycle-test", { replace: true });
+				}
 			} catch (error) {
 				setBtnLoading(false);
 				setErrorMsg("Unable to log in");

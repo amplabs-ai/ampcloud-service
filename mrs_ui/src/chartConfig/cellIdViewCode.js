@@ -15,8 +15,8 @@ import urllib.request
 # PyData Libraries
 import pandas as pd
 
-def get_amplabs_data(cell_id):
-    url = "https://www.amplabs.ai/download/cells/cycle_data_json?cell_id={}{2}".format(cell_id)
+def get_amplabs_data(params):
+    url = "https://www.amplabs.ai/download/cells/cycle_data_json?{}".format(params)
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -30,8 +30,8 @@ def get_amplabs_data(cell_id):
     return None
 
 #Fetch Data from Amplabs API
-cell_id = "{0}"
-response = get_amplabs_data(cell_id)
+params = "{0}"
+response = get_amplabs_data(params)
 
 if response:
     df = pd.DataFrame(response['records'])
@@ -54,8 +54,8 @@ import urllib.request
 # PyData Libraries
 import pandas as pd
 
-def get_amplabs_data(cell_id):
-    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json?cell_id={}{2}".format(cell_id)
+def get_amplabs_data(params):
+    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json?{}".format(params)
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -69,8 +69,8 @@ def get_amplabs_data(cell_id):
     return None
 
 #Fetch Data from Amplabs API
-cell_id = "{0}"
-response = get_amplabs_data(cell_id)
+params = "{0}"
+response = get_amplabs_data(params)
 
 if response:
     df = pd.DataFrame(response['records'])
@@ -94,8 +94,8 @@ import urllib.request
 # PyData Libraries
 import pandas as pd
 
-def get_amplabs_data(cell_id):
-    url = "https://www.amplabs.ai/download/cells/abuse_timeseries_json?cell_id={}{2}".format(cell_id)
+def get_amplabs_data(params):
+    url = "https://www.amplabs.ai/download/cells/abuse_timeseries_json?{}".format(params)
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -109,8 +109,8 @@ def get_amplabs_data(cell_id):
     return None
 
 #Fetch Data from Amplabs API
-cell_id = "{0}"
-response = get_amplabs_data(cell_id)
+params = "{0}"
+response = get_amplabs_data(params)
 
 if response:
     df = pd.DataFrame(response['records'])

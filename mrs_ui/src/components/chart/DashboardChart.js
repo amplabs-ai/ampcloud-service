@@ -6,10 +6,12 @@ import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { chartConfig, getChartMetadata } from "../../chartConfig/dashboardChartConfig";
 import { audit } from "../../auditAction/audit";
 import { enterFullscreenOption, exitFullscreenOption } from "../../chartConfig/chartFullScreenOption";
+import { useAuth } from "../../context/auth";
 
 const DashboardChart = (props) => {
 	const screen = useFullScreenHandle();
 	const chartRef = useRef();
+	const { user } = useAuth(); // auth context
 
 	const reportChange = useCallback((state) => {
 		if (state) {
@@ -49,7 +51,7 @@ const DashboardChart = (props) => {
 							title: "View Code",
 							icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 							onclick: function () {
-								audit(`cycle_dash_chart_${props.chartName}_viewcode`);
+								audit(`cycle_dash_chart_${props.chartName}_viewcode`, user.iss);
 								let { code } = getChartMetadata(props.chartName);
 								props.formatCode(code);
 							},
@@ -59,7 +61,7 @@ const DashboardChart = (props) => {
 							title: "Enter Fullscreen",
 							icon: `path://M2 2.5C2 2.22386 2.22386 2 2.5 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V2.5ZM9 2.5C9 2.22386 9.22386 2 9.5 2H12.5C12.7761 2 13 2.22386 13 2.5V5.5C13 5.77614 12.7761 6 12.5 6C12.2239 6 12 5.77614 12 5.5V3H9.5C9.22386 3 9 2.77614 9 2.5ZM2.5 9C2.77614 9 3 9.22386 3 9.5V12H5.5C5.77614 12 6 12.2239 6 12.5C6 12.7761 5.77614 13 5.5 13H2.5C2.22386 13 2 12.7761 2 12.5V9.5C2 9.22386 2.22386 9 2.5 9ZM12.5 9C12.7761 9 13 9.22386 13 9.5V12.5C13 12.7761 12.7761 13 12.5 13H9.5C9.22386 13 9 12.7761 9 12.5C9 12.2239 9.22386 12 9.5 12H12V9.5C12 9.22386 12.2239 9 12.5 9Z`,
 							onclick: function () {
-								audit(`cycle_dash_chart_${props.chartName}_fullscreen`);
+								audit(`cycle_dash_chart_${props.chartName}_fullscreen`, user.iss);
 								screen.enter();
 							},
 						},
@@ -98,7 +100,7 @@ const DashboardChart = (props) => {
 		// });
 		// for auditing
 		chartRef.current.getEchartsInstance().on("dataZoom", () => {
-			audit(`cycle_dash_chart_${props.chartName}_dataZoom`);
+			audit(`cycle_dash_chart_${props.chartName}_dataZoom`, user.iss);
 		});
 	}, []);
 

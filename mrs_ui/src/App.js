@@ -13,6 +13,7 @@ import PublicDataDashboard from "./pages/PublicDataDashboard";
 import PrivateRoute from "./routes/PrivateRoute";
 import { AuthProvider } from "./context/auth.js";
 import RedirectRoute from "./routes/RedirectRoute";
+import SharedDashboard from "./components/SharedDashboard";
 
 const App = () => {
 	return (
@@ -55,8 +56,23 @@ const App = () => {
 							<Route path="abuse-test" element={<DashboardPage />} />
 						</Route>
 						{/* <Route path="/uploadProgress" element={<ProcessUpload />}></Route> */}
-						<Route path="/plotter" element={<PlotterPage />}></Route>
+						<Route
+							path="/plotter"
+							element={
+								<PrivateRoute>
+									<PlotterPage />
+								</PrivateRoute>
+							}
+						></Route>
 						<Route path="/dashboard/public" element={<PublicDataDashboard />} exact></Route>
+						<Route
+							path="/dashboard/:test/share/:id"
+							element={
+								<PrivateRoute>
+									<SharedDashboard />
+								</PrivateRoute>
+							}
+						/>
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>
 				</AuthProvider>

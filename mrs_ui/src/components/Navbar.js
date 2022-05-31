@@ -76,26 +76,32 @@ const Navbar = () => {
 				</button>
 				<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 					<ul className="navbar-nav">
-						<li className="nav-item">
-							<Link className="nav-link" to="/plotter">
-								Plot
-							</Link>
-						</li>
 						{auth.user.isLoggedIn && (
 							<>
 								<li className="nav-item">
-									<Dropdown overlay={uploadMenu}>
+									<Link className="nav-link" to="/plotter">
+										Plot
+									</Link>
+								</li>
+								<li className="nav-item">
+									{/* <Dropdown overlay={uploadMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
 											Upload <FaAngleDown />
 										</Link>
-									</Dropdown>
+									</Dropdown> */}
+									<Link className="nav-link" to="/upload/cycle-test">
+										Upload
+									</Link>
 								</li>
 								<li className="nav-item">
-									<Dropdown overlay={dashboardMenu}>
+									{/* <Dropdown overlay={dashboardMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
 											Dashboard <FaAngleDown />
 										</Link>
-									</Dropdown>
+									</Dropdown> */}
+									<Link className="nav-link" to="/dashboard/cycle-test">
+										Dashboard
+									</Link>
 								</li>
 								<li className="nav-item">
 									<Dropdown overlay={userProfileMenu}>
