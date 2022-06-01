@@ -5,6 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
 import styles from "./LandingPage.module.css";
 import { useAuth } from "../context/auth";
+import googleSignInSvg from "../assets/sign-in-with-google.svg";
+import linkedInSignInPng from "../assets/sign-in-with-linkedin.png";
 
 const LandingPage = () => {
 	const auth = useAuth();
@@ -58,6 +60,12 @@ const LandingPage = () => {
 				console.log("login err", error);
 			}
 		}
+	};
+
+	const handleLoginWithSocial = async (e, platform) => {
+		e.preventDefault();
+		// Start the Google OAuth 2.0 flow!
+		await auth.loginWithSocial(location.state?.from, platform);
 	};
 
 	return (
@@ -115,6 +123,20 @@ const LandingPage = () => {
 					<p className="py-2 fw-light mt-1 mb-0 text-muted" style={{ lineHeight: "1.6", fontSize: "0.9rem" }}>
 						Please provide your email address to get started.
 					</p>
+					<div className="m-1">
+						<form onSubmit={(e) => handleLoginWithSocial(e, "google")}>
+							<button className="google" type="submit">
+								<img src={googleSignInSvg} alt="google Sign-in SVG" />
+							</button>
+						</form>
+					</div>
+					<div className="m-1">
+						<form onSubmit={(e) => handleLoginWithSocial(e, "linkedin")}>
+							<button class="linkedin" type="submit">
+								<img src={linkedInSignInPng} alt="LinkedIn Button" style={{ maxWidth: "80%" }} />
+							</button>
+						</form>
+					</div>
 				</animated.div>
 			</div>
 		</div>

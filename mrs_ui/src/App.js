@@ -14,6 +14,7 @@ import PrivateRoute from "./routes/PrivateRoute";
 import { AuthProvider } from "./context/auth.js";
 import RedirectRoute from "./routes/RedirectRoute";
 import SharedDashboard from "./components/SharedDashboard";
+import Callback from "./pages/Callback";
 
 const App = () => {
 	return (
@@ -65,6 +66,8 @@ const App = () => {
 							}
 						></Route>
 						<Route path="/dashboard/public" element={<PublicDataDashboard />} exact></Route>
+						<Route path="/callback/:redirectstate" element={<Callback />}></Route>
+						<Route path="/callback" element={<Callback />} exact></Route>
 						<Route
 							path="/dashboard/:test/share/:id"
 							element={

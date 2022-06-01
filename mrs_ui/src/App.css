@@ -124,3 +124,18 @@ h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant
 [data-theme='dark'] .editable-row:hover .editable-cell-value-wrap {
   border: 1px solid #434343;
 }
+
+button.google {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+
+button.linkedin {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
