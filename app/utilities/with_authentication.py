@@ -18,6 +18,7 @@ def with_authentication(allow_public = None):
                     issuer,
                 )
                 g.user = user.data['email']
+                print('g.user', g.user)
             except Exception as e:
                 if allow_public:
                     g.user = "public"

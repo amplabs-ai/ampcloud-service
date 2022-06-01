@@ -1,19 +1,31 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import { Spin } from "antd";
 import { Magic } from "magic-sdk";
+import { OAuthExtension } from "@magic-ext/oauth";
+import { useLocation } from "react-router-dom";
 
 const magic = new Magic(process.env.REACT_APP_PK_KEY, {
 	testMode: false, //process.env.REACT_APP_ENV === "production" ? false : true,
+	extensions: [new OAuthExtension()],
 });
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
 	const [user, setUser] = useState({ isLoggedIn: null });
 	const [loading, setLoading] = useState(true);
+	const location = useLocation();
 
 	useEffect(() => {
 		const validateUser = async () => {
 			try {
+				if (location.pathname.includes(`/callback`)) {
+					try {
+						const result = await magic.oauth.getRedirectResult();
+						console.log("google auth", result);
+					} catch (error) {
+						console.log(error);
+					}
+				}
 				await checkUser(setUser);
 				setLoading(false);
 			} catch (error) {
@@ -43,8 +55,18 @@ export const AuthProvider = ({ children }) => {
 	const login = async (email) => {
 		await magic.auth.loginWithMagicLink({
 			email: email, //process.env.REACT_APP_ENV === "production" ? email : "test+success@magic.link",
+			redirectURI: "http://localhost:3000",
 		});
 		await checkUser(setUser);
+	};
+
+	const loginWithSocial = async (redirectRoute, platform) => {
+		console.log("redirectRoute", redirectRoute);
+		const didToken = await magic.oauth.loginWithRedirect({
+			provider: platform,
+			redirectURI: `${window.location.origin}/callback/${redirectRoute ? encodeURIComponent(redirectRoute) : ""}`,
+		});
+		console.log(didToken);
 	};
 
 	const logout = async () => {
@@ -60,7 +82,7 @@ export const AuthProvider = ({ children }) => {
 		);
 	}
 
-	return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+	return <AuthContext.Provider value={{ user, login, logout, loginWithSocial }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
