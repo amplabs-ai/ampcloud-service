@@ -35,7 +35,7 @@ print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 #Private Routes, not documented
 app.add_url_rule('/dashboard/share/validate-id', 'dashboard_share_validate_id', dashboard_share_validate_id, methods= ['POST'])
 app.add_url_rule('/dashboard/audit', 'dashboard_audit', dashboard_audit)
-app.add_url_rule('/dashboard/share-id', 'dashboard_share_url', dashboard_share_url, methods = ['POST'])
+app.add_url_rule('/dashboard/share-id', 'dashboard_share_url', dashboard_share_url, methods = ['POST', 'PATCH'])
 app.add_url_rule('/dashboard/share-linkedin', 'dashboard_share_linkedin', dashboard_share_linkedin, methods = ['POST'])
 
 @app.route("/")
