@@ -1,15 +1,19 @@
 import React, { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
-import { Button } from "antd";
+import { Button, Collapse, Divider } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
 import styles from "./LandingPage.module.css";
-import { useAuth } from "../context/auth";
-import googleSignInSvg from "../assets/sign-in-with-google.svg";
+import { useAuth0 } from "@auth0/auth0-react";
+import googleSignInSvg from "../assets/sign-in-with-google.png";
 import linkedInSignInPng from "../assets/sign-in-with-linkedin.png";
+import microsoftSignInPng from "../assets/login-with-microsoft.png";
+import LoginButton from "../components/LoginButton";
+
+const { Panel } = Collapse;
 
 const LandingPage = () => {
-	const auth = useAuth();
+	const auth = useAuth0();
 	console.log("from context", auth);
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -71,15 +75,23 @@ const LandingPage = () => {
 	return (
 		<div className={styles.wrapper + " container"}>
 			<div className="row">
-				<animated.div className="col-md-8 p-2" style={aboutAnim}>
-					<div>
+				<animated.div className="col-md-12 p-2 text-center" style={aboutAnim}>
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							height: "100%",
+							flexDirection: "column",
+						}}
+					>
 						<h1 className="display-4 text-center mb-3">About</h1>
-						<p className="para" style={{ lineHeight: "1.6" }}>
+						<p className="para" style={{ lineHeight: "1.6", padding: "0px 90px" }}>
 							Tools for scientists, researchers, and engineers to analyze, publish, and collaborate in order to reinvent
 							our energy systems.
 						</p>
 						<div className="text-center">
-							<Button
+							{/* <Button
 								type="primary"
 								size="large"
 								onClick={() => {
@@ -87,57 +99,79 @@ const LandingPage = () => {
 								}}
 							>
 								View Public Data
-							</Button>
+							</Button> */}
+							<LoginButton />
 						</div>
 					</div>
 				</animated.div>
-				<animated.div style={formAnim} className={`col-md-4 p-4 shadow-sm ${styles.formSection}`}>
-					<form onSubmit={(e) => handleEmailSubmit(e)}>
-						<div className="mb-3">
-							<label htmlFor="email" className="form-label">
-								Email address
-							</label>
-							<input
-								type="email"
-								className="form-control m-0"
-								id="email"
-								placeholder="Enter Email"
-								onChange={(e) => {
-									setErrorMsg("");
-									setEmailValue(e.target.value);
-								}}
-								required
-							/>
-							{errorMsg && (
-								<div className="form-text" style={{ color: "red" }}>
-									{errorMsg}
-								</div>
-							)}
-						</div>
-						<div className="text-center">
-							<Button htmlType="submit" type="primary" icon={<FaArrowRight />} size="large" loading={btnLoading}>
-								&nbsp;&nbsp;Continue
-							</Button>
-						</div>
-					</form>
-					<p className="py-2 fw-light mt-1 mb-0 text-muted" style={{ lineHeight: "1.6", fontSize: "0.9rem" }}>
-						Please provide your email address to get started.
-					</p>
+				{/* <animated.div style={formAnim} className={`col-md-4 p-4 shadow-sm ${styles.formSection}`}>
 					<div className="m-1">
 						<form onSubmit={(e) => handleLoginWithSocial(e, "google")}>
 							<button className="google" type="submit">
-								<img src={googleSignInSvg} alt="google Sign-in SVG" />
+								<img src={googleSignInSvg} alt="google sign-in" />
 							</button>
 						</form>
 					</div>
 					<div className="m-1">
 						<form onSubmit={(e) => handleLoginWithSocial(e, "linkedin")}>
-							<button class="linkedin" type="submit">
-								<img src={linkedInSignInPng} alt="LinkedIn Button" style={{ maxWidth: "80%" }} />
+							<button className="linkedin" type="submit">
+								<img src={linkedInSignInPng} alt="LinkedIn sign-in Button" style={{ maxWidth: "80%" }} />
 							</button>
 						</form>
 					</div>
-				</animated.div>
+					<div className="m-1">
+						<form onSubmit={(e) => handleLoginWithSocial(e, "microsoft")}>
+							<button className="microsoft" type="submit">
+								<img src={microsoftSignInPng} alt="microsoft sign-in Button" style={{ maxWidth: "80%" }} />
+							</button>
+						</form>
+					</div>
+					<Divider>OR</Divider>
+					<Collapse bordered={false}>
+						<Panel
+							header={
+								<>
+									<Button className="p-0" type="link">
+										Signup/Login with Magic Link
+									</Button>
+								</>
+							}
+							key="1"
+						>
+							<form onSubmit={(e) => handleEmailSubmit(e)}>
+								<div className="mb-3">
+									<label htmlFor="email" className="form-label">
+										Email address
+									</label>
+									<input
+										type="email"
+										className="form-control m-0"
+										id="email"
+										placeholder="Enter Email"
+										onChange={(e) => {
+											setErrorMsg("");
+											setEmailValue(e.target.value);
+										}}
+										required
+									/>
+									{errorMsg && (
+										<div className="form-text" style={{ color: "red" }}>
+											{errorMsg}
+										</div>
+									)}
+								</div>
+								<div className="text-center">
+									<Button htmlType="submit" type="primary" icon={<FaArrowRight />} size="large" loading={btnLoading}>
+										&nbsp;&nbsp;Continue
+									</Button>
+								</div>
+							</form>
+							<p className="py-2 fw-light mt-1 mb-0 text-muted" style={{ lineHeight: "1.6", fontSize: "0.8rem" }}>
+								Please provide your email address to get started.
+							</p>
+						</Panel>
+					</Collapse>
+				</animated.div> */}
 			</div>
 		</div>
 	);

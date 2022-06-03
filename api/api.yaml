@@ -371,8 +371,8 @@ paths:
 
   /upload/cells/status:
     get:
-      security:
-        - BearerAuth: []
+      # security:
+      #   - BearerAuth: []
       summary: Check upload status for the file sent via uplaod request.
       x-openapi-router-controller: app.controllers.status_check_controller
       operationId: get_status

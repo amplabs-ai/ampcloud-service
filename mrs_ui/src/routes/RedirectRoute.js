@@ -1,20 +1,26 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/auth";
+import { Navigate } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
+import { Spin } from "antd";
 
 const RedirectRoute = ({ children }) => {
-	const { user } = useAuth();
-	const location = useLocation();
+	const { isAuthenticated, isLoading } = useAuth0();
 
-	if (user.isLoggedIn && !location.state?.from) {
+	if (isLoading) {
+		return (
+			<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+				<Spin size="large" />
+			</div>
+		);
+	}
+	if (isAuthenticated) {
 		return (
 			<>
 				<Navigate to="/dashboard" replace />
 			</>
 		);
-	} else {
-		return <>{children}</>;
 	}
+	return <>{children}</>;
 };
 
 export default RedirectRoute;

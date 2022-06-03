@@ -7,9 +7,10 @@ DEGREE = 3
 CELL_LIST_FILE_NAME = "cell_list.xlsx"
 TEST_DB_URL = "sqlite:///tests/test_data/db/bas-test.db"
 LIVE_DB_URL = "<your-db-string>"
-MAGIC_LINK_API_SECRET = "sk_live_846B42882F0F7630"
+AUTH0_DOMAIN = "dev-lnxjzkkj.us.auth0.com"
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
+
 
 # Amplabs DB
 AMPLABS_DB_URL = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "development" \

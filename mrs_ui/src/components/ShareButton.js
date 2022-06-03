@@ -5,14 +5,14 @@ import { FaLinkedin, FaEnvelope, FaLink, FaCheckCircle, FaExclamationCircle } fr
 import { ShareAltOutlined } from "@ant-design/icons";
 import { toBlob } from "html-to-image";
 import { useSearchParams } from "react-router-dom";
-import Cookies from "js-cookie";
 import copyToClipboard from "../utility/copyToClipboard";
 import b64toBlob from "../utility/b64ToBlob";
 import axios from "axios";
 import HelmetMetaData from "../components/HelmetMetaData";
 import { SHARE_TEXT } from "../constants/shareText";
-import { useAuth } from "../context/auth";
+import { useAuth0 } from "@auth0/auth0-react";
 import DashSharePrivate from "./DashSharePrivate";
+import { useAccessToken } from "../context/AccessTokenContext";
 
 const Title = Typography;
 const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
@@ -33,9 +33,10 @@ const ShareButton = (props, ref) => {
 	const [shareType, setShareType] = useState("private");
 	const [loading, setLoading] = useState(false);
 	const [shareLink, setShareLink] = useState("");
+	const { accessToken } = useAccessToken();
 
 	const [searchParamsForCode, setSearchParamsForCode] = useSearchParams();
-	const { user } = useAuth(); // auth context
+	const { user } = useAuth0(); // auth context
 
 	useEffect(() => {
 		if ([...searchParamsForCode].length) {
@@ -66,7 +67,7 @@ const ShareButton = (props, ref) => {
 					.post("/dashboard/share-linkedin", formData, {
 						headers: {
 							"Content-Type": "multipart/form-data",
-							Authorization: `Bearer ${user.iss}`,
+							Authorization: `Bearer ${accessToken}`,
 						},
 					})
 					.then((response) => {
@@ -113,7 +114,7 @@ const ShareButton = (props, ref) => {
 	}, []);
 
 	const doShareDashboard = () => {
-		audit(`${props.dashboard}_dash_share`, user.iss);
+		audit(`${props.dashboard}_dash_share`, accessToken);
 		setMetaImageDash(null);
 		localStorage.setItem("dashImage", null);
 		setShallShowShareDashModal(true);
@@ -172,7 +173,7 @@ const ShareButton = (props, ref) => {
 				url: "/dashboard/share-id",
 				headers: {
 					"Content-Type": "application/json",
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 				data: data,
 			};

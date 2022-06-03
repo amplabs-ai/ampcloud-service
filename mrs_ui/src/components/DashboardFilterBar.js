@@ -6,9 +6,10 @@ import ViewCodeModal from "./ViewCodeModal";
 import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../chartConfig/cellIdViewCode";
 import { audit } from "../auditAction/audit";
 import Highlighter from "react-highlight-words";
-import { useAuth } from "../context/auth";
+import { useAuth0 } from "@auth0/auth0-react";
 
 import { SearchOutlined } from "@ant-design/icons";
+import { useAccessToken } from "../context/AccessTokenContext";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -27,7 +28,8 @@ const DashboardFilterBar = (props) => {
 	const [sample, setSample] = useState(localStorage.getItem("sample") ? localStorage.getItem("sample") : 10);
 	const [loading, setLoading] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
-	const { user } = useAuth(); // auth context
+
+	const { accessToken } = useAccessToken();
 
 	const [searchText, setSearchText] = useState("");
 	const [searchedColumn, setSearchedColumn] = useState("");
@@ -76,7 +78,7 @@ const DashboardFilterBar = (props) => {
 			axios
 				.get(endpoint, {
 					headers: {
-						Authorization: `Bearer ${user.iss}`,
+						Authorization: `Bearer ${accessToken}`,
 					},
 				})
 				.then((response) => {
@@ -118,7 +120,7 @@ const DashboardFilterBar = (props) => {
 			.delete(`/cells`, {
 				params: params,
 				headers: {
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(() => {
@@ -173,7 +175,7 @@ const DashboardFilterBar = (props) => {
 			.get(`/download/cells/cycle_data`, {
 				params: params,
 				headers: {
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
@@ -200,14 +202,14 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const viewCycleDataCode = (k) => {
-		audit(`cycle_dash_cellId__cycle_viewcode`, user.iss);
+		audit(`cycle_dash_cellId__cycle_viewcode`, accessToken);
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), props.dashboardId));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
-		audit(`cycle_dash_cellId__ts_viewcode`, user.iss);
+		audit(`cycle_dash_cellId__ts_viewcode`, accessToken);
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), props.dashboardId));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
@@ -222,7 +224,7 @@ const DashboardFilterBar = (props) => {
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
 				headers: {
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
@@ -240,7 +242,7 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const viewAbuseTSCode = (k) => {
-		audit(`abuse_dash_cellId__ts_viewcode`, user.iss);
+		audit(`abuse_dash_cellId__ts_viewcode`, accessToken);
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), props.dashboardId));
 		setCodeContent(abuseCellIdViewCode);
 		setModalVisible(true);
@@ -255,7 +257,7 @@ const DashboardFilterBar = (props) => {
 			.get(`/download/cells/abuse_timeseries`, {
 				params: params,
 				headers: {
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
@@ -291,7 +293,7 @@ const DashboardFilterBar = (props) => {
 					<Button
 						type="primary"
 						onClick={() => {
-							audit(`${props.testType}_dash_cellId_search`, user.iss);
+							audit(`${props.testType}_dash_cellId_search`, accessToken);
 							handleSearch(selectedKeys, confirm, dataIndex);
 						}}
 						icon={<SearchOutlined />}
