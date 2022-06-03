@@ -1,8 +1,8 @@
 import { message, Modal, Spin } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useAccessToken } from "../context/AccessTokenContext";
 import EditableTable from "./EditableTable";
-import { useAuth } from "../context/auth";
 
 const cellMetadataCol = [
 	{
@@ -109,7 +109,7 @@ const EditCellData = (props) => {
 	const [cellMetadata, setCellMetadata] = useState([]);
 	const [testMetadata, setTestMetadata] = useState([]);
 	const [shallShowLoad, setShallShowLoad] = useState(false);
-	const { user } = useAuth(); // auth context
+	const { accessToken } = useAccessToken();
 
 	const getData = () => {
 		let params = new URLSearchParams();
@@ -121,7 +121,7 @@ const EditCellData = (props) => {
 		let request = {
 			params: params,
 			headers: {
-				Authorization: `Bearer ${user.iss}`,
+				Authorization: `Bearer ${accessToken}`,
 			},
 		};
 		setCellMetadata([]);
@@ -162,7 +162,6 @@ const EditCellData = (props) => {
 		setShallShowLoad(true);
 		let endpoint = type === "test" ? "/cells/tests/cycle/meta" : "/cells/cycle/meta";
 		console.log("data", data);
-
 		let newData = [];
 		// newData = newData.map((d) => {
 		// 	delete d.key;
@@ -182,12 +181,12 @@ const EditCellData = (props) => {
 		axios
 			.patch(endpoint, newData, {
 				headers: {
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then((response) => {
 				props.onCellEdit();
-				getData();
+				// getData();
 				let data = response; // .data.records[0]
 				console.log("edit api", data);
 				setShallShowLoad(false);

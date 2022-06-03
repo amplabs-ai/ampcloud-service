@@ -12,7 +12,7 @@ import Worker from "../worker/worker";
 import EditCellData from "../components/EditCellData";
 import ShareButton from "../components/ShareButton";
 import DashboardChart from "../components/chart/DashboardChart";
-import { useAuth } from "../context/auth";
+import { useAccessToken } from "../context/AccessTokenContext";
 // ====== utility ======
 const instance = new WorkerBuilder(Worker);
 const { Content } = Layout;
@@ -62,6 +62,8 @@ const DashboardCycleTest = (props) => {
 	});
 	const [cancelReqToken, setCancelReqToken] = useState({});
 	const [cellIdForShare, setCellIdForShare] = useState([]);
+
+	const { accessToken } = useAccessToken();
 	// ======= Hooks ==========
 	useEffect(() => {
 		let check = true;
@@ -85,8 +87,6 @@ const DashboardCycleTest = (props) => {
 		};
 	}, []);
 
-	const { user } = useAuth(); // auth context
-
 	const handleLoadCellIds = (checkedCellIds) => {
 		console.log("handleLoadCellIds", checkedCellIds);
 		setCellDataOnEdit([]);
@@ -103,7 +103,7 @@ const DashboardCycleTest = (props) => {
 				method: "get",
 				url: `/cells/cycle/meta?dashboard_id=${props.dashboardId}`,
 				headers: {
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			};
 
@@ -214,7 +214,7 @@ const DashboardCycleTest = (props) => {
 		let request = {
 			params: getSearchParams(cellIds, step),
 			headers: {
-				Authorization: `Bearer ${user.iss}`,
+				Authorization: `Bearer ${accessToken}`,
 			},
 		};
 		_fetchData("energyAndDecay", request);

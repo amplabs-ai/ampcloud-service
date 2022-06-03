@@ -27,7 +27,7 @@ app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(401, unauthorized_exception)
 app.add_error_handler(ProblemException, problem_exception)
-CORS(app.app, origins=["http://localhost:3000"], supports_credentials=True)
+CORS(app.app, origins=["https://localhost:3000"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 

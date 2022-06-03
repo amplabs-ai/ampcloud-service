@@ -9,7 +9,8 @@ import { useTransition, animated } from "react-spring";
 import UploadPageForms from "../components/UploadPageForms";
 import ProcessUpload from "../components/ProcessUpload";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { useAuth } from "../context/auth";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useAccessToken } from "../context/AccessTokenContext";
 
 const { Title } = Typography;
 
@@ -34,7 +35,10 @@ const UploadPage = () => {
 		percentage: 0,
 	});
 	const [processingProgressMsg, setprocessingProgressMsg] = useState("Please wait while we process your uploads.");
-	const { user } = useAuth(); // auth context
+
+	const { user } = useAuth0();
+
+	const { accessToken } = useAccessToken();
 
 	const transition = useTransition(showProcessing, {
 		from: { x: -600, opacity: 0 },
@@ -118,7 +122,7 @@ const UploadPage = () => {
 					.post(endpoint, formData, {
 						headers: {
 							"Content-Type": "multipart/form-data",
-							Authorization: `Bearer ${user.iss}`,
+							Authorization: `Bearer ${accessToken}`,
 						},
 						onUploadProgress: (progressEvent) => {
 							console.log(file.name, progressEvent);
@@ -206,7 +210,7 @@ const UploadPage = () => {
 			.post("/upload/cells/initialize", uploadInitReqData, {
 				headers: {
 					"Content-Type": "multipart/form-data",
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then((response) => {
@@ -256,13 +260,14 @@ const UploadPage = () => {
 		let errorCount = 0;
 		let params = new URLSearchParams();
 		params.append("cell_id", cellId);
+		params.append("email", user.email);
 		let intervalId = setInterval(() => {
 			axios
 				.get(`/upload/cells/status`, {
 					params: params,
-					headers: {
-						Authorization: `Bearer ${user.iss}`,
-					},
+					// headers: {
+					// 	Authorization: `Bearer ${accessToken}`,
+					// },
 				})
 				.then((res) => {
 					console.log("status", res.data.records);

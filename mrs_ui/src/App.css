@@ -125,6 +125,7 @@ h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant
   border: 1px solid #434343;
 }
 
+
 button.google {
   cursor: pointer;
   border: none;
@@ -133,9 +134,19 @@ button.google {
 }
 
 
+
 button.linkedin {
   cursor: pointer;
   border: none;
   background: transparent;
   padding: 0;
 }
+
+
+button.microsoft {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+

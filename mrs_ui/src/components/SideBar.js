@@ -4,7 +4,8 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import axios from "axios";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
-import { useAuth } from "../context/auth";
+import { useAuth0 } from "@auth0/auth0-react"; 
+import { useAccessToken } from "../context/AccessTokenContext";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -138,7 +139,7 @@ const SideBar = (props) => {
 	const [checkedCellIds, setCheckedCellIds] = useState([]);
 	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false);
 	const [error, setError] = useState(null);
-	const { user } = useAuth(); // auth context
+	const {accessToken} = useAccessToken();
 
 	useEffect(() => {
 		setIsCelldataLoaded(false);
@@ -147,7 +148,7 @@ const SideBar = (props) => {
 		axios
 			.get(endpoint, {
 				headers: {
-					Authorization: `Bearer ${user.iss}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then((res) => {

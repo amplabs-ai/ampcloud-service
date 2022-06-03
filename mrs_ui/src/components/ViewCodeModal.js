@@ -3,13 +3,13 @@ import { Modal, Typography, message } from "antd";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import copyToClipboard from "../utility/copyToClipboard";
-import { useAuth } from "../context/auth";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const { Text } = Typography;
 
 const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) => {
 	const codeString = code;
-	const { user } = useAuth();
+	const { user } = useAuth0();
 
 	const formatCode = (code, ...args) => {
 		for (let k in args) {

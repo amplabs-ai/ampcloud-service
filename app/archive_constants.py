@@ -13,7 +13,7 @@ DEGREE = 3
 CELL_LIST_FILE_NAME = "cell_list.xlsx"
 TEST_DB_URL = "sqlite:///tests/test_data/db/bas-test.db"
 LIVE_DB_URL = "<your-db-string>"
-MAGIC_LINK_API_SECRET = "sk_live_846B42882F0F7630"
+
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
@@ -24,6 +24,11 @@ LINKEDIN_CLIENT_ID = os.getenv('LINKEDIN_CLIENT_ID')
 LINKEDIN_CLIENT_SECRET = os.getenv('LINKEDIN_CLIENT_SECRET')
 LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard/cycle-test' if ENV == 'production' else 'http://localhost:3000/dashboard/cycle-test'
 LINKEDIN_REDIRECT_URI_DASH_ABUSE= 'https://www.amplabs.ai/dashboard/abuse-test' if ENV == 'production' else 'http://localhost:3000/dashboard/abuse-test'
+
+#Auth0
+AUTH0_DOMAIN = os.getenv('AUTH0_PROD_DOMAIN') if ENV == 'production' else os.getenv('AUTH0_DEV_DOMAIN')
+AUTH0_AUDIENCE = os.getenv('AUTH0_AUDIENCE')
+AUTH0_ALGORITHMS = ["RS256"]
 
 # Public Database emails:
 BATTERY_ARCHIVE = "info@batteryarchive.org"

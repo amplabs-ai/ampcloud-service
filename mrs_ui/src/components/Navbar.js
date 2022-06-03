@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import logo from "../images/amplabsLogo.png";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, Dropdown } from "antd";
+import { Menu, Dropdown, Avatar, Image } from "antd";
 import { FaAngleDown } from "react-icons/fa";
-import { useAuth } from "../context/auth";
+// import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0 } from "@auth0/auth0-react";
+
+import { UserOutlined } from "@ant-design/icons";
 
 const Navbar = () => {
-	const auth = useAuth();
-	const navigate = useNavigate();
+	const { logout, isAuthenticated, user, getAccessTokenSilently } = useAuth0();
 
 	const uploadMenu = (
 		<Menu data-toggle="collapse" data-target=".navbar-collapse">
@@ -31,8 +33,9 @@ const Navbar = () => {
 					className="nav-link"
 					onClick={async (e) => {
 						e.preventDefault();
-						await auth.logout();
-						navigate("/", { replace: true });
+						// await auth.logout();
+						// navigate("/", { replace: true });
+						logout();
 					}}
 					to="/"
 				>
@@ -76,7 +79,8 @@ const Navbar = () => {
 				</button>
 				<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 					<ul className="navbar-nav">
-						{auth.user.isLoggedIn && (
+						{/* {auth.user.isLoggedIn && ( */}
+						{isAuthenticated && (
 							<>
 								<li className="nav-item">
 									<Link className="nav-link" to="/plotter">
@@ -106,7 +110,8 @@ const Navbar = () => {
 								<li className="nav-item">
 									<Dropdown overlay={userProfileMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
-											{auth.user.email} <FaAngleDown />
+											<Avatar src={user.picture ? user.picture : <UserOutlined />} style={{ width: 32 }}></Avatar>{" "}
+											{user.email} <FaAngleDown />
 										</Link>
 									</Dropdown>
 								</li>

@@ -2,13 +2,13 @@ import { Button, Input, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import { useAuth } from "../context/auth";
+import { useAccessToken } from "../context/AccessTokenContext";
 
 const DashSharePrivate = (props) => {
 	const [sharedWith, setSharedWith] = useState([]);
 	const [btnLoading, setBtnLoading] = useState(false);
 	const [inputMail, setInputMail] = useState("");
-	const { user } = useAuth(); // auth context
+	const { accessToken } = useAccessToken();
 	const [shareLink, setShareLink] = useState("");
 
 	const removeSharedWith = (user) => {
@@ -44,7 +44,7 @@ const DashSharePrivate = (props) => {
 			url: "/dashboard/share-id",
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: `Bearer ${user.iss}`,
+				Authorization: `Bearer ${accessToken}`,
 			},
 			data: data,
 		};

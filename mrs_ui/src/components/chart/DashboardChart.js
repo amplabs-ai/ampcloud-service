@@ -6,12 +6,12 @@ import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { chartConfig, getChartMetadata } from "../../chartConfig/dashboardChartConfig";
 import { audit } from "../../auditAction/audit";
 import { enterFullscreenOption, exitFullscreenOption } from "../../chartConfig/chartFullScreenOption";
-import { useAuth } from "../../context/auth";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const DashboardChart = (props) => {
 	const screen = useFullScreenHandle();
 	const chartRef = useRef();
-	const { user } = useAuth(); // auth context
+	const { user } = useAuth0(); // auth context
 
 	const reportChange = useCallback((state) => {
 		if (state) {

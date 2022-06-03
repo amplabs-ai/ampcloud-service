@@ -13,6 +13,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
 	const [user, setUser] = useState({ isLoggedIn: null });
 	const [loading, setLoading] = useState(true);
+	const [avatar, setAvatar] = useState(null);
 	const location = useLocation();
 
 	useEffect(() => {
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }) => {
 					try {
 						const result = await magic.oauth.getRedirectResult();
 						console.log("google auth", result);
+						setAvatar(result.oauth.userInfo.profile ? result.oauth.userInfo.profile : result.oauth.userInfo.picture);
 					} catch (error) {
 						console.log(error);
 					}
@@ -82,7 +84,9 @@ export const AuthProvider = ({ children }) => {
 		);
 	}
 
-	return <AuthContext.Provider value={{ user, login, logout, loginWithSocial }}>{children}</AuthContext.Provider>;
+	return (
+		<AuthContext.Provider value={{ user, avatar, login, logout, loginWithSocial }}>{children}</AuthContext.Provider>
+	);
 };
 
 export const useAuth = () => {

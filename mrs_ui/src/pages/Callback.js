@@ -7,14 +7,15 @@ const Callback = () => {
 	let { redirectstate } = useParams();
 	console.log("callback redirectstate", redirectstate);
 
-	if (redirectstate) {
-		return <Navigate to={redirectstate} replace />;
-	}
+	// if (redirectstate) {
+	// 	return <Navigate to={redirectstate} replace />;
+	// }
 
 	return (
-		<RedirectRoute>
-			<LandingPage />
-		</RedirectRoute>
+		// <RedirectRoute>
+		// 	<LandingPage />
+		// </RedirectRoute>
+		<></>
 	);
 };
 
