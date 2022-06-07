@@ -12,7 +12,7 @@ import HelmetMetaData from "../components/HelmetMetaData";
 import { SHARE_TEXT } from "../constants/shareText";
 import { useAuth0 } from "@auth0/auth0-react";
 import DashSharePrivate from "./DashSharePrivate";
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0Token } from "../utility/useAuth0Token";
 
 const Title = Typography;
 const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
@@ -33,7 +33,9 @@ const ShareButton = (props, ref) => {
 	const [shareType, setShareType] = useState("private");
 	const [loading, setLoading] = useState(false);
 	const [shareLink, setShareLink] = useState("");
-	const { accessToken } = useAccessToken();
+
+	const accessToken = useAuth0Token();
+
 
 	const [searchParamsForCode, setSearchParamsForCode] = useSearchParams();
 	const { user } = useAuth0(); // auth context

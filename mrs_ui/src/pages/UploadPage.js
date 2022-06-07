@@ -10,7 +10,7 @@ import UploadPageForms from "../components/UploadPageForms";
 import ProcessUpload from "../components/ProcessUpload";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0Token } from "../utility/useAuth0Token";
 
 const { Title } = Typography;
 
@@ -37,8 +37,7 @@ const UploadPage = () => {
 	const [processingProgressMsg, setprocessingProgressMsg] = useState("Please wait while we process your uploads.");
 
 	const { user } = useAuth0();
-
-	const { accessToken } = useAccessToken();
+	const accessToken = useAuth0Token();
 
 	const transition = useTransition(showProcessing, {
 		from: { x: -600, opacity: 0 },

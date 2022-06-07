@@ -6,10 +6,9 @@ import ViewCodeModal from "./ViewCodeModal";
 import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../chartConfig/cellIdViewCode";
 import { audit } from "../auditAction/audit";
 import Highlighter from "react-highlight-words";
-import { useAuth0 } from "@auth0/auth0-react";
 
 import { SearchOutlined } from "@ant-design/icons";
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0Token } from "../utility/useAuth0Token";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -29,12 +28,13 @@ const DashboardFilterBar = (props) => {
 	const [loading, setLoading] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
 
-	const { accessToken } = useAccessToken();
-
 	const [searchText, setSearchText] = useState("");
 	const [searchedColumn, setSearchedColumn] = useState("");
 
 	const [cellDirInfo, setCellDirInfo] = useState([]);
+
+	const accessToken = useAuth0Token();
+
 
 	const _initializeFilterBar = (data) => {
 		let cellIdData = [];
@@ -61,6 +61,7 @@ const DashboardFilterBar = (props) => {
 			setTableLoading(false);
 		}
 	};
+
 
 	useEffect(() => {
 		let endpoint = props.testType === "abuseTest" ? "/cells/abuse/meta" : "/cells/cycle/meta";

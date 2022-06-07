@@ -4,8 +4,8 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import axios from "axios";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
-import { useAuth0 } from "@auth0/auth0-react"; 
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0Token } from "../utility/useAuth0Token";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -139,35 +139,40 @@ const SideBar = (props) => {
 	const [checkedCellIds, setCheckedCellIds] = useState([]);
 	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false);
 	const [error, setError] = useState(null);
-	const {accessToken} = useAccessToken();
+	// const { getAccessTokenSilently } = useAuth0();
+
+	const accessToken = useAuth0Token(); 
 
 	useEffect(() => {
-		setIsCelldataLoaded(false);
-		let endpoint = props.testType === "abuse-test" ? "/cells/abuse/meta" : "/cells/cycle/meta";
-		console.log("endpointt", endpoint);
-		axios
-			.get(endpoint, {
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			})
-			.then((res) => {
-				console.log("sidebar ", res);
-				if (res.status === 200 && res.data) {
-					let treeData = _generateTreeData(res.data.records[0]);
-					console.log("treeData", treeData);
-					setTreeData(treeData);
-					setFilteredTreeData(() => {
-						setIsCelldataLoaded(true);
-						return treeData;
-					});
-				}
-			})
-			.catch((err) => {
-				console.log("get cellId err", err);
-				setError(err);
-			});
-	}, [props.refresh]);
+		if (accessToken) {
+			setIsCelldataLoaded(false);
+			let endpoint = props.testType === "abuse-test" ? "/cells/abuse/meta" : "/cells/cycle/meta";
+			console.log("endpointt", endpoint);
+			// const accessToken = await getAccessTokenSilently();
+			axios
+				.get(endpoint, {
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				})
+				.then((res) => {
+					console.log("sidebar ", res);
+					if (res.status === 200 && res.data) {
+						let treeData = _generateTreeData(res.data.records[0]);
+						console.log("treeData", treeData);
+						setTreeData(treeData);
+						setFilteredTreeData(() => {
+							setIsCelldataLoaded(true);
+							return treeData;
+						});
+					}
+				})
+				.catch((err) => {
+					console.log("get cellId err", err);
+					setError(err);
+				});
+		}
+	}, [props.refresh, accessToken]);
 
 	const findObjectAndParents = (item, title) => {
 		if (item.title.toLowerCase().includes(title.toLowerCase()) || !title) {

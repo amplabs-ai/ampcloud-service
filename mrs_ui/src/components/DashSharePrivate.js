@@ -2,14 +2,15 @@ import { Button, Input, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0Token } from "../utility/useAuth0Token";
 
 const DashSharePrivate = (props) => {
 	const [sharedWith, setSharedWith] = useState([]);
 	const [btnLoading, setBtnLoading] = useState(false);
 	const [inputMail, setInputMail] = useState("");
-	const { accessToken } = useAccessToken();
 	const [shareLink, setShareLink] = useState("");
+
+	const accessToken = useAuth0Token();
 
 	const removeSharedWith = (user) => {
 		setSharedWith(sharedWith.filter((u) => u !== user));

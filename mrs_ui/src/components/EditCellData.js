@@ -1,7 +1,7 @@
 import { message, Modal, Spin } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0Token } from "../utility/useAuth0Token";
 import EditableTable from "./EditableTable";
 
 const cellMetadataCol = [
@@ -109,7 +109,8 @@ const EditCellData = (props) => {
 	const [cellMetadata, setCellMetadata] = useState([]);
 	const [testMetadata, setTestMetadata] = useState([]);
 	const [shallShowLoad, setShallShowLoad] = useState(false);
-	const { accessToken } = useAccessToken();
+
+	const accessToken = useAuth0Token();
 
 	const getData = () => {
 		let params = new URLSearchParams();
