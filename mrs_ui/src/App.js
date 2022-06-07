@@ -43,37 +43,39 @@ const App = () => {
 					domain={domain}
 					clientId={clientId}
 					redirectUri="https://localhost:3000/dashboard"
+					audience="https://amplabs.server"
+					useRefreshTokens={true}
 				>
-					<AccessTokenContextProvider>
-						<p>My Token = {window.token}</p>
-						<BackTop />
-						<Navbar />
-						<Routes>
-							<Route
-								path="/"
-								element={
-									<RedirectRoute>
-										<LandingPage />
-									</RedirectRoute>
-								}
-								exact
-							/>
-							<Route path="/upload" element={<PrivateRoute component={UploadPage} />}>
-								<Route path="cycle-test" element={<UploadPage />} />
-								<Route path="abuse-test" element={<UploadPage />} />
-							</Route>
-							<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}>
-								<Route path="cycle-test" element={<DashboardPage />} />
-								<Route path="abuse-test" element={<DashboardPage />} />
-							</Route>
-							<Route path="/plotter" element={<PrivateRoute component={PlotterPage} />}></Route>
-							<Route path="/dashboard/public" element={<PublicDataDashboard />} exact></Route>
-							<Route path="/callback/:redirectstate" element={<Callback />}></Route>
-							<Route path="/callback" element={<Callback />} exact></Route>
-							<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
-							<Route path="*" element={<PageNotFound />} />
-						</Routes>
-					</AccessTokenContextProvider>
+					<p>My Token = {window.token}</p>
+					<BackTop />
+					<Navbar />
+					{/* <AccessTokenContextProvider> */}
+					<Routes>
+						<Route
+							path="/"
+							element={
+								<RedirectRoute>
+									<LandingPage />
+								</RedirectRoute>
+							}
+							exact
+						/>
+						<Route path="/upload" element={<PrivateRoute component={UploadPage} />}>
+							<Route path="cycle-test" element={<UploadPage />} />
+							<Route path="abuse-test" element={<UploadPage />} />
+						</Route>
+						<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}>
+							<Route path="cycle-test" element={<DashboardPage />} />
+							<Route path="abuse-test" element={<DashboardPage />} />
+						</Route>
+						<Route path="/plotter" element={<PrivateRoute component={PlotterPage} />}></Route>
+						<Route path="/dashboard/public" element={<PublicDataDashboard />} exact></Route>
+						<Route path="/callback/:redirectstate" element={<Callback />}></Route>
+						<Route path="/callback" element={<Callback />} exact></Route>
+						<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
+						<Route path="*" element={<PageNotFound />} />
+					</Routes>
+					{/* </AccessTokenContextProvider> */}
 				</Auth0ProviderWithRedirectCallback>
 			</Router>
 		</>

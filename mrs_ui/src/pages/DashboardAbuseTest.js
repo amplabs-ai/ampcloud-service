@@ -10,13 +10,14 @@ import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { enterFullscreenOption, exitFullscreenOption } from "../chartConfig/chartFullScreenOption";
 import { audit } from "../auditAction/audit";
 import ShareButton from "../components/ShareButton";
-import { useAuth0 } from "@auth0/auth0-react";
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0Token } from "../utility/useAuth0Token";
 
 const DashboardAbuseTest = () => {
 	const screen1 = useFullScreenHandle();
 	const screen2 = useFullScreenHandle();
 	const screen3 = useFullScreenHandle();
+
+	const accessToken = useAuth0Token();
 
 	const [noDataFound, setNoDataFound] = useState(false);
 	const [internalServerError, setInternalServerError] = useState("");
@@ -42,8 +43,6 @@ const DashboardAbuseTest = () => {
 	const testTempraturesChart = useRef();
 	const voltageChart = useRef();
 	const dashboardRef = useRef(null);
-
-	const { accessToken } = useAccessToken();
 
 	useEffect(() => {
 		let check = true;

@@ -51,13 +51,13 @@ const LandingPage = () => {
 				await auth.login(emailValue);
 				setBtnLoading(false);
 				// localStorage.setItem("token", res);
-				if (location.state?.from) {
-					console.log("location.state.from", location.state.from);
-					navigate(location.state.from, { replace: true });
-				} else {
-					console.log("location.state.from /dash", location.state.from);
-					navigate("/dashboard/cycle-test", { replace: true });
-				}
+				// if (location.state?.from) {
+				// 	console.log("location.state.from", location.state.from);
+				// 	navigate(location.state.from, { replace: true });
+				// } else {
+				// 	console.log("location.state.from /dash", location.state.from);
+				// 	navigate("/dashboard/cycle-test", { replace: true });
+				// }
 			} catch (error) {
 				setBtnLoading(false);
 				setErrorMsg("Unable to log in");

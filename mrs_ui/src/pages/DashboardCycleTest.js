@@ -12,7 +12,7 @@ import Worker from "../worker/worker";
 import EditCellData from "../components/EditCellData";
 import ShareButton from "../components/ShareButton";
 import DashboardChart from "../components/chart/DashboardChart";
-import { useAccessToken } from "../context/AccessTokenContext";
+import { useAuth0Token } from "../utility/useAuth0Token";
 // ====== utility ======
 const instance = new WorkerBuilder(Worker);
 const { Content } = Layout;
@@ -63,7 +63,8 @@ const DashboardCycleTest = (props) => {
 	const [cancelReqToken, setCancelReqToken] = useState({});
 	const [cellIdForShare, setCellIdForShare] = useState([]);
 
-	const { accessToken } = useAccessToken();
+	const accessToken = useAuth0Token();
+
 	// ======= Hooks ==========
 	useEffect(() => {
 		let check = true;

@@ -7,7 +7,7 @@ const LoginButton = () => {
 
 	return (
 		<Button type="primary" className="m-1" icon={<FaArrowRight />} size="large" onClick={() => loginWithRedirect()}>
-			&nbsp;&nbsp;Continue
+			&nbsp;&nbsp;Start
 		</Button>
 	);
 };

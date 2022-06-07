@@ -9,7 +9,9 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { UserOutlined } from "@ant-design/icons";
 
 const Navbar = () => {
-	const { logout, isAuthenticated, user, getAccessTokenSilently } = useAuth0();
+	const { logout, isAuthenticated, user } = useAuth0();
+
+	console.log(user);
 
 	const uploadMenu = (
 		<Menu data-toggle="collapse" data-target=".navbar-collapse">
