@@ -22,10 +22,9 @@ export const AuthProvider = ({ children }) => {
 				if (location.pathname.includes(`/callback`)) {
 					try {
 						const result = await magic.oauth.getRedirectResult();
-						console.log("google auth", result);
 						setAvatar(result.oauth.userInfo.profile ? result.oauth.userInfo.profile : result.oauth.userInfo.picture);
 					} catch (error) {
-						console.log(error);
+						console.error(error);
 					}
 				}
 				await checkUser(setUser);
@@ -41,7 +40,6 @@ export const AuthProvider = ({ children }) => {
 		const isLoggedIn = await magic.user.isLoggedIn();
 		if (isLoggedIn) {
 			const user = await magic.user.getMetadata();
-			console.log("user magic", user);
 			return cb({
 				isLoggedIn: true,
 				email: user.email,
@@ -63,12 +61,10 @@ export const AuthProvider = ({ children }) => {
 	};
 
 	const loginWithSocial = async (redirectRoute, platform) => {
-		console.log("redirectRoute", redirectRoute);
 		const didToken = await magic.oauth.loginWithRedirect({
 			provider: platform,
 			redirectURI: `${window.location.origin}/callback/${redirectRoute ? encodeURIComponent(redirectRoute) : ""}`,
 		});
-		console.log(didToken);
 	};
 
 	const logout = async () => {

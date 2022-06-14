@@ -1,25 +1,19 @@
 import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
-import DashboardAbuseTest from "../pages/DashboardAbuseTest";
+import { DashboardProvider } from "../context/DashboardContext";
 import DashboardCycleTest from "../pages/DashboardCycleTest";
+import Dashboard2 from "./dashboard/Dashboard2";
 
 const SharedDashboard = (props) => {
-	let { id, test } = useParams();
-
-	useEffect(() => {
-		console.log("/share", id, test);
-	}, []);
+	let { id } = useParams();
 
 	return (
-		<div style={{ paddingTop: "1rem" }}>
-			{test === "cycle" ? (
-				<DashboardCycleTest dashboardId={id} type="shared" />
-			) : test === "abuse" ? (
-				<DashboardAbuseTest />
-			) : (
-				""
-			)}
-		</div>
+		<DashboardProvider>
+			<div style={{ paddingTop: "1rem" }}>
+				{/* <DashboardCycleTest dashboardId={id} type="shared" /> */}
+				<Dashboard2 dashboardId={id} type="shared" />
+			</div>
+		</DashboardProvider>
 	);
 };
 

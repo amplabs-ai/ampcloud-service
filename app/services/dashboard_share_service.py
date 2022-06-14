@@ -15,7 +15,7 @@ def dashboard_share_add_service(data, email):
             "cell_id": ",".join(data['cell_id']),
             "test": data['test'],
             "step": data['step'],
-            "sample": data['sample'],
+            "sample": data.get('sample'),
             "is_public": data['is_public']
         }
         ao.session.execute(SharedDashboard.__table__.insert(), dashboard_values)
@@ -53,7 +53,7 @@ def dashboard_share_update_service(data, email, dashboard_id):
 
 def dashboard_share_validate_id_service(email, dashboard_id):
     ao = ArchiveOperator()
-    ao.set_session()   
+    ao.set_session()
     try:
         dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
         if dashboard_data:

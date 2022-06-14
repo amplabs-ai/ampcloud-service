@@ -49,7 +49,6 @@ const UploadPageForms = ({ pageType }, ref) => {
 							onFieldsChange={(e) => {
 								let x = {};
 								x[e[0].name[0]] = e[0].value;
-								console.log(cellMetadata);
 								setCellMetadata({ ...cellMetadata, ...x });
 							}}
 						>
@@ -135,7 +134,6 @@ const UploadPageForms = ({ pageType }, ref) => {
 									onFieldsChange={(e) => {
 										let x = {};
 										x[e[0].name[0]] = e[0].value;
-										console.log("abuse", abuseTestMetadata);
 										setAbuseTestMetadata({ ...abuseTestMetadata, ...x });
 									}}
 								>

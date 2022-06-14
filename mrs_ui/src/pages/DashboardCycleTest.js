@@ -123,7 +123,7 @@ const DashboardCycleTest = (props) => {
 				});
 		}
 		return () => {};
-	}, [props.dashboardId]);
+	}, [props.dashboardId, accessToken]);
 
 	const handleEditCellIds = (checkedCellIds) => {
 		console.log("handleEditCellIds", checkedCellIds);

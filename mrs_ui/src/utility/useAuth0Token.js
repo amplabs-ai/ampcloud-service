@@ -8,10 +8,9 @@ export const useAuth0Token = () => {
 		(async () => {
 			try {
 				const accessToken = await getAccessTokenSilently();
-				console.log("accessToken", accessToken);
 				setToken(accessToken);
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		})();
 	}, []);

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import logo from "../images/amplabsLogo.png";
+import logo from "../assets/images/amplabsLogo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, Dropdown, Avatar, Image } from "antd";
 import { FaAngleDown } from "react-icons/fa";
@@ -11,23 +11,6 @@ import { UserOutlined } from "@ant-design/icons";
 const Navbar = () => {
 	const { logout, isAuthenticated, user } = useAuth0();
 
-	console.log(user);
-
-	const uploadMenu = (
-		<Menu data-toggle="collapse" data-target=".navbar-collapse">
-			<Menu.Item key="cycleTest">
-				<Link className="nav-link" to="/upload/cycle-test">
-					Cycle Test
-				</Link>
-			</Menu.Item>
-			<Menu.Item key="abuseTest">
-				<Link className="nav-link" to="/upload/abuse-test">
-					Abuse Test
-				</Link>
-			</Menu.Item>
-		</Menu>
-	);
-
 	const userProfileMenu = (
 		<Menu>
 			<Menu.Item key="logout">
@@ -35,28 +18,11 @@ const Navbar = () => {
 					className="nav-link"
 					onClick={async (e) => {
 						e.preventDefault();
-						// await auth.logout();
-						// navigate("/", { replace: true });
 						logout();
 					}}
 					to="/"
 				>
 					Sign-out
-				</Link>
-			</Menu.Item>
-		</Menu>
-	);
-
-	const dashboardMenu = (
-		<Menu>
-			<Menu.Item key="cycleTest">
-				<Link className="nav-link" to="/dashboard/cycle-test">
-					Cycle Test
-				</Link>
-			</Menu.Item>
-			<Menu.Item key="abuseTest">
-				<Link className="nav-link" to="/dashboard/abuse-test">
-					Abuse Test
 				</Link>
 			</Menu.Item>
 		</Menu>
@@ -105,7 +71,7 @@ const Navbar = () => {
 											Dashboard <FaAngleDown />
 										</Link>
 									</Dropdown> */}
-									<Link className="nav-link" to="/dashboard/cycle-test">
+									<Link className="nav-link" to="/dashboard">
 										Dashboard
 									</Link>
 								</li>

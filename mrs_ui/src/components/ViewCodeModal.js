@@ -4,12 +4,15 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import copyToClipboard from "../utility/copyToClipboard";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth0Token } from "../utility/useAuth0Token";
 
 const { Text } = Typography;
 
 const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) => {
 	const codeString = code;
 	const { user } = useAuth0();
+
+	const accessToken = useAuth0Token();
 
 	const formatCode = (code, ...args) => {
 		for (let k in args) {
@@ -36,7 +39,7 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 						message.success("Copied to clipboard!");
 						message.success("Copied to clipboard!");
 						copyToClipboard(
-							formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${user.iss}")`)
+							formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${accessToken}")`)
 						);
 					}}
 					showLineNumbers={true}
@@ -45,14 +48,14 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 					style={a11yLight}
 				>
 					{/* {codeString.replace("{queryParams}", searchParams)} */}
-					{formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${user.iss}")`)}
+					{formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${accessToken}")`)}
 				</SyntaxHighlighter>
 				<div className="d-flex flex-row-reverse mb-2">
 					<Text
 						type="secondary"
 						onClick={() => {
 							copyToClipboard(
-								formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${user.iss})"`)
+								formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${accessToken})"`)
 							);
 							// navigator.clipboard.writeText(
 							//   formatCode(codeString, searchParams, Cookies.get("userId"))

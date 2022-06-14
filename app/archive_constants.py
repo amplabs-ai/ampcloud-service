@@ -7,7 +7,6 @@ DEGREE = 3
 CELL_LIST_FILE_NAME = "cell_list.xlsx"
 TEST_DB_URL = "sqlite:///tests/test_data/db/bas-test.db"
 LIVE_DB_URL = "<your-db-string>"
-AUTH0_DOMAIN = "dev-lnxjzkkj.us.auth0.com"
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
@@ -18,8 +17,13 @@ AMPLABS_DB_URL = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-da
 # linkedin share constants
 LINKEDIN_CLIENT_ID = '78opgrui0xx0ng'
 LINKEDIN_CLIENT_SECRET = 'hGAIpqZh5swxgM6v'
-LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard/cycle-test' if ENV == 'production' else 'http://localhost:3000/dashboard/cycle-test'
+LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard' if ENV == 'production' else 'http://localhost:3000/dashboard/cycle-test'
 LINKEDIN_REDIRECT_URI_DASH_ABUSE= 'https://www.amplabs.ai/dashboard/abuse-test' if ENV == 'production' else 'http://localhost:3000/dashboard/abuse-test'
+
+#Auth0
+AUTH0_DOMAIN = "dev-lnxjzkkj.us.auth0.com"
+AUTH0_AUDIENCE = "https://amplabs.server"
+AUTH0_ALGORITHMS = ["RS256"]
 
 # Public Database emails:
 BATTERY_ARCHIVE = "info@batteryarchive.org"
