@@ -34,7 +34,7 @@ params = "{0}"
 response = get_amplabs_data(params)
 
 if response:
-    df = pd.DataFrame(response['records'])
+    df = pd.DataFrame(response['records'][0])
     print("Process complete", df.info())
 `;
 export const timeSeriesDataCodeContent = `
@@ -73,7 +73,7 @@ params = "{0}"
 response = get_amplabs_data(params)
 
 if response:
-    df = pd.DataFrame(response['records'])
+    df = pd.DataFrame(response['records'][0])
     print("Process complete", df.info())
 `;
 

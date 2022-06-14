@@ -1,8 +1,9 @@
 import { message, Modal, Spin } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useAuth0Token } from "../utility/useAuth0Token";
-import EditableTable from "./EditableTable";
+import { useDashboard } from "../../context/DashboardContext";
+import { useAuth0Token } from "../../utility/useAuth0Token";
+import EditableTable from "../EditableTable";
 
 const cellMetadataCol = [
 	{
@@ -105,22 +106,49 @@ const testMetadataCol = [
 	},
 ];
 
-const EditCellData = (props) => {
+// cellIds={cellDataOnEdit} type={props.type} onCellEdit={refreshSideBarOnEdit}
+
+const ViewMetadata = (props) => {
 	const [cellMetadata, setCellMetadata] = useState([]);
 	const [testMetadata, setTestMetadata] = useState([]);
 	const [shallShowLoad, setShallShowLoad] = useState(false);
 
 	const accessToken = useAuth0Token();
+	const { state, action } = useDashboard();
 
-	const getData = () => {
+	const getSearchParams = (cellIds) => {
 		let params = new URLSearchParams();
-		props.cellIds.map((k) => {
-			// if (k.split("_")[0] === "private") {
-			// }
-			params.append("cell_id", k.substring(k.indexOf("_") + 1));
+		cellIds.map((k) => {
+			params.append("cell_id", k);
 		});
+		return params;
+	};
+
+	const getTestMetadata = (cellIds) => {
 		let request = {
-			params: params,
+			params: getSearchParams(cellIds),
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+			},
+		};
+		setTestMetadata([]);
+		axios
+			.get("/cells/tests/cycle/metaWithId", request)
+			.then((response) => {
+				let data = response.data.records[0];
+				data = data.map((d, k) => {
+					return { ...d, key: k };
+				});
+				setTestMetadata(data);
+			})
+			.catch((err) => {
+				console.error("EditCell err", err);
+			});
+	};
+
+	const getCellMetadata = (cellIds) => {
+		let request = {
+			params: getSearchParams(cellIds),
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 			},
@@ -138,24 +166,17 @@ const EditCellData = (props) => {
 			.catch((err) => {
 				console.error("EditCell err", err);
 			});
-		setTestMetadata([]);
-		axios
-			.get("/cells/tests/cycle/metaWithId", request)
-			.then((response) => {
-				let data = response.data.records[0];
-				data = data.map((d, k) => {
-					return { ...d, key: k };
-				});
-				setTestMetadata(data);
-			})
-			.catch((err) => {
-				console.error("EditCell err", err);
-			});
+	};
+
+	const getData = () => {
+		let cellIdsWithoutId = state.selectedCellIds.map((k) => k.substring(k.indexOf("_") + 1));
+		getCellMetadata(cellIdsWithoutId);
+		getTestMetadata(cellIdsWithoutId);
 	};
 
 	useEffect(() => {
-		getData();
-	}, [props.cellIds]);
+		if (state.selectedCellIds && accessToken) getData();
+	}, [state.selectedCellIds, accessToken]);
 
 	const handleSaveChanges = (data, type) => {
 		setShallShowLoad(true);
@@ -169,15 +190,17 @@ const EditCellData = (props) => {
 				newData.push(item);
 			}
 		}
+		console.log("before save api", newData, state.selectedCellIds);
 		axios
 			.patch(endpoint, newData, {
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
 			})
-			.then(() => {
-				props.onCellEdit();
-				// getData();
+			.then((response) => {
+				action.refreshSidebar();
+				getTestMetadata(newData.map((d) => d.cell_id));
+				// console.log("asdw", JSON.stringify(getSearchParams(newData.map((d) => d.cell_id))));
 				setShallShowLoad(false);
 				message.success("Updated Successfully!");
 				message.success("Updated Successfully!");
@@ -211,4 +234,4 @@ const EditCellData = (props) => {
 	);
 };
 
-export default EditCellData;
+export default ViewMetadata;

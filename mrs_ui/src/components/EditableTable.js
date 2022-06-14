@@ -39,7 +39,7 @@ const EditableCell = ({ title, editable, children, dataIndex, record, handleSave
 			toggleEdit();
 			handleSave({ ...record, ...values });
 		} catch (errInfo) {
-			console.log("Save failed:", errInfo);
+			console.error("Save failed:", errInfo);
 		}
 	};
 
@@ -90,7 +90,6 @@ const EditableTable = (props) => {
 
 	useEffect(() => {
 		setDataSource([...props.dataSource]);
-		console.log("props.dataSource", props.dataSource);
 	}, [props.dataSource]);
 
 	useEffect(() => {
@@ -117,11 +116,9 @@ const EditableTable = (props) => {
 
 	const handleSave = (row) => {
 		const newData = [...dataSource];
-		console.log("before save", dataSource);
 		const index = newData.findIndex((item) => row.key === item.key);
 		const item = newData[index];
 		newData.splice(index, 1, { ...item, ...row });
-		console.log("onedit newData", row, newData);
 		setDataSource(newData);
 	};
 
@@ -132,8 +129,7 @@ const EditableTable = (props) => {
 		},
 	};
 
-	const handleMetadataSave = () => {
-		console.log("handleMetadata save", dataSource);
+	const handleMetadataSave = () => { 
 		props.onSave(JSON.parse(JSON.stringify(dataSource)));
 	};
 

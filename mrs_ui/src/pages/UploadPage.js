@@ -19,8 +19,6 @@ const UploadPage = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	console.log("location.state", location.state?.file);
-
 	const [pageType, setPageType] = useState("cycle-test");
 	const [files, setFiles] = useState([]);
 	const [uploadProgress, setUploadProgress] = useState({});
@@ -55,7 +53,6 @@ const UploadPage = () => {
 	}, [intervalId]);
 
 	useEffect(() => {
-		console.log("uploadsadasdasd", location);
 		if (location.pathname === "/upload/abuse-test") {
 			setPageType("abuse-test");
 		} else if (location.pathname === "/upload/cycle-test" || location.pathname === "/upload") {
@@ -66,7 +63,6 @@ const UploadPage = () => {
 	}, [location.pathname]);
 
 	const onFileChange = (files) => {
-		console.log(files);
 		setUploadProgress({});
 		setFiles(files);
 	};
@@ -113,10 +109,7 @@ const UploadPage = () => {
 				const dataToUpload = new Blob([compressedFile], { type: file.type });
 				const fileToUpload = new Blob([dataToUpload], { type: file.type });
 				formData.append("file", fileToUpload, file.name);
-				console.log("before append", cellId);
 				formData.append("cell_id", cellId);
-
-				console.log("compression size", fileToUpload.size);
 				axios
 					.post(endpoint, formData, {
 						headers: {
@@ -124,7 +117,6 @@ const UploadPage = () => {
 							Authorization: `Bearer ${accessToken}`,
 						},
 						onUploadProgress: (progressEvent) => {
-							console.log(file.name, progressEvent);
 							let percentage = Math.ceil((progressEvent.loaded / progressEvent.total) * 100);
 							let prog = {
 								detail: percentage === 100 ? "completed" : "in progress",
@@ -141,7 +133,6 @@ const UploadPage = () => {
 								setFilesUploadedCount((c) => {
 									if (c + 1 === files.length) {
 										setTimeout(() => {
-											console.log("show processing...");
 											setShowProcessing(true);
 											window.scrollTo(0, 0);
 											getStatus(cellId);
@@ -153,17 +144,14 @@ const UploadPage = () => {
 						},
 					})
 					.then((response) => {
-						console.log("file upload finish", response, response.status === 200);
 						if (response.data.status === 200) {
 							if (response.data.detail === "Success") {
 								console.log("upload finish", file.name);
 							}
 						}
-						// _shallRedirectToDashboard(clearIntervalId, response);
 					})
 					.catch((error) => {
-						console.log("file upload err", error);
-						// setReUpload(true);
+						console.error("file upload err", error);
 					});
 			};
 			reader.readAsArrayBuffer(file);
@@ -172,7 +160,6 @@ const UploadPage = () => {
 
 	const fileUploadHandler = async (e) => {
 		let cellMetadata = uploadPageFormsRef.current.getCellMetadata();
-		console.log(cellMetadata);
 		if (!cellMetadata.cell_id) {
 			message.warning("Please provide Cell Id");
 			message.warning("Please provide Cell Id");
@@ -214,16 +201,15 @@ const UploadPage = () => {
 			})
 			.then((response) => {
 				if (response.status === 200) {
-					console.log("initiate file upload success!");
 					doFileUpload(cellMetadata.cell_id);
 				} else if (response.status === 400) {
-					console.log(response);
+					console.error(response);
 					message.error(response.data.detail);
 					message.error(response.data.detail);
 				}
 			})
 			.catch((error) => {
-				console.log("init file upload err", error.response.data.detail);
+				console.error("init file upload err", error.response.data.detail);
 				message.error(error.response.data.detail);
 				message.error(error.response.data.detail);
 			});
@@ -249,7 +235,6 @@ const UploadPage = () => {
 				break;
 			}
 		}
-		console.log("redirect", redirect);
 		if (redirect) {
 			setTimeout(() => navigate("/dashboard"), 1500);
 		}
@@ -269,7 +254,6 @@ const UploadPage = () => {
 					// },
 				})
 				.then((res) => {
-					console.log("status", res.data.records);
 					if (res.data.records) {
 						if (parseInt(res.data.records.percentage) === 100) {
 							// redirect user
@@ -288,7 +272,7 @@ const UploadPage = () => {
 						clearInterval(intervalId);
 						setprocessingProgressMsg("Oops! Error occured while processing uploads...");
 					}
-					console.log(err);
+					console.error(err);
 					errorCount++;
 				});
 		}, 1000);

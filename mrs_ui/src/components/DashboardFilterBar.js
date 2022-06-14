@@ -35,7 +35,6 @@ const DashboardFilterBar = (props) => {
 
 	const accessToken = useAuth0Token();
 
-
 	const _initializeFilterBar = (data) => {
 		let cellIdData = [];
 		if (data.length) {
@@ -45,7 +44,6 @@ const DashboardFilterBar = (props) => {
 					cell_id: cellId.cell_id,
 				});
 			});
-			console.log(cellIdData);
 			setCellIds([...cellIdData]);
 			setSelectedRowKeys(cellIdData.map((c) => c.key));
 			setSelectedRows([...cellIdData]);
@@ -53,7 +51,6 @@ const DashboardFilterBar = (props) => {
 			props.onFilterChange([...cellIdData], props.testType === "abuseTest" ? sample : step);
 		} else {
 			// error
-			console.log("no data found!");
 			setCellIds([]);
 			setSelectedRowKeys([]);
 			setSelectedRows([]);
@@ -65,7 +62,6 @@ const DashboardFilterBar = (props) => {
 
 	useEffect(() => {
 		let endpoint = props.testType === "abuseTest" ? "/cells/abuse/meta" : "/cells/cycle/meta";
-		console.log("endpointt", endpoint);
 		let data;
 		if (props.testType === "cycleTest") {
 			// temp wrap in object
@@ -83,12 +79,10 @@ const DashboardFilterBar = (props) => {
 					},
 				})
 				.then((response) => {
-					console.log("cell ids abuse", response);
 					data = response.data.records[0];
 					_initializeFilterBar(data);
 				})
 				.catch((err) => {
-					console.log("get cellId err", err);
 					props.internalServerErrorFound("500");
 				});
 		}
@@ -105,7 +99,6 @@ const DashboardFilterBar = (props) => {
 	useEffect(() => {
 		let data;
 		if (props.testType === "cycleTest") {
-			console.log("in useEffect", props.cellData);
 			setCellDirInfo(props.cellData);
 			data = _cleanCellIds(props.cellData);
 			_initializeFilterBar(data);
@@ -114,7 +107,6 @@ const DashboardFilterBar = (props) => {
 
 	const handleCellDelete = (record) => {
 		setLoading(true);
-		console.log("delete", record);
 		let params = new URLSearchParams();
 		params.append("cell_id", record.cell_id);
 		axios
@@ -157,7 +149,6 @@ const DashboardFilterBar = (props) => {
 		localStorage.setItem("sample", sample);
 		localStorage.setItem("step", step);
 		let result = props.onFilterChange(selectedRows, props.testType === "abuseTest" ? sample : step);
-		console.log("selectedRows after delete", selectedRows);
 		if (result) {
 			message.success("Filter Applied!"); // potential bug in antd need to call msg twice
 			message.success("Filter Applied!");
@@ -168,7 +159,6 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const downloadCycleData = (k) => {
-		console.log("downloadCycleData", k);
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
@@ -180,7 +170,6 @@ const DashboardFilterBar = (props) => {
 				},
 			})
 			.then(({ data }) => {
-				console.log("downloadcycledata", data);
 				var a = document.createElement("a");
 				var blob = new Blob([data], { type: "text/csv" });
 				a.href = window.URL.createObjectURL(blob);
@@ -217,7 +206,6 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const downloadTimeSeriesData = (k) => {
-		console.log("downloadTimeSeriesData", k);
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
@@ -229,7 +217,6 @@ const DashboardFilterBar = (props) => {
 				},
 			})
 			.then(({ data }) => {
-				console.log("downloadTimeSeriesData", data);
 				var a = document.createElement("a");
 				var blob = new Blob([data], { type: "text/csv" });
 				a.href = window.URL.createObjectURL(blob);
@@ -250,7 +237,6 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const downloadAbuseTSData = (k) => {
-		console.log("downloadAbuseTSData", k);
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
@@ -262,7 +248,6 @@ const DashboardFilterBar = (props) => {
 				},
 			})
 			.then(({ data }) => {
-				console.log("downloadAbuseTSData", data);
 				var a = document.createElement("a");
 				var blob = new Blob([data], { type: "text/csv" });
 				a.href = window.URL.createObjectURL(blob);

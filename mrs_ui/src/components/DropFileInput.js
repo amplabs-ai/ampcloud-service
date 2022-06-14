@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import blankFileImage from "../assets/file-blank-solid-240.png";
-import uploadImg from "../assets/cloud-upload-regular-240.png";
+import blankFileImage from "../assets/images/file-blank-solid-240.png";
+import uploadImg from "../assets/images/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
 import {
   Progress,
@@ -23,7 +23,6 @@ const { Text } = Typography;
 const REQUIRED_HEADERS = ["test_time", "cycle", "current", "voltage"];
 
 const DropFileInput = (props) => {
-  console.log("props.uploadProgress", props.uploadProgress);
   const wrapperRef = useRef(null);
   const [fileList, setFileList] = useState([]);
   const [fileValidationErrs, setFileValidationErrs] = useState([]);
@@ -57,7 +56,6 @@ const DropFileInput = (props) => {
     }
     if (props.pageType !== "cycle-test") {
       props.onFileChange([actualFile]);
-      console.log("[[actualFile]]", [actualFile]);
       setFileList([actualFile]);
     } else {
       setShallShowFileValModal(true); // validation modal
@@ -70,7 +68,6 @@ const DropFileInput = (props) => {
         fastMode: true,
         transformHeader: function (h, i) {
           // fix cycle column header
-          console.log("transformHeader", h, i);
           if (h.toLowerCase().includes("cycle")) return "cycle";
           if (
             h.toLowerCase().includes("test") &&
@@ -94,23 +91,20 @@ const DropFileInput = (props) => {
         },
         complete: function (results) {
           if (data.length) {
-            console.log("papaparse", data);
             if (props.pageType === "cycle-test") {
               newFile = _checkCycleTestCsv(data, fileName);
               if (newFile) {
                 setShallShowFileValModal(false);
                 props.onFileChange([newFile]);
-                console.log("[newFile]", [newFile]);
                 setFileList([newFile]);
               }
             } else if (props.pageType === "abuse-test") {
               // _validateAbuseTestCsv(data);
               // props.onFileChange([actualFile]);
-              // console.log("[[actualFile]]", [actualFile]);
               // setFileList([actualFile]);
             }
           } else {
-            console.log("file is empty!");
+            console.error("file is empty!");
           }
         },
       });
@@ -129,12 +123,10 @@ const DropFileInput = (props) => {
 
   const _checkHeaders = (data) => {
     let headers = Object.keys(data[0]).map((h) => h.toLowerCase());
-    console.log("h", headers);
     let missingHeaders = [];
     missingHeaders = REQUIRED_HEADERS.filter(function (v) {
       return headers.indexOf(v) == -1;
     });
-    console.log("missing", missingHeaders);
     if (missingHeaders.length) {
       setFileValidationErrs((prev) => [
         ...prev,
@@ -150,7 +142,6 @@ const DropFileInput = (props) => {
       // 		duplicates.push(tempArray[i]);
       // 	}
       // }
-      // console.log("duplicates", duplicates);
       return false;
     } else {
       return true;
@@ -176,8 +167,6 @@ const DropFileInput = (props) => {
     // 	}
     // 	return d;
     // });
-    // console.log("fixCycleIndexData", x);
-    // console.log("fixCycleIndexData csv", Papa.unparse(x));
     let x = data;
     let parts = [new Blob([Papa.unparse(x)], { type: "text/plain" })];
 
@@ -236,13 +225,6 @@ const DropFileInput = (props) => {
       };
     }
   };
-
-  // const shallRedirectToDashBoard = () => {
-  // 	if (props.shallRedirectToDashBoard) {
-  // 		setTimeout(() => navigate("/dashboard"), 1000);
-  // 	}
-  // };
-  // shallRedirectToDashBoard();
 
   return (
     <>
@@ -352,18 +334,6 @@ const DropFileInput = (props) => {
                       )
                     }
                   />
-                  {/* <br />
-									{fileValidationErrs.length ? (
-										<div style={{ position: "absolute", top: "90%", color: "red" }}>
-											<ul>
-												{fileValidationErrs.map((err) => (
-													<li key={err}>{err}</li>
-												))}
-											</ul>
-										</div>
-									) : (
-										<div></div>
-									)} */}
                 </List.Item>
               )}
             />

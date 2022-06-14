@@ -17,8 +17,6 @@ const ProcessUpload = ({ processingProgressMsg, processingProgress }) => {
 				curr = i + 1;
 			}
 		});
-
-		console.log("curr", curr);
 		setCurrent(curr);
 	}, [processingProgress]);
 
@@ -55,10 +53,8 @@ const ProcessUpload = ({ processingProgressMsg, processingProgress }) => {
 					type={status === "exception" ? "primary" : "danger"}
 					onClick={(e) => {
 						if (status === "exception") {
-							console.log("retry");
 							window.location.reload();
 						} else {
-							console.log("cancel");
 							window.location.reload();
 						}
 					}}

@@ -12,12 +12,10 @@ export const AccessTokenContextProvider = ({ children }) => {
 	useEffect(() => {
 		(async () => {
 			try {
-				console.log("runned");
 				const token = await getAccessTokenSilently();
-				console.log("token", token);
 				setAccessToken(token);
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		})();
 	}, [getAccessTokenSilently]);

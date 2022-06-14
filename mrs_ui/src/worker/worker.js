@@ -3,7 +3,6 @@
 export default () => {
 	// eslint-disable-next-line no-restricted-globals
 	self.onmessage = (message) => {
-		console.log("message", message);
 		let { chartData, selectedCellIds } = message.data;
 		const _checkCellIdInSeries = (c, selectedCellIds) => {
 			let flag = false;

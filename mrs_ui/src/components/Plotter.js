@@ -26,21 +26,16 @@ const Plotter = () => {
 	const [file, setFile] = useState(null);
 
 	const handleYAxisSelect = (value) => {
-		console.log(value);
 		setAvailableCol(availableCol.filter((c) => c !== value));
 		setSelectedYaxes([...selectedYaxes, value]);
-		console.log(availableCol.filter((c) => c !== value));
 	};
 
 	const handleYAxisDeselect = (value) => {
-		console.log(value);
 		setAvailableCol((prev) => [...prev, value]);
 		setSelectedYaxes(selectedYaxes.filter((c) => c !== value));
-		console.log([...availableCol, value]);
 	};
 
 	const handleXAxisChange = (value) => {
-		console.log(`selected ${value}`);
 		setSelectedXaxis(value);
 	};
 
@@ -116,7 +111,6 @@ const Plotter = () => {
 	};
 
 	const fileUploadHandler = (info) => {
-		console.log("info", info);
 		setFile(info.file.originFileObj);
 		setFileName(info.file.name);
 		if (info.fileList.length) {
@@ -125,7 +119,6 @@ const Plotter = () => {
 				skipEmptyLines: true,
 				dynamicTyping: true,
 				complete: function (results) {
-					console.log("parsed", results.data);
 					setAvailableCol(results.data[0]);
 					setData(results.data);
 				},
@@ -133,23 +126,7 @@ const Plotter = () => {
 		}
 	};
 
-	// const dynamicSort = (property) => {
-	// 	var sortOrder = 1;
-	// 	if (property[0] === "-") {
-	// 		sortOrder = -1;
-	// 		property = property.substr(1);
-	// 	}
-	// 	return function (a, b) {
-	// 		/* next line works with strings and numbers,
-	// 		 * and you may want to customize it to your needs
-	// 		 */
-	// 		var result = a[property] < b[property] ? -1 : a[property] > b[property] ? 1 : 0;
-	// 		return result * sortOrder;
-	// 	};
-	// };
-
 	const removeFile = (e) => {
-		console.log("onRemove");
 		setData(null);
 		setAvailableCol([]);
 		setSelectedXaxis(null);
@@ -161,17 +138,6 @@ const Plotter = () => {
 
 	return (
 		<div style={{ marginTop: "4rem" }} className="mx-3">
-			{/* <div className="p-2" style={{ display: "flex", flexDirection: "row-reverse" }}>
-				<Tooltip title="Full-Screen">
-					<Button
-						type="primary"
-						shape="circle"
-						onClick={() => toggle_full_screen()}
-						icon={<FullscreenOutlined />}
-						size="large"
-					/>
-				</Tooltip>
-			</div> */}
 			<div className="my-3 row">
 				<div className="col-md-6">
 					<Dragger

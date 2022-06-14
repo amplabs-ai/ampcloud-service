@@ -30,13 +30,11 @@ const DashSharePrivate = (props) => {
 			return;
 		}
 		setBtnLoading(true);
-		console.log("generate share link private", props.cellIds);
 		let data = JSON.stringify({
 			shared_to: sharedWith,
 			cell_id: props.cellIds,
 			test: props.dashboard,
-			step: props.step,
-			sample: props.sample,
+			step: props.step, 
 			is_public: false,
 		});
 
@@ -50,12 +48,9 @@ const DashSharePrivate = (props) => {
 			data: data,
 		};
 
-		console.log(config);
-
 		axios(config)
 			.then(function (response) {
 				setBtnLoading(false);
-				console.log("dashboard share id res", response.data.detail);
 				setShareLink(
 					(process.env.REACT_APP_ENV === "production" ? process.env.REACT_APP_PROD_URI : "http://localhost:3000") +
 						`/dashboard/${props.dashboard}/share/` +
@@ -64,7 +59,6 @@ const DashSharePrivate = (props) => {
 			})
 			.catch(function (error) {
 				setBtnLoading(false);
-				console.log(error);
 				message.error("Error Generating Link! Please Try Again.");
 				message.error("Error Generating Link! Please Try Again.");
 			});
