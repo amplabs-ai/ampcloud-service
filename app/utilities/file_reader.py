@@ -1,7 +1,7 @@
 import gzip
 import datetime
 import pandas as pd
-from app.archive_constants import ARCHIVE_COLS, FORMAT, INP_LABELS
+from app.archive_constants import ARCHIVE_COLS, FORMAT, INP_LABELS, LABEL
 
 
 def read_generic(file, mapping='test_time,cycle,current,voltage'):
@@ -12,24 +12,26 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
     missing_columns = set(column_list).difference(set(df_time_series_file.columns))
     if missing_columns:
         raise KeyError(f"{missing_columns} columns are not present")
-    #validating renaming optional columns:
+    # validating renaming optional columns:
     columns_to_rename = {}
     for col in df_time_series_file.columns:
         column = col.lower().strip()
         if 'discharge' in column and 'capacity' in column:
-            columns_to_rename[col] = 'capacity_discharge'
+            columns_to_rename[col] = LABEL.AH_D.value
         elif 'charge' in column and 'capacity' in column:
-            columns_to_rename[col] = 'capacity_charge'
+            columns_to_rename[col] = LABEL.AH_C.value
         elif 'discharge' in column and 'energy' in column:
-            columns_to_rename[col] = 'energy_discharge'
+            columns_to_rename[col] = LABEL.E_D.value
         elif 'charge' in column and 'energy' in column:
-            columns_to_rename[col] = 'energy_charge'
+            columns_to_rename[col] = LABEL.E_C.value
         elif 'date' in column and 'time' in column:
-            columns_to_rename[col] = 'date_time'
+            columns_to_rename[col] = LABEL.DATE_TIME.value
         elif 'cell' in column and 'temperature' in column:
-            columns_to_rename[col] = 'cell_temperature'
+            columns_to_rename[col] = LABEL.CELL_TEMP.value
         elif 'environment' in column and 'temperature' in column:
-            columns_to_rename[col] = 'env_temperature'
+            columns_to_rename[col] = LABEL.ENV_TEMP.value
+        elif 'step' in column and 'index' in column:
+            columns_to_rename[col] = LABEL.STEP_INDEX.value
 
     df_time_series_file.rename(columns=columns_to_rename, inplace=True)
 
@@ -51,33 +53,41 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
 
     if "date_time" in df_ts.columns and "test_time" not in df_ts.columns:
         df_ts['test_time'] = df_ts['date_time'] - \
-            df_ts['date_time'].iloc[0]
+                             df_ts['date_time'].iloc[0]
         df_ts['test_time'] = df_ts['test_time'].dt.total_seconds()
 
-    df_ts['ah_c'] = df_time_series_file['capacity_charge'] if 'capacity_charge' in df_time_series_file.columns else 0
-    df_ts['e_c'] = df_time_series_file['energy_charge'] if 'energy_charge' in df_time_series_file.columns else 0
-    df_ts['ah_d'] = df_time_series_file['capacity_discharge'] if 'capacity_discharge' in df_time_series_file.columns else 0
-    df_ts['e_d'] = df_time_series_file['energy_discharge'] if 'energy_discharge' in df_time_series_file.columns else 0
+    df_ts[LABEL.AH_C.value] = df_time_series_file[
+        LABEL.AH_C.value] if LABEL.AH_C.value in df_time_series_file.columns else 0
+    df_ts[LABEL.E_C.value] = df_time_series_file[
+        LABEL.E_C.value] if LABEL.E_C.value in df_time_series_file.columns else 0
+    df_ts[LABEL.AH_D.value] = df_time_series_file[
+        LABEL.AH_D.value] if LABEL.AH_D.value in df_time_series_file.columns else 0
+    df_ts[LABEL.E_D.value] = df_time_series_file[
+        LABEL.E_D.value] if LABEL.E_D.value in df_time_series_file.columns else 0
 
     # df_ts['cycle_index_file'] = df_ts[
     #     'cycle'].apply(pd.to_numeric)
-    df_ts['cycle_time'] = 0
-    df_ts['cycle_index'] = df_ts['cycle'].apply(pd.to_numeric)
+    df_ts[LABEL.CYCLE_TIME.value] = 0
+    df_ts[LABEL.CYCLE_INDEX.value] = df_ts['cycle'].apply(pd.to_numeric)
     # df_ts['filename'] = file.filename
 
-    if 'cell_temperature' in df_time_series_file:
-        df_ts['cell_temperature'] = df_time_series_file['cell_temperature']
-    
-    if 'env_temperature' in df_time_series_file:
-        df_ts['env_temperature'] = df_time_series_file['env_temperature']
+    if LABEL.CELL_TEMP.value in df_time_series_file:
+        df_ts[LABEL.CELL_TEMP.value] = df_time_series_file[LABEL.CELL_TEMP.value]
+        df_ts[LABEL.DATAPOINT_DTEMP.value] = df_time_series_file[LABEL.CELL_TEMP.value].diff().fillna(0)
+
+    if LABEL.ENV_TEMP.value in df_time_series_file:
+        df_ts[LABEL.ENV_TEMP.value] = df_time_series_file[LABEL.ENV_TEMP.value]
+
+    if LABEL.STEP_INDEX.value in df_time_series_file:
+        df_ts[LABEL.STEP_INDEX.value] = df_time_series_file[LABEL.STEP_INDEX.value]
 
     if df_tmerge.empty:
-        df_tmerge = df_ts[df_ts['test_time'] > 0]
+        df_tmerge = df_ts[df_ts[LABEL.TEST_TIME.value] > 0]
     else:
         df_tmerge = df_tmerge.append(
-            df_ts[df_ts['test_time'] > 0], ignore_index=True)
+            df_ts[df_ts[LABEL.TEST_TIME.value] > 0], ignore_index=True)
 
-    df_tmerge.rename(columns={'current': 'i', 'voltage': 'v'}, inplace=True)
+    # df_tmerge.rename(columns={'current': 'i', 'voltage': 'v'}, inplace=True)
     df_tmerge.drop(['cycle'], axis=1, inplace=True)
     return df_tmerge
 
@@ -211,16 +221,17 @@ def read_maccor(file):
                                      ignore_index=True)
     return df_tmerge
 
-def read_ornlabuse(file):
 
+def read_ornlabuse(file):
     # excels = glob.glob(file_path + '*.xls*')
-    column_list = ['Running Time', 'Axial Force', 'Analog 1', 'Axial Displacement', 'Running Time 1', 'TC 01', 'TC 02', 'TC 03', 'TC 04', 'TC 05', 'TC 06']
+    column_list = ['Running Time', 'Axial Force', 'Analog 1', 'Axial Displacement', 'Running Time 1', 'TC 01', 'TC 02',
+                   'TC 03', 'TC 04', 'TC 05', 'TC 06']
     df_tmerge = pd.DataFrame()
     # for excel in excels:
     #     if '~$' in excel:
     #         continue
     with gzip.open(file, 'rb') as decompressed_file:
-            df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
+        df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
 
     missing_columns = set(column_list).difference(set(df_ts_file.columns))
     if missing_columns:
@@ -255,31 +266,32 @@ def read_ornlabuse(file):
         INP_LABELS.TC_05.value]
     df_ts_b[ARCHIVE_COLS.temp_6.value] = df_ts_file[
         INP_LABELS.TC_06.value]
-        # df_time_series_b['cell_id'] = cell_id
+    # df_time_series_b['cell_id'] = cell_id
 
-        # if df_tmerge.empty:
+    # if df_tmerge.empty:
     df_tmerge = df_ts_a
     df_tmerge = df_tmerge.append(df_ts_b, ignore_index=True)
-        # else:
-        #     df_tmerge = df_tmerge.append(df_ts_a, ignore_index=True)
-        #     df_tmerge = df_tmerge.append(df_ts_b, ignore_index=True)
+    # else:
+    #     df_tmerge = df_tmerge.append(df_ts_a, ignore_index=True)
+    #     df_tmerge = df_tmerge.append(df_ts_b, ignore_index=True)
 
     return df_tmerge
 
+
 # read the abuse excel files from SNL
 def read_snlabuse(file):
-
     # excels = glob.glob(file_path + '*.xls*')
-    column_list = ['Running Time',	'Axial Displacement', 'Axial Force', 'Analog 1', 'TC 01', 'TC 02', 'TC 03', 'TC 04', 'TC 05', 'TC 06']
+    column_list = ['Running Time', 'Axial Displacement', 'Axial Force', 'Analog 1', 'TC 01', 'TC 02', 'TC 03', 'TC 04',
+                   'TC 05', 'TC 06']
 
     df_tmerge = pd.DataFrame()
 
     # for excel in excels:
     #     if '~$' in excel:
     #         continue
-    
+
     with gzip.open(file, 'rb') as decompressed_file:
-            df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
+        df_ts_file = pd.read_excel(decompressed_file, sheet_name='data')
 
     missing_columns = set(column_list).difference(set(df_ts_file.columns))
     if missing_columns:
@@ -311,6 +323,7 @@ def read_snlabuse(file):
 
     return df_tmerge
 
+
 def prepare_maccor_file(file):
     with gzip.open(file, 'rb') as decompressed_file:
         lines = decompressed_file.readlines()
@@ -322,7 +335,7 @@ def prepare_maccor_file(file):
     for line in lines:
         forget_line = line.startswith(b"Today") or line.startswith(
             b"Filename") or line.startswith(b"Procedure") or line.startswith(
-                b"Comment")
+            b"Comment")
         if not forget_line:
             new_file.write(line)
     new_file.close()

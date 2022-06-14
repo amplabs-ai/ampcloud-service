@@ -62,5 +62,6 @@ def with_authentication(allow_public = None):
         return decorated_function
     return decorator
 
+
 def skip_default_auth(arg):
     return dict()

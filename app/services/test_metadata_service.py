@@ -2,6 +2,7 @@ from app.archive_constants import BATTERY_ARCHIVE, DATA_MATR_IO, RESPONSE_MESSAG
 from app.model import AbuseMeta, ArchiveOperator, CycleMeta
 import logging
 
+
 def get_testmeta_service(test_model, email):
     try:
         ao = ArchiveOperator()
@@ -37,6 +38,7 @@ def get_testmeta_by_cell_id_service(cell_id, test_model, email):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
+
 
 def update_test_metadata_service(email, test, request_data):
     try:

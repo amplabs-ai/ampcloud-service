@@ -1,20 +1,26 @@
 from decimal import Decimal
 import time
+import numpy as np
 import pandas as pd
 from app.archive_constants import LABEL
 
 import warnings
+
 warnings.filterwarnings('ignore')
 
 status = {}
+
 
 def default(obj):
     if isinstance(obj, Decimal):
         return str(obj)
     raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
+
+
 def clear_status(email):
     time.sleep(2)
     status.pop(email, None)
+
 
 def sort_timeseries(df_tmerge):
     # print(df_tmerge)
@@ -76,11 +82,11 @@ def sort_timeseries(df_tmerge):
                 x[1] = x[0]
 
         df_tmp = pd.DataFrame(data=cycles[:, [1]],
-                            columns=[LABEL.CYCLE_INDEX.value])
+                              columns=[LABEL.CYCLE_INDEX.value])
         df_t[LABEL.CYCLE_INDEX.value] = df_tmp[LABEL.CYCLE_INDEX.value]
 
         df_tmp = pd.DataFrame(data=cycles[:, [3]],
-                            columns=[LABEL.TEST_TIME.value])
+                              columns=[LABEL.TEST_TIME.value])
         df_t[LABEL.TEST_TIME.value] = pd.to_numeric(
             df_tmp[LABEL.TEST_TIME.value])
 
@@ -93,7 +99,7 @@ def sort_timeseries(df_tmerge):
     return df_ts
 
 
-def calc_cycle_stats(df_t, cell_id = None, email = None):
+def calc_cycle_stats(df_t, cell_id=None, email=None):
     """
     Calculate cycle states from cycle timeseries data
 
@@ -101,38 +107,19 @@ def calc_cycle_stats(df_t, cell_id = None, email = None):
     :param df_t: cycle timeseries data frame.
     :return: tuple of dataframes of calculated stats and timeseries data
     """
-    df_t = df_t.sort_values(by =[LABEL.CYCLE_INDEX.value, LABEL.TEST_TIME.value]).reset_index(drop=True)
+    df_t = df_t.sort_values(by=[LABEL.CYCLE_INDEX.value, LABEL.TEST_TIME.value]).reset_index(drop=True)
     df_t[LABEL.CYCLE_TIME.value] = 0
 
     no_cycles = int(df_t[LABEL.CYCLE_INDEX.value].max())
     # Initialize the cycle_data time frame
-    a = [0 for _ in range(no_cycles)]  # using loops
-
-    df_c = pd.DataFrame(data=a, columns=[LABEL.CYCLE_INDEX.value])
-    # df_c[LABEL.CELL_ID.value] = cell_id
-    df_c[LABEL.CYCLE_INDEX.value] = 0
-    df_c[LABEL.V_MAX.value] = 0
-    df_c[LABEL.I_MAX.value] = 0
-    df_c[LABEL.V_MIN.value] = 0
-    df_c[LABEL.I_MIN.value] = 0
-    df_c[LABEL.AH_C.value] = 0
-    df_c[LABEL.AH_D.value] = 0
-    df_c[LABEL.E_C.value] = 0
-    df_c[LABEL.E_D.value] = 0
-    df_c[LABEL.V_C_MEAN.value] = 0
-    df_c[LABEL.V_D_MEAN.value] = 0
-    df_c[LABEL.TEST_TIME.value] = 0
-    df_c[LABEL.AH_EFF.value] = 0
-    df_c[LABEL.E_EFF.value] = 0
-    step = 60/len(df_c.index)
+    df_c = init_stats_df(no_cycles)
+    step = 60 / len(df_c.index)
 
     for c_ind in df_c.index:
         if email and cell_id:
             status[f"{email}|{cell_id}"]['progress']['percentage'] += step
         x = c_ind + 1
-
         df_f = df_t[df_t[LABEL.CYCLE_INDEX.value] == x]
-
         if not email:
             df_f[LABEL.AH_C.value] = 0
             df_f[LABEL.E_C.value] = 0
@@ -140,116 +127,254 @@ def calc_cycle_stats(df_t, cell_id = None, email = None):
             df_f[LABEL.E_D.value] = 0
 
         if not df_f.empty:
-
             try:
-
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.CYCLE_INDEX.value)] = x
-
+                          df_c.columns.get_loc(LABEL.CYCLE_INDEX.value)] = x
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.V_MAX.value)] = df_f.loc[
-                            df_f[LABEL.V.value].idxmax()].v
+                          df_c.columns.get_loc(LABEL.CYCLE_MAX_V.value)] = df_f.loc[
+                    df_f[LABEL.V.value].idxmax()].voltage
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.V_MIN.value)] = df_f.loc[
-                            df_f[LABEL.V.value].idxmin()].v
-
+                          df_c.columns.get_loc(LABEL.CYCLE_MIN_V.value)] = df_f.loc[
+                    df_f[LABEL.V.value].idxmin()].voltage
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.I_MAX.value)] = df_f.loc[
-                            df_f[LABEL.I.value].idxmax()].i
+                          df_c.columns.get_loc(LABEL.CYCLE_MAX_I.value)] = df_f.loc[
+                    df_f[LABEL.I.value].idxmax()].current
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.I_MIN.value)] = df_f.loc[
-                            df_f[LABEL.I.value].idxmin()].i
-
-                df_c.iloc[
-                    c_ind,
-                    df_c.columns.get_loc(LABEL.TEST_TIME.value)] = df_f.loc[
-                        df_f[LABEL.TEST_TIME.value].idxmax()].test_time
-
-                df_f[LABEL.DT.value] = df_f[LABEL.TEST_TIME.value].diff() / 3600.0
-                df_f_c = df_f[df_f[LABEL.I.value] > 0]
-                df_f_d = df_f[df_f[LABEL.I.value] < 0]
+                          df_c.columns.get_loc(LABEL.CYCLE_MIN_I.value)] = df_f.loc[
+                    df_f[LABEL.I.value].idxmin()].current
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.TEST_TIME.value)] = df_f.loc[
+                    df_f[LABEL.TEST_TIME.value].idxmax()].test_time
 
                 df_f = calc_cycle_quantities(df_f)
 
+                # get df according to charge/discharge/rest
+                df_f_c = df_f[df_f[LABEL.I.value] > 0]
+                df_f_d = df_f[df_f[LABEL.I.value] < 0]
+                df_f_r = df_f[df_f[LABEL.I.value] == 0]
+
+
+                # set cycle specific values from calculated quantities
                 df_t.loc[df_t.cycle_index == x,
-                        LABEL.CYCLE_TIME.value] = df_f[LABEL.CYCLE_TIME.value]
+                         LABEL.CYCLE_TIME.value] = df_f[LABEL.CYCLE_TIME.value]
                 df_t.loc[df_t.cycle_index == x,
-                        LABEL.AH_C.value] = df_f[LABEL.AH_C.value]
+                         LABEL.POWER.value] = df_f[LABEL.POWER.value]
                 df_t.loc[df_t.cycle_index == x,
-                        LABEL.E_C.value] = df_f[LABEL.E_C.value]
+                         LABEL.AH_C.value] = df_f[LABEL.AH_C.value]
                 df_t.loc[df_t.cycle_index == x,
-                        LABEL.AH_D.value] = df_f[LABEL.AH_D.value]
+                         LABEL.CYCLE_CUM_AH_C.value] = df_f[LABEL.CYCLE_CUM_AH_C.value]
                 df_t.loc[df_t.cycle_index == x,
-                        LABEL.E_D.value] = df_f[LABEL.E_D.value]
+                         LABEL.AH_D.value] = df_f[LABEL.AH_D.value]
+                df_t.loc[df_t.cycle_index == x,
+                         LABEL.CYCLE_CUM_AH_D.value] = df_f[LABEL.CYCLE_CUM_AH_D.value]
+                df_t.loc[df_t.cycle_index == x,
+                         LABEL.E_C.value] = df_f[LABEL.E_C.value]
+                df_t.loc[df_t.cycle_index == x,
+                         LABEL.CYCLE_CUM_E_C.value] = df_f[LABEL.CYCLE_CUM_E_C.value]
+                df_t.loc[df_t.cycle_index == x,
+                         LABEL.E_D.value] = df_f[LABEL.E_D.value]
+                df_t.loc[df_t.cycle_index == x,
+                         LABEL.CYCLE_CUM_E_D.value] = df_f[LABEL.CYCLE_CUM_E_D.value]
+                df_t.loc[df_t.cycle_index == x,
+                         LABEL.STEP_TYPE.value] = df_f[LABEL.STEP_TYPE.value]
+
+                if LABEL.STEP_INDEX.value in df_f:
+                    df_t.loc[df_t.cycle_index == x,
+                             LABEL.STEP_TIME.value] = df_f[LABEL.STEP_TIME.value]
+                    # df_t.loc[df_t.cycle_index == x,
+                    #          LABEL.STEP_DATAPOINT_ORDINAL.value] = df_f[LABEL.STEP_DATAPOINT_ORDINAL.value]
+                    df_c.loc[df_c.cycle_index == x,
+                             LABEL.STEP_COUNT.value] = len(pd.unique(df_f[LABEL.STEP_INDEX.value]))
+                    df_c.loc[df_c.cycle_index == x,
+                             LABEL.CHARGE_STEP_COUNT.value] = len(pd.unique(df_f_c[LABEL.STEP_INDEX.value]))
+                    df_c.loc[df_c.cycle_index == x,
+                             LABEL.DISCHARGE_STEP_COUNT.value] = len(pd.unique(df_f_d[LABEL.STEP_INDEX.value]))
+                    df_c.loc[df_c.cycle_index == x,
+                             LABEL.REST_STEP_COUNT.value] = len(pd.unique(df_f_r[LABEL.STEP_INDEX.value]))
+                    df_t.loc[df_t.cycle_index == x, LABEL.STEP_DATAPOINT_ORDINAL.value] = df_f.groupby([LABEL.STEP_INDEX.value]).cumcount()+1
+
+                df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_START_TS.value)] = df_f[LABEL.DATE_TIME.value].iloc[0]
+                df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_END_TS.value)] = df_f[LABEL.DATE_TIME.value].iloc[-1]
+                df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_DURATION.value)] = (
+                        df_f[LABEL.DATE_TIME.value].iloc[-1] - df_f[LABEL.DATE_TIME.value].iloc[0]).total_seconds()
 
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.AH_C.value)] = df_f[
-                            LABEL.AH_C.value].max()
+                          df_c.columns.get_loc(LABEL.CYCLE_AH_C.value)] = df_f_c[LABEL.AH_C.value].max()
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.AH_D.value)] = df_f[
-                            LABEL.AH_D.value].max()
-                df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.E_C.value)] = df_f[
-                    LABEL.E_C.value].max()
-                df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.E_D.value)] = df_f[
-                    LABEL.E_D.value].max()
+                          df_c.columns.get_loc(LABEL.CYCLE_AH_D.value)] = df_f_d[LABEL.AH_D.value].max()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_E_C.value)] = df_f_c[LABEL.E_C.value].max()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_E_D.value)] = df_f_d[LABEL.E_D.value].max()
 
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.V_C_MEAN.value)] = df_f_c[
-                            LABEL.V.value].mean()
+                          df_c.columns.get_loc(LABEL.CYCLE_MAX_P.value)] = df_f[LABEL.POWER.value].abs().max()
                 df_c.iloc[c_ind,
-                        df_c.columns.get_loc(LABEL.V_D_MEAN.value)] = df_f_d[
-                            LABEL.V.value].mean()
+                          df_c.columns.get_loc(LABEL.CYCLE_MAX_C_P.value)] = df_f_c[LABEL.POWER.value].abs().max()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MAX_D_P.value)] = df_f_d[LABEL.POWER.value].abs().max()
+
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MIN_P.value)] = df_f[LABEL.POWER.value].abs().min()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MIN_C_P.value)] = df_f_c[LABEL.POWER.value].abs().min()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MIN_D_P.value)] = df_f_d[LABEL.POWER.value].abs().min()
+
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MEAN_P.value)] = df_f[LABEL.POWER.value].mean()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MEAN_C_P.value)] = df_f_c[LABEL.POWER.value].mean()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MEAN_D_P.value)] = df_f_d[LABEL.POWER.value].mean()
+
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MEAN_V.value)] = df_f[LABEL.V.value].mean()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MEAN_C_V.value)] = df_f_c[LABEL.V.value].mean()
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.CYCLE_MEAN_D_V.value)] = df_f_d[LABEL.V.value].mean()
+
+                df_c.iloc[c_ind,
+                          df_c.columns.get_loc(LABEL.DATAPOINT_COUNT.value)] = len(df_f)
+
+                if not df_f_r.empty:
+                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_MAX_REST_V.value)] = df_f_r.loc[df_f_r[
+                        LABEL.V.value].idxmax()].voltage
+                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_MIN_REST_V.value)] = df_f_r.loc[df_f_r[
+                        LABEL.V.value].idxmin()].voltage
+                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_TOTAL_REST_TIME.value)] = df_f_r[
+                        LABEL.TEST_TIME.value].sum()
 
                 if df_c.iloc[c_ind,
-                            df_c.columns.get_loc(LABEL.AH_C.value)] == 0:
+                             df_c.columns.get_loc(LABEL.CYCLE_AH_C.value)] == 0:
                     df_c.iloc[c_ind,
-                            df_c.columns.get_loc(LABEL.AH_EFF.value)] = 0
+                              df_c.columns.get_loc(LABEL.CYCLE_AH_EFF.value)] = 0
                 else:
-                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.AH_EFF.value)] = df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.AH_D.value)] / \
-                                                                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.AH_C.value)]
+                    df_c.iloc[c_ind,
+                              df_c.columns.get_loc(LABEL.CYCLE_AH_EFF.value)] = df_c.iloc[c_ind, df_c.columns.get_loc(
+                        LABEL.CYCLE_AH_D.value)] / df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_AH_C.value)]
 
                 if df_c.iloc[c_ind,
-                            df_c.columns.get_loc(LABEL.E_C.value)] == 0:
+                             df_c.columns.get_loc(LABEL.CYCLE_E_C.value)] == 0:
                     df_c.iloc[c_ind,
-                            df_c.columns.get_loc(LABEL.E_EFF.value)] = 0
+                              df_c.columns.get_loc(LABEL.CYCLE_E_EFF.value)] = 0
                 else:
-                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.E_EFF.value)] = df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.E_D.value)] / \
-                                                                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.E_C.value)]
+                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_E_EFF.value)] = df_c.iloc[
+                                                                                          c_ind, df_c.columns.get_loc(
+                                                                                              LABEL.CYCLE_E_D.value)] / \
+                                                                                      df_c.iloc[
+                                                                                          c_ind, df_c.columns.get_loc(
+                                                                                              LABEL.CYCLE_E_C.value)]
 
             except Exception as e:
                 pass
 
+    # set test specific values
     df_cc = df_c[df_c[LABEL.CYCLE_INDEX.value] > 0]
     df_tt = df_t[df_t[LABEL.CYCLE_INDEX.value] > 0]
+    df_tt[LABEL.CUM_AH_C.value] = df_tt[LABEL.AH_C.value].cumsum(axis=0)
+    df_tt[LABEL.CUM_AH_D.value] = df_tt[LABEL.AH_D.value].cumsum(axis=0)
+    df_tt[LABEL.NET_AH.value] = df_tt[LABEL.CUM_AH_C.value] - df_tt[LABEL.CUM_AH_D.value]
+    df_tt[LABEL.CUM_E_C.value] = df_tt[LABEL.E_C.value].cumsum(axis=0)
+    df_tt[LABEL.CUM_E_D.value] = df_tt[LABEL.E_D.value].cumsum(axis=0)
+    df_tt[LABEL.NET_E.value] = df_tt[LABEL.CUM_E_C.value] - df_tt[LABEL.CUM_E_D.value]
+    df_tt[LABEL.NET_E.value] = df_tt[LABEL.CUM_E_C.value] - df_tt[LABEL.CUM_E_D.value]
+    df_tt[LABEL.TEST_DATAPOINT_ORDINAL.value] = np.arange(1, len(df_tt) + 1)
+    df_tt[LABEL.DATAPOINT_DV.value] = df_tt[LABEL.V.value].diff().fillna(0)
+    df_tt[LABEL.DATAPOINT_DI.value] = df_tt[LABEL.I.value].diff().fillna(0)
+    df_tt[LABEL.DATAPOINT_DTIME.value] = df_tt[LABEL.TEST_TIME.value].diff().fillna(0)
+    df_tt[LABEL.DATAPOINT_DQ.value] = df_tt[LABEL.AH_C.value].where(df_tt[LABEL.STEP_TYPE.value] == 'Charge', df_tt[LABEL.AH_D.value]).diff().fillna(0)
+    df_tt[LABEL.DV_DT.value] = (df_tt[LABEL.DATAPOINT_DV.value] / df_tt[LABEL.DATAPOINT_DTIME.value]).replace({np.inf: 0})
+    df_tt[LABEL.DQ_DV.value] = (df_tt[LABEL.DATAPOINT_DQ.value] / df_tt[LABEL.DATAPOINT_DV.value]).replace({np.inf: 0})
+    df_tt[LABEL.TEST_NET_CAPACITY.value] = (
+            (df_tt[LABEL.TEST_TIME.value] - df_tt[LABEL.TEST_TIME.value].iloc[0]) * df_tt[LABEL.I.value]).cumsum()
+    df_tt[LABEL.TEST_NET_ENERGY.value] = ((df_tt[LABEL.TEST_TIME.value] - df_tt[LABEL.TEST_TIME.value].iloc[0]) * df_tt[
+        LABEL.POWER.value]).cumsum()
+    df_tt[LABEL.CAPACITY_THROUGHPUT.value] = df_tt[LABEL.TEST_TIME.value].diff().fillna(0) * df_tt[LABEL.I.value].abs()
+    df_tt[LABEL.ENERGY_THROUGHPUT.value] = df_tt[LABEL.TEST_TIME.value].diff().fillna(0) * df_tt[LABEL.POWER.value].abs()
 
-        # df_cc = df_cc.drop([LABEL.CELL_ID.value], axis=1)
+    df_tt_c = df_tt[df_tt[LABEL.STEP_TYPE.value] == "Charge"]
+    df_tt_d = df_tt[df_tt[LABEL.STEP_TYPE.value] == "Discharge"]
+    if not df_tt_c.empty:
+        df_cc[LABEL.DV_START_C.value] = df_tt_c[LABEL.DATAPOINT_DV.value].iloc[
+            0]
+        df_cc[LABEL.DV_END_C.value] = df_tt_c[LABEL.DATAPOINT_DV.value].iloc[-1]
+        df_cc[LABEL.DT_START_C.value] = \
+            df_tt_c[LABEL.DATAPOINT_DTIME.value].iloc[0]
+        df_cc[LABEL.DT_END_C.value] = df_tt_c[LABEL.DATAPOINT_DTIME.value].iloc[
+            -1]
+        df_cc[LABEL.CYCLE_R_START_C.value] = df_tt_c[LABEL.I.value].iloc[0] * df_tt_c[LABEL.V.value].iloc[0]
+        df_cc[LABEL.CYCLE_R_END_C.value] = df_tt_c[LABEL.I.value].iloc[-1] * df_tt_c[LABEL.V.value].iloc[-1]
+
+    if not df_tt_d.empty:
+        df_cc[LABEL.DV_START_D.value] = \
+            df_tt_d[LABEL.DATAPOINT_DV.value].iloc[0]
+        df_cc[LABEL.DV_END_D.value] = df_tt_d[LABEL.DATAPOINT_DV.value].iloc[
+            -1]
+        df_cc[LABEL.DT_START_D.value] = \
+            df_tt_d[LABEL.DATAPOINT_DTIME.value].iloc[0]
+        df_cc[LABEL.DT_END_D.value] = \
+            df_tt_d[LABEL.DATAPOINT_DTIME.value].iloc[-1]
+        df_cc[LABEL.CYCLE_R_START_D.value] = df_tt_d[LABEL.I.value].iloc[0] * df_tt_d[LABEL.V.value].iloc[0]
+        df_cc[LABEL.CYCLE_R_END_D.value] = df_tt_d[LABEL.I.value].iloc[-1] * df_tt_d[LABEL.V.value].iloc[-1]
+
     return df_cc, df_tt
 
-def calc_abuse_stats(df_t, df_test_md, cell_id = None, email = None):
-    step = 60/len(df_t.index)
+
+def calc_abuse_stats(df_t, df_test_md, cell_id=None, email=None):
+    step = 60 / len(df_t.index)
     for _ in df_t.index:
         if email and cell_id:
             status[f"{email}|{cell_id}"]['progress']['percentage'] += step
         df_t[LABEL.NORM_D.value] = df_t.iloc[
-            0:, df_t.columns.get_loc(LABEL.AXIAL_D.value)] - df_t[
-                LABEL.AXIAL_D.value][0]
+                                   0:, df_t.columns.get_loc(LABEL.AXIAL_D.value)] - df_t[
+                                       LABEL.AXIAL_D.value][0]
         df_t[LABEL.STRAIN.value] = df_t.iloc[
-            0:, df_t.columns.get_loc(LABEL.NORM_D.value)] / df_test_md[
-                LABEL.THICKNESS.value]
+                                   0:, df_t.columns.get_loc(LABEL.NORM_D.value)] / df_test_md[
+                                       LABEL.THICKNESS.value]
     return df_t
+
 
 # unpack the dataframe and calculate quantities used in statistics
 def calc_cycle_quantities(df):
     """
     Helper function to calculat quantities used in cycle statistics
     """
+    step_index_present = False
+    step_time_present = False
+    calc_charge_capacity = False
+    calc_discharge_capacity = False
+    calc_charge_energy = False
+    calc_discharge_energy = False
 
+    if (df[LABEL.AH_C.value] == 0).all():
+        calc_charge_capacity = True
+    if (df[LABEL.AH_D.value] == 0).all():
+        calc_discharge_capacity = True
+    if (df[LABEL.E_C.value] == 0).all():
+        calc_charge_energy = True
+    if (df[LABEL.E_D.value] == 0).all():
+        calc_discharge_energy = True
+
+    df[LABEL.STEP_TYPE.value] = "Charge"
     tmp_arr = df[[
         LABEL.TEST_TIME.value, LABEL.I.value, LABEL.V.value, LABEL.AH_C.value,
         LABEL.E_C.value, LABEL.AH_D.value, LABEL.E_D.value,
-        LABEL.CYCLE_TIME.value
+        LABEL.CYCLE_TIME.value, LABEL.STEP_TYPE.value
     ]].to_numpy()
 
+    if LABEL.STEP_INDEX.value in df:
+        tmp_arr = np.c_[tmp_arr, df[[LABEL.STEP_INDEX.value]].to_numpy()]
+        step_index_present = True
+        if LABEL.STEP_TIME.value in df and not (df[LABEL.STEP_TIME.value].iloc[0]):
+            tmp_arr = np.c_[tmp_arr, df[[LABEL.STEP_TIME.value]].to_numpy()]
+            step_time_present = True
+        else:
+            tmp_arr = np.pad(tmp_arr, ((0, 0), (0, 1)), mode='constant', constant_values=0)
+        # tmp_arr = np.pad(tmp_arr, ((0, 0), (0, 1)), mode='constant', constant_values=0)
+
+    step_start = -1
     start = 0
     last_time = 0
     last_i_c = 0
@@ -261,36 +386,58 @@ def calc_cycle_quantities(df):
     last_ah_d = 0
     last_e_d = 0
     initial_time = 0
+    # step_ordinal = 1
 
     for x in tmp_arr:
+
+        if step_index_present:
+            if x[1] < 0:
+                x[8] = "Discharge"
+            elif x[1] > 0:
+                x[8] = "Charge"
+            else:
+                x[8] = "Rest"
+            if not step_time_present:
+                if step_start == -1:
+                    initial_step_time = x[0]
+                    x[10] = 0
+                    step_start = 0
+                    # x[11] = step_ordinal
+                    # step_ordinal = 1
+
+                else:
+                    if last_step != x[9]:
+                        initial_step_time = x[0]
+                        x[10] = 0
+                        # x[11] = 1
+                        # step_ordinal = 1
+                    else:
+                        x[10] = x[0] - initial_step_time
+                        # x[11] = step_ordinal + 1
+                        # step_ordinal = x[11]
+                last_step = x[9]
 
         if start == 0:
             start += 1
             initial_time = x[0]
         else:
             if x[1] >= 0:
-                if (x[3] == 0).all():
+                if calc_charge_capacity:
                     x[3] = (x[0] - last_time) * (x[1] + last_i_c) * 0.5 + last_ah_c
-                if (x[4] == 0).all():
+                if calc_charge_energy:
                     x[4] = (x[0] - last_time) * (x[1] + last_i_c) * 0.5 * (
-                    x[2] + last_v_c) * 0.5 + last_e_c
+                            x[2] + last_v_c) * 0.5 + last_e_c
                 last_i_c = x[1]
                 last_v_c = x[2]
                 last_ah_c = x[3]
                 last_e_c = x[4]
 
             if x[1] <= 0:
-                if (x[5] == 0).all():
+                if calc_discharge_capacity:
                     x[5] = (x[0] - last_time) * (x[1] + last_i_d) * 0.5 + last_ah_d
-                # if x[5] == 0:
-                #     print("x5=0:" + str(x[5]) + " last_ah_d: " +
-                #           str(last_ah_d))
-                # if last_ah_d == 0:
-                #     print("x5:" + str(x[5]) + " last_ah_d=0: " +
-                #           str(last_ah_d))
-                if (x[6] == 0).all():
+                if calc_discharge_energy:
                     x[6] = (x[0] - last_time) * (x[1] + last_i_d) * 0.5 * (
-                    x[2] + last_v_d) * 0.5 + last_e_d
+                            x[2] + last_v_d) * 0.5 + last_e_d
                 last_i_d = x[1]
                 last_v_d = x[2]
                 last_ah_d = x[5]
@@ -299,35 +446,51 @@ def calc_cycle_quantities(df):
         x[7] = x[0] - initial_time
         last_time = x[0]
 
-    if (df['ah_c'] == 0).all():
+    if calc_charge_capacity:
         df_tmp = pd.DataFrame(data=tmp_arr[:, [3]], columns=[LABEL.AH_C.value])
         df_tmp.index += df.index[0]
         df[LABEL.AH_C.value] = df_tmp[LABEL.AH_C.value] / 3600.0
 
-    if (df['e_c'] == 0).all():
+    if calc_charge_energy:
         df_tmp = pd.DataFrame(data=tmp_arr[:, [4]], columns=[LABEL.E_C.value])
         df_tmp.index += df.index[0]
         df[LABEL.E_C.value] = df_tmp[LABEL.E_C.value] / 3600.0
 
-    if (df['ah_d'] == 0).all():
+    if calc_discharge_capacity:
         df_tmp = pd.DataFrame(data=tmp_arr[:, [5]], columns=[LABEL.AH_D.value])
         df_tmp.index += df.index[0]
         df[LABEL.AH_D.value] = -df_tmp[LABEL.AH_D.value] / 3600.0
 
-    if (df['e_d'] == 0).all():
+    if calc_discharge_energy:
         df_tmp = pd.DataFrame(data=tmp_arr[:, [6]], columns=[LABEL.E_D.value])
         df_tmp.index += df.index[0]
         df[LABEL.E_D.value] = -df_tmp[LABEL.E_D.value] / 3600.0
 
+    if step_index_present:
+        df_tmp = pd.DataFrame(data=tmp_arr[:, [10]], columns=[LABEL.STEP_TIME.value])
+        df_tmp.index += df.index[0]
+        df[LABEL.STEP_TIME.value] = df_tmp[LABEL.STEP_TIME.value]
+
+        df_tmp = pd.DataFrame(data=tmp_arr[:, [8]], columns=[LABEL.STEP_TYPE.value])
+        df_tmp.index += df.index[0]
+        df[LABEL.STEP_TYPE.value] = df_tmp[LABEL.STEP_TYPE.value]
+
+        # df_tmp = pd.DataFrame(data=tmp_arr[:, [11]], columns=[LABEL.STEP_DATAPOINT_ORDINAL.value])
+        # df_tmp.index += df.index[0]
+
     df_tmp = pd.DataFrame(data=tmp_arr[:, [7]],
-                        columns=[LABEL.CYCLE_TIME.value])
+                          columns=[LABEL.CYCLE_TIME.value])
     df_tmp.index += df.index[0]
     df[LABEL.CYCLE_TIME.value] = df_tmp[LABEL.CYCLE_TIME.value]
-
+    df[LABEL.CYCLE_CUM_AH_C.value] = df[LABEL.AH_C.value].cumsum(axis=0)
+    df[LABEL.CYCLE_CUM_AH_D.value] = df[LABEL.AH_D.value].cumsum(axis=0)
+    df[LABEL.CYCLE_CUM_E_C.value] = df[LABEL.E_C.value].cumsum(axis=0)
+    df[LABEL.CYCLE_CUM_E_D.value] = df[LABEL.E_D.value].cumsum(axis=0)
+    df[LABEL.POWER.value] = df[LABEL.I.value] * df[LABEL.V.value]
     return df
 
-def split_cycle_metadata(df_c_md):
 
+def split_cycle_metadata(df_c_md):
     df_cell_md = extract_cell_metdata(df_c_md)
 
     # Build test metadata
@@ -343,7 +506,6 @@ def split_cycle_metadata(df_c_md):
 
 
 def split_abuse_metadata(df_c_md):
-
     df_cell_md = extract_cell_metdata(df_c_md)
 
     # Build test metadata
@@ -356,6 +518,7 @@ def split_abuse_metadata(df_c_md):
     df_test_md[LABEL.TEMP.value] = [df_c_md[LABEL.TEMP.value]]
 
     return df_cell_md, df_test_md
+
 
 def extract_cell_metdata(df_c_md):
     """ Build cell metadata """
@@ -371,3 +534,42 @@ def extract_cell_metdata(df_c_md):
     df_cell_md[LABEL.TESTER.value] = [df_c_md[LABEL.TESTER.value]]
 
     return df_cell_md
+
+
+def init_stats_df(no_cycles):
+    a = [0 for _ in range(no_cycles)]  # using loops
+    df_c = pd.DataFrame(data=a, columns=[LABEL.CYCLE_INDEX.value])
+    df_c[LABEL.CYCLE_INDEX.value] = 0
+    df_c[LABEL.CYCLE_MAX_V.value] = 0
+    df_c[LABEL.CYCLE_MAX_I.value] = 0
+    df_c[LABEL.CYCLE_MIN_V.value] = 0
+    df_c[LABEL.CYCLE_MIN_I.value] = 0
+    df_c[LABEL.CYCLE_AH_C.value] = 0
+    df_c[LABEL.CYCLE_AH_D.value] = 0
+    df_c[LABEL.CYCLE_E_C.value] = 0
+    df_c[LABEL.CYCLE_E_D.value] = 0
+    df_c[LABEL.CYCLE_MEAN_C_V.value] = 0
+    df_c[LABEL.CYCLE_MEAN_D_V.value] = 0
+    df_c[LABEL.TEST_TIME.value] = 0
+    df_c[LABEL.CYCLE_AH_EFF.value] = 0
+    df_c[LABEL.CYCLE_E_EFF.value] = 0
+    df_c[LABEL.CYCLE_START_TS.value] = 0
+    df_c[LABEL.CYCLE_END_TS.value] = 0
+    df_c[LABEL.CYCLE_DURATION.value] = 0
+    df_c[LABEL.CYCLE_MAX_P.value] = 0
+    df_c[LABEL.CYCLE_MAX_C_P.value] = 0
+    df_c[LABEL.CYCLE_MAX_D_P.value] = 0
+    df_c[LABEL.CYCLE_MIN_P.value] = 0
+    df_c[LABEL.CYCLE_MIN_C_P.value] = 0
+    df_c[LABEL.CYCLE_MIN_D_P.value] = 0
+    df_c[LABEL.CYCLE_MEAN_P.value] = 0
+    df_c[LABEL.CYCLE_MEAN_C_P.value] = 0
+    df_c[LABEL.CYCLE_MEAN_D_P.value] = 0
+    df_c[LABEL.CYCLE_MEAN_V.value] = 0
+    df_c[LABEL.CYCLE_MEAN_C_V.value] = 0
+    df_c[LABEL.CYCLE_MEAN_D_V.value] = 0
+    df_c[LABEL.DATAPOINT_COUNT.value] = 0
+    df_c[LABEL.CYCLE_MAX_REST_V.value] = 0
+    df_c[LABEL.CYCLE_MIN_REST_V.value] = 0
+    df_c[LABEL.CYCLE_TOTAL_REST_TIME.value] = 0
+    return df_c

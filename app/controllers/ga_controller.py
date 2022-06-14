@@ -9,6 +9,7 @@ from flask import request, jsonify
 from app.response import Response
 
 from app.model import ArchiveOperator
+
 # Routes
 "tracker -> msg"
 global ga_status
@@ -16,6 +17,7 @@ ga_status = {}
 "tracker -> id"
 global source
 source = {}
+
 
 def finish(tracker):
     if tracker in ga_status:
@@ -72,12 +74,12 @@ def ga_publish(dataset_id):
         data[LABEL.CELL_ID.value] = cell_id
         data = pd.DataFrame(data=data, columns=data.keys())
         cell = ArchiveCell(cell_id,
-                        test_type=TEST_TYPE.CYCLE.value,
-                        metadata=metadata,
-                        data=data)
+                           test_type=TEST_TYPE.CYCLE.value,
+                           metadata=metadata,
+                           data=data)
 
         threading.Thread(target=ga_finish, name="data_thread",
-                        args=(tracker, cell, ga_status)).start()
+                         args=(tracker, cell, ga_status)).start()
         # # Add something from metadata into response
         return jsonify(
             {"tracker": tracker, "dataset_id": dataset_id, "token": token})

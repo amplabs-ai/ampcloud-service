@@ -33,6 +33,7 @@ AUTH0_ALGORITHMS = ["RS256"]
 BATTERY_ARCHIVE = "info@batteryarchive.org"
 DATA_MATR_IO = "data.matr.io@tri.global"
 
+
 class TEST_TYPE(Enum):
     ABUSE = "abuse"
     CYCLE = "cycle"
@@ -114,8 +115,14 @@ class OUTPUT_LABELS(Enum):
 
 
 class LABEL(Enum):
+    INDEX = "index"
     CELL_ID = "cell_id"
     MAPPING = "mapping"
+    EMAIL = "email"
+    CYCLE_INDEX = "cycle_index"
+    CYCLE_TIME = "cycle_time"
+
+    # cell meta
     ANODE = "anode"
     CATHODE = "cathode"
     SOURCE = "source"
@@ -123,34 +130,121 @@ class LABEL(Enum):
     FORM_FACTOR = "form_factor"
     TEST = "test"
     TESTER = "tester"
+
+    # Test meta
     CRATE_C = "crate_c"
     CRATE_D = "crate_d"
     SOC_MAX = "soc_max"
     SOC_MIN = "soc_min"
     TEMP = "temperature"
+    V_MAX = "v_max"
+    V_MIN = "v_min"
+
+    # Cycle Timeseries
+    DATE_TIME = "date_time"
+    TEST_TIME = "test_time"
+    I = "current"
+    V = "voltage"
+    AH_C = "charge_capacity"
+    CYCLE_CUM_AH_C = "cycle_charge_capacity"
+    CUM_AH_C = "cumulative_charge_capacity"
+    AH_D = "discharge_capacity"
+    CYCLE_CUM_AH_D = "cycle_discharge_capacity"
+    CUM_AH_D = "cumulative_discharge_capacity"
+    NET_AH = "net_capacity"
+    E_C = "charge_energy"
+    CYCLE_CUM_E_C = "cycle_charge_energy"
+    CUM_E_C = "cumulative_charge_energy"
+    E_D = "discharge_energy"
+    CYCLE_CUM_E_D = "cycle_discharge_energy"
+    CUM_E_D = "cumulative_discharge_energy"
+    NET_E = "net_energy"
+    POWER = "power"
+    STEP_INDEX = "step_index"
+    STEP_TYPE = "step_type"
+    STEP_TIME = "step_time"
+    TEST_DATAPOINT_ORDINAL = "test_datapoint_ordinal"
+    STEP_DATAPOINT_ORDINAL = "step_datapoint_ordinal"
+    DATAPOINT_DV = "datapoint_dv"
+    DATAPOINT_DI = "datapoint_di"
+    DATAPOINT_DTIME = "datapoint_dtime"
+    DATAPOINT_DTEMP = "datapoint_dtemp"
+    DATAPOINT_DQ = "datapoint_dq"
+    DQ_DV = "dq_dv"
+    DV_DT = "dv_dt"
+    CAPACITY_THROUGHPUT = "capacity_throughput"
+    ENERGY_THROUGHPUT = "energy_throughput"
+    TEST_NET_CAPACITY = "test_net_capacity"
+    TEST_NET_ENERGY = "test_net_energy"
+    ENV_TEMP = "environment_temperature"
+    CELL_TEMP = "cell_temperature"
+
+    # Cycle Stats
+    CYCLE_START_TS = "cycle_start_timestamp"
+    CYCLE_END_TS = "cycle_end_timestamp"
+
+    CYCLE_MAX_I = "cycle_max_current"
+    CYCLE_MIN_I = "cycle_min_current"
+
+    CYCLE_MAX_V = "cycle_max_voltage"
+    CYCLE_MIN_V = "cycle_min_voltage"
+
+    CYCLE_MEAN_V = "cycle_mean_voltage"
+    CYCLE_MEAN_C_V = "cycle_mean_charge_voltage"
+    CYCLE_MEAN_D_V = "cycle_mean_discharge_voltage"
+
+    CYCLE_AH_C = "cycle_charge_capacity"
+    CYCLE_AH_D = "cycle_discharge_capacity"
+
+    CYCLE_E_C = "cycle_charge_energy"
+    CYCLE_E_D = "cycle_discharge_energy"
+
+    CYCLE_MAX_P = "cycle_max_power"
+    CYCLE_MAX_C_P = "cycle_max_charge_power"
+    CYCLE_MAX_D_P = "cycle_max_discharge_power"
+
+    CYCLE_MIN_P = "cycle_min_power"
+    CYCLE_MIN_C_P = "cycle_min_charge_power"
+    CYCLE_MIN_D_P = "cycle_min_discharge_power"
+
+    CYCLE_MEAN_P = "cycle_mean_power"
+    CYCLE_MEAN_C_P = "cycle_mean_charge_power"
+    CYCLE_MEAN_D_P = "cycle_mean_discharge_power"
+
+    CYCLE_AH_EFF = "cycle_coulombic_efficiency"
+    CYCLE_E_EFF = "cycle_energy_efficiency"
+
+    DATAPOINT_COUNT = "datapoint_count"
+
+    CYCLE_MAX_REST_V = "cycle_max_rest_voltage"
+    CYCLE_MIN_REST_V = "cycle_min_rest_voltage"
+
+    CYCLE_TOTAL_REST_TIME = "cycle_total_rest_time"
+    STEP_COUNT = "step_count"
+    CYCLE_DURATION = "cycle_duration"
+    REST_STEP_COUNT = "rest_step_count"
+    CHARGE_STEP_COUNT = "charge_step_count"
+    DISCHARGE_STEP_COUNT = "discharge_step_count"
+    DV_START_C = "dv_start_of_charge"
+    DV_END_C = "dv_end_of_charge"
+    DV_START_D = "dv_start_of_discharge"
+    DV_END_D = "dv_end_of_discharge"
+    DT_START_C = "dt_start_of_charge"
+    DT_END_C = "dt_end_of_charge"
+    DT_START_D = "dt_start_of_discharge"
+    DT_END_D = "dt_end_of_discharge"
+    CYCLE_V_EFF = "cycle_voltage_efficiency"
+    CYCLE_R_START_C = "cycle_resistance_start_of_charge"
+    CYCLE_R_END_C = "cycle_resistance_end_of_charge"
+    CYCLE_R_START_D = "cycle_resistance_start_of_discharge"
+    CYCLE_R_END_D = "cycle_resistance_end_of_discharge"
+
+    # Not used
     THICKNESS = "thickness"
     V_INIT = "v_init"
     INDENTOR = "indentor"
     NAIL_SPEED = "nail_speed"
     FILE_ID = "file_id"
-    CYCLE_INDEX = "cycle_index"
-    CYCLE_TIME = "cycle_time"
-    V_MAX = "v_max"
-    I_MAX = "i_max"
-    V_MIN = "v_min"
-    I_MIN = "i_min"
-    AH_C = "ah_c"
-    AH_D = "ah_d"
-    E_C = "e_c"
-    E_D = "e_d"
-    V_C_MEAN = "v_c_mean"
-    V_D_MEAN = "v_d_mean"
-    DATE_TIME = "date_time"
-    TEST_TIME = "test_time"
-    AH_EFF = "ah_eff"
-    E_EFF = "e_eff"
-    I = "i"
-    V = "v"
     DT = "dt"
     NORM_D = "norm_d"
     AXIAL_D = "axial_d"
@@ -158,6 +252,7 @@ class LABEL(Enum):
     CYCLE_INDEX_FILE = "cycle_index_file"
     FILENAME = "filename"
     FILE_TYPE = "file_type"
+
 
 RESPONSE_MESSAGE = {
     "RESERVED_PUBLIC_CELL_ID": "Cell id {} is reserved",
