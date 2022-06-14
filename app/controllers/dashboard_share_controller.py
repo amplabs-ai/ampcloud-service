@@ -1,15 +1,17 @@
-
 import json
 import logging
-from app.archive_constants import LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI_DASH_ABUSE, LINKEDIN_REDIRECT_URI_DASH_CYCLE
+from app.archive_constants import LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI_DASH_ABUSE, \
+    LINKEDIN_REDIRECT_URI_DASH_CYCLE
 from app.response import Response
-from app.services.dashboard_share_service import dashboard_share_add_service, dashboard_share_update_service, dashboard_share_validate_id_service
+from app.services.dashboard_share_service import dashboard_share_add_service, dashboard_share_update_service, \
+    dashboard_share_validate_id_service
 from app.utilities.with_authentication import with_authentication
 from flask import request, g
 import requests
 import urllib.parse
 
-@with_authentication(allow_public = True)
+
+@with_authentication(allow_public=True)
 def dashboard_audit():
     try:
         email = g.user
@@ -21,6 +23,7 @@ def dashboard_audit():
         logging.error(err)
         return Response(500, "Internal Server Error").to_dict(), 500
 
+
 @with_authentication()
 def dashboard_share_url():
     try:
@@ -30,7 +33,7 @@ def dashboard_share_url():
             status, detail, *records = dashboard_share_add_service(data, email)
             return Response(status, detail).to_dict(), status
         elif request.method == 'PATCH':
-            dashboard_id = dashboard_id = request.args.to_dict().get('dashboard_id')
+            dashboard_id = request.args.to_dict().get('dashboard_id')
             status, detail, *records = dashboard_share_update_service(data, email, dashboard_id)
             return Response(status, detail).to_dict(), status
 
@@ -54,13 +57,15 @@ def dashboard_share_linkedin():
             redirectUri = urllib.parse.quote(LINKEDIN_REDIRECT_URI_DASH_ABUSE, safe='')
 
         # get access_token from code
-        url = "https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=" + authCode + "&redirect_uri=" + redirectUri + "&client_id=" + LINKEDIN_CLIENT_ID + "&client_secret=" + LINKEDIN_CLIENT_SECRET
-        payload={}
+        url = "https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=" + authCode + \
+              "&redirect_uri=" + redirectUri + "&client_id=" + LINKEDIN_CLIENT_ID + "&client_secret=" + \
+              LINKEDIN_CLIENT_SECRET
+        payload = {}
         response = requests.request("POST", url, data=payload)
-        accessToken = json.loads(response.text).get('access_token') 
+        accessToken = json.loads(response.text).get('access_token')
         # get user id from access_token
         url = "https://api.linkedin.com/v2/me"
-        payload={}
+        payload = {}
         headers = {
             'Authorization': 'Bearer ' + accessToken
         }
@@ -90,16 +95,14 @@ def dashboard_share_linkedin():
         }
         response = requests.request("POST", url, headers=headers, data=payload)
         json_data = json.loads(response.text)
-        uploadUrl = json_data.get('value').get('uploadMechanism').get('com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest').get('uploadUrl')
+        uploadUrl = json_data.get('value').get('uploadMechanism').get(
+            'com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest').get('uploadUrl')
         assetLink = json_data.get('value').get('asset')
 
         # upload image binary
         url = uploadUrl
-        payload=shareImageFile.read()
-        # files=[shareImageFile]
-        # files={
-        #    'file': open('C:\\Users\\Administrator\\Desktop\\ampcloud server\\app\\controllers\\Cycle Index Data - Energy and Capacity Decay (3).png','rb')
-        # }
+        payload = shareImageFile.read()
+
         headers = {
             'Authorization': 'Bearer ' + accessToken,
             'Content-Type': 'image/png'
@@ -113,22 +116,22 @@ def dashboard_share_linkedin():
             "lifecycleState": "PUBLISHED",
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
-                "shareCommentary": {
-                    "text": shareText
-                },
-                "shareMediaCategory": "IMAGE",
-                "media": [
-                    {
-                    "status": "READY",
-                    "description": {
-                        "text": "Amplabs Dashboard"
+                    "shareCommentary": {
+                        "text": shareText
                     },
-                    "media": assetLink,
-                    "title": {
-                        "text": "Amplabs Dashboard"
-                    }
-                    }
-                ]
+                    "shareMediaCategory": "IMAGE",
+                    "media": [
+                        {
+                            "status": "READY",
+                            "description": {
+                                "text": "Amplabs Dashboard"
+                            },
+                            "media": assetLink,
+                            "title": {
+                                "text": "Amplabs Dashboard"
+                            }
+                        }
+                    ]
                 }
             },
             "visibility": {
@@ -147,6 +150,7 @@ def dashboard_share_linkedin():
     except Exception as err:
         logging.error(err)
         return Response(500, "Internal Server Error").to_dict(), 500
+
 
 @with_authentication()
 def dashboard_share_validate_id():

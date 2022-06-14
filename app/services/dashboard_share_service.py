@@ -2,6 +2,7 @@ import uuid
 from app.model import ArchiveOperator, SharedDashboard
 import logging
 
+
 def dashboard_share_add_service(data, email):
     ao = ArchiveOperator()
     ao.set_session()
@@ -26,6 +27,7 @@ def dashboard_share_add_service(data, email):
     finally:
         ao.release_session()
 
+
 def dashboard_share_update_service(data, email, dashboard_id):
     ao = ArchiveOperator()
     ao.set_session()
@@ -42,7 +44,8 @@ def dashboard_share_update_service(data, email, dashboard_id):
             "sample": data['sample'],
             "is_public": data['is_public']
         }
-        ao.session.execute(SharedDashboard.__table__.update().where(SharedDashboard.uuid==dashboard_data.uuid), dashboard_values)
+        ao.session.execute(SharedDashboard.__table__.update().where(SharedDashboard.uuid == dashboard_data.uuid),
+                           dashboard_values)
         return 200, dashboard_data.uuid
     except Exception as err:
         logging.error(err)

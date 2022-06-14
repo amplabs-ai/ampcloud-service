@@ -2,13 +2,15 @@ from app.archive_constants import RESPONSE_MESSAGE
 from app.model import ArchiveOperator
 import logging
 
-def get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id = None):
+
+def get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data['shared_by']
@@ -23,7 +25,7 @@ def get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id = No
             series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -31,13 +33,15 @@ def get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id = No
     finally:
         ao.release_session()
 
-def get_energy_and_capacity_decay_service(cell_id, email, dashboard_id = None):
+
+def get_energy_and_capacity_decay_service(cell_id, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data['shared_by']
@@ -51,7 +55,7 @@ def get_energy_and_capacity_decay_service(cell_id, email, dashboard_id = None):
             series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -59,13 +63,15 @@ def get_energy_and_capacity_decay_service(cell_id, email, dashboard_id = None):
     finally:
         ao.release_session()
 
-def get_efficiency_service(cell_id, email, dashboard_id = None):
+
+def get_efficiency_service(cell_id, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data['shared_by']
@@ -79,7 +85,7 @@ def get_efficiency_service(cell_id, email, dashboard_id = None):
             series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -87,13 +93,15 @@ def get_efficiency_service(cell_id, email, dashboard_id = None):
     finally:
         ao.release_session()
 
-def get_compare_by_cycle_time_service(cell_id, email, dashboard_id = None):
+
+def get_compare_by_cycle_time_service(cell_id, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data['shared_by']
@@ -107,7 +115,7 @@ def get_compare_by_cycle_time_service(cell_id, email, dashboard_id = None):
             series[f"{row['series_2']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -115,13 +123,15 @@ def get_compare_by_cycle_time_service(cell_id, email, dashboard_id = None):
     finally:
         ao.release_session()
 
-def get_force_and_displacement_service(cell_id, email, sample, dashboard_id = None):
+
+def get_force_and_displacement_service(cell_id, email, sample, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data['shared_by']
@@ -135,7 +145,7 @@ def get_force_and_displacement_service(cell_id, email, sample, dashboard_id = No
             series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -143,13 +153,15 @@ def get_force_and_displacement_service(cell_id, email, sample, dashboard_id = No
     finally:
         ao.release_session()
 
-def get_test_tempratures_service(cell_id, email, sample, dashboard_id = None):
+
+def get_test_tempratures_service(cell_id, email, sample, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data['shared_by']
@@ -163,7 +175,7 @@ def get_test_tempratures_service(cell_id, email, sample, dashboard_id = None):
             series[f"{row['series_1']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value})
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -171,13 +183,15 @@ def get_test_tempratures_service(cell_id, email, sample, dashboard_id = None):
     finally:
         ao.release_session()
 
-def get_voltage_service(cell_id, email, sample, dashboard_id = None):
+
+def get_voltage_service(cell_id, email, sample, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         if dashboard_id and email != "public":   
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data['shared_by']
@@ -191,7 +205,7 @@ def get_voltage_service(cell_id, email, sample, dashboard_id = None):
             series[f"{row['series']}||{row['cell_id']}"].append(row)
 
         for key, value in series.items():
-            records.append({"id": key.split('||')[0], "cell_id":key.split('||')[1], "source": value}) 
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)

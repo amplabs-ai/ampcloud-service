@@ -1,11 +1,9 @@
 import logging
-import pandas as pd
-from sqlalchemy import text
-from app.archive_constants import ARCHIVE_TABLE, RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO, TEST_TYPE
+from app.archive_constants import RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO, TEST_TYPE
 from app.model import AbuseMeta, AbuseTimeSeries, ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries
 
 
-def get_cellmeta_service(email, test, dashboard_id = None):
+def get_cellmeta_service(email, test, dashboard_id=None):
 
     def add_type(row, key, value):
         row[key] = value
@@ -16,7 +14,7 @@ def get_cellmeta_service(email, test, dashboard_id = None):
         ao.set_session()
         if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to):
                 return 401, "Unauthorised Access"
             else:
                 cell_id = dashboard_data.cell_id.split(',')
@@ -38,7 +36,8 @@ def get_cellmeta_service(email, test, dashboard_id = None):
     finally:
         ao.release_session()
 
-def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id = None):
+
+def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id=None):
     def add_type(row):
         row_dict = row.to_dict()
         if row.email == BATTERY_ARCHIVE:
@@ -53,7 +52,8 @@ def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id = None):
         ao.set_session()
         if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not(dashboard_data) or not (dashboard_data.is_public or email in dashboard_data.shared_to) or not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
+            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
+                    not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
                 return 401, "Unauthorised Access"
             else:
                 email = dashboard_data.shared_by
@@ -66,6 +66,7 @@ def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id = None):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
+
 
 def update_cell_metadata_service(email, test, request_data):
     try:
