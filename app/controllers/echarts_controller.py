@@ -103,3 +103,19 @@ def get_voltage(cell_id, sample):
     logging.info("User {email} Action CHART_PREPARATION_TIME data Volt size {size} fetch_time {fetch_time}".format
                  (email=email, size=size, fetch_time=fetch_time))
     return Response(status, detail, records).to_dict(), status
+
+
+@with_authentication()
+def get_timeseries_columns_data():
+    email = g.user
+    data = request.json
+    status, detail, *records = get_timeseries_columns_data_service(data, email)
+    return Response(status, detail, records).to_dict(), status
+
+
+@with_authentication()
+def get_stats_columns_data():
+    email = g.user
+    data = request.json
+    status, detail, *records = get_stats_columns_data_service(data, email)
+    return Response(status, detail, records).to_dict(), status
