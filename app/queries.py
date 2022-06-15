@@ -30,7 +30,7 @@ select * from
 (SELECT
     cell_id,
     cycle_time,
-    voltage,  
+    voltage as v,  
     cycle_index,  
     case 
         when current>0 then
@@ -137,4 +137,18 @@ where value <> '0'
 ORDER BY r.cell_id,
          r.test_time,
          KEY
+"""
+TIMESERIES_DATA="""
+SELECT {columns}, cell_id
+FROM
+    cycle_timeseries
+WHERE cell_id IN ({cell_ids}) and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
+        {filters}
+"""
+STATS_DATA="""
+SELECT {columns}, cell_id
+FROM
+    cycle_stats
+WHERE cell_id IN ({cell_ids}) and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
+        {filters}
 """

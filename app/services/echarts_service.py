@@ -212,3 +212,55 @@ def get_voltage_service(cell_id, email, sample, dashboard_id=None):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
+
+
+def get_timeseries_columns_data_service(data, email):
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        columns = (',').join(data['columns'])
+        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids']) 
+        filters = ('and ').join(data['filters'])
+        archive_cells = ao.get_all_data_from_timeseries_query(columns, cell_ids, email, filters)
+        records = []
+        series = {}
+        for row in archive_cells:
+            row = dict(row)
+            if not series.get(row['cell_id']):
+                series[row['cell_id']] = []
+            series[row['cell_id']].append(row)
+
+        for key, value in series.items():
+            records.append({"id": key, "source": value})
+        return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+    except Exception as err:
+        logging.error(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()
+
+
+def get_stats_columns_data_service(data, email):
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        columns = (',').join(data['columns'])
+        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids']) 
+        filters = 'and' + ('and ').join(data['filters']) if data.get('filters') else ""
+        archive_cells = ao.get_all_data_from_stats_query(columns, cell_ids, email, filters)
+        records = []
+        series = {}
+        for row in archive_cells:
+            row = dict(row)
+            if not series.get(row['cell_id']):
+                series[row['cell_id']] = []
+            series[row['cell_id']].append(row)
+
+        for key, value in series.items():
+            records.append({"id": key, "source": value})
+        return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+    except Exception as err:
+        logging.error(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()
