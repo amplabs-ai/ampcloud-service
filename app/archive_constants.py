@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-ENV = "production"
+ENV = "development"
 SLASH = "/"
 
 DEGREE = 3

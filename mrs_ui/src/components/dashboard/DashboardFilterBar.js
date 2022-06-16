@@ -12,7 +12,7 @@ import { useDashboard } from "../../context/DashboardContext";
 
 const { Text } = Typography;
 
-const DashboardFilterBar2 = (props) => {
+const DashboardFilterBar = (props) => {
 	const [cellIds, setCellIds] = useState([]);
 	const [tableLoading, setTableLoading] = useState(true);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -71,29 +71,29 @@ const DashboardFilterBar2 = (props) => {
 		let params = new URLSearchParams();
 		params.append("cell_id", record.cell_id);
 		console.log("delete cell", record.cell_id);
-		// axios
-		// 	.delete(`/cells`, {
-		// 		params: params,
-		// 		headers: {
-		// 			Authorization: `Bearer ${accessToken}`,
-		// 		},
-		// 	})
-		// 	.then(() => {
-		// 		setLoading(false);
-		// 		setCellIds(cellIds.filter((item) => item.key !== record.key));
-		// 		let records = selectedRows.filter((item) => item.key !== record.key);
-		// 		setSelectedRows(records);
-		// 		setSelectedRowKeys(selectedRowKeys.filter((item) => item !== record.key));
-		// 		props.onCellIdChange(records);
-		// 		action.refreshSidebar(record.cell_id);
-		// 		message.success("Cell Id Deleted!");
-		// 		message.success("Cell Id Deleted!");
-		// 	})
-		// 	.catch((err) => {
-		// 		setLoading(false);
-		// 		message.error("Error deleting Cell Id");
-		// 		message.error("Error deleting Cell Id");
-		// 	});
+		axios
+			.delete(`/cells`, {
+				params: params,
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			})
+			.then(() => {
+				setLoading(false);
+				setCellIds(cellIds.filter((item) => item.key !== record.key));
+				let records = selectedRows.filter((item) => item.key !== record.key);
+				setSelectedRows(records);
+				setSelectedRowKeys(selectedRowKeys.filter((item) => item !== record.key));
+				props.onCellIdChange(records);
+				action.refreshSidebar(record.cell_id);
+				message.success("Cell Id Deleted!");
+				message.success("Cell Id Deleted!");
+			})
+			.catch((err) => {
+				setLoading(false);
+				message.error("Error deleting Cell Id");
+				message.error("Error deleting Cell Id");
+			});
 	};
 
 	const handleApplyFilter = () => {
@@ -413,4 +413,4 @@ const DashboardFilterBar2 = (props) => {
 	);
 };
 
-export default DashboardFilterBar2;
+export default DashboardFilterBar;

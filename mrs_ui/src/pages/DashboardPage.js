@@ -1,11 +1,14 @@
 import React from "react";
-import DashboardCycleTest from "./DashboardCycleTest";
+import Dashboard from "../components/dashboard/Dashboard";
+import { DashboardProvider } from "../context/DashboardContext";
 
 const DashboardPage = () => {
 	return (
-		<div style={{ paddingTop: "1rem" }}>
-			<DashboardCycleTest />
-		</div>
+		<DashboardProvider>
+			<div style={{ paddingTop: "1.1rem" }}>
+				<Dashboard />
+			</div>
+		</DashboardProvider>
 	);
 };
 

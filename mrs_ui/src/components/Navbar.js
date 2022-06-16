@@ -52,7 +52,12 @@ const Navbar = () => {
 							<>
 								<li className="nav-item">
 									<Link className="nav-link" to="/plotter">
-										Plot
+										Plotter
+									</Link>
+								</li>
+								<li className="nav-item">
+									<Link className="nav-link" to="/data-viewer">
+										Data-Viewer
 									</Link>
 								</li>
 								<li className="nav-item">

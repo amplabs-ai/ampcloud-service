@@ -5,15 +5,14 @@ import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
-import ShareButton from "../ShareButton";
-import ChartContainer2 from "./ChartContainer2";
+import ChartContainer from "./ChartContainer";
 import DashboardShareButton from "./DashboardShareButton";
-import Sidebar2 from "./Sidebar2";
+import SideBar from "./Sidebar";
 import ViewMetadata from "./ViewMetadata";
 
 const { Content } = Layout;
 
-const Dashboard2 = (props) => {
+const Dashboard = (props) => {
 	const navigate = useNavigate();
 	const { state, action, dashboardRef } = useDashboard();
 	const accessToken = useAuth0Token();
@@ -81,11 +80,11 @@ const Dashboard2 = (props) => {
 						}
 					></PageHeader>
 					<Layout hasSider>
-						{props.type === "shared" ? null : <Sidebar2 />}
+						{props.type === "shared" ? null : <SideBar page="dashboard" />}
 						<Layout className="site-layout" style={{ marginLeft: "auto" }}>
 							<Content>
 								{state.shallShowChart ? (
-									<ChartContainer2 />
+									<ChartContainer />
 								) : state.shallShowEdit ? (
 									<ViewMetadata />
 								) : (
@@ -102,4 +101,4 @@ const Dashboard2 = (props) => {
 	);
 };
 
-export default Dashboard2;
+export default Dashboard;

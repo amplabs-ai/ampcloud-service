@@ -387,7 +387,7 @@ class ArchiveOperator:
 
     def get_all_cell_meta_with_id(self, cell_id, email):
         return self.get_all_data_from_table_with_id(CellMeta, cell_id, email)
-    
+
     def get_all_shared_cell_meta_with_id(self, cell_id, email, test):
         return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id),
                                                    CellMeta.test == test).all()
@@ -469,7 +469,8 @@ class ArchiveOperator:
     def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters):
         try:
             result = self.session.execute(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
-            return result        
+            print(result)
+            return result
         except Exception as err:
             print(err)
             pass
@@ -477,7 +478,7 @@ class ArchiveOperator:
     def get_all_data_from_stats_query(self, columns, cell_ids, email, filters):
         try:
             result = self.session.execute(STATS_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
-            return result        
+            return result
         except Exception as err:
             print(err)
             pass

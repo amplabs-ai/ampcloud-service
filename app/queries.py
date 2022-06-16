@@ -4,12 +4,12 @@ SELECT
     key || ': ' || r.cell_id as series,
     r.cycle_index,
     value
-FROM (SELECT cell_id, trunc(cycle_index,0) as cycle_index, json_build_object('e_eff', TRUNC(cycle_energy_efficiency::numeric,3), 'ah_eff', TRUNC(cycle_coulombic_efficiency::numeric,3)) AS line 
+FROM (SELECT cell_id, trunc(cycle_index,0) as cycle_index, json_build_object('e_eff', TRUNC(cycle_energy_efficiency::numeric,3), 'ah_eff', TRUNC(cycle_coulombic_efficiency::numeric,3)) AS line
 FROM cycle_stats
 where cell_id IN {cell_id} and cycle_coulombic_efficiency<1.004 and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) as r
 JOIN LATERAL json_each_text(r.line) ON (key ~ '[e,ah]_[eff]')
 GROUP by r.cell_id, r.cycle_index, json_each_text.key, json_each_text.value
-order by r.cell_id,r.cycle_index, key 
+order by r.cell_id,r.cycle_index, key
 """
 ENERGY_AND_CAPACITY_DECAY_QUERY = """
 SELECT
@@ -18,36 +18,36 @@ SELECT
     r.cycle_index,
     r.test_time,
 value
-FROM (SELECT cell_id, trunc(cycle_index::numeric,0) as cycle_index, test_time, json_build_object('e_d', TRUNC(cycle_discharge_energy::numeric,3), 'ah_d', TRUNC(cycle_discharge_capacity::numeric,3) ) AS line 
+FROM (SELECT cell_id, trunc(cycle_index::numeric,0) as cycle_index, test_time, json_build_object('e_d', TRUNC(cycle_discharge_energy::numeric,3), 'ah_d', TRUNC(cycle_discharge_capacity::numeric,3) ) AS line
 FROM cycle_stats
 where cell_id IN {cell_id} and cycle_coulombic_efficiency<1.1 and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) as r
 JOIN LATERAL json_each_text(r.line) ON (key ~ '[e,ah]_[d]')
-GROUP by r.cell_id, r.cycle_index,  r.test_time, json_each_text.key, json_each_text.value      
+GROUP by r.cell_id, r.cycle_index,  r.test_time, json_each_text.key, json_each_text.value
 order by r.cell_id,r.cycle_index, key
 """
 CYCLE_QUANTITIES_BY_STEP_QUERY = """
-select * from 
+select * from
 (SELECT
     cell_id,
     cycle_time,
-    voltage as v,  
-    cycle_index,  
-    case 
+    voltage as v,
+    cycle_index,
+    case
         when current>0 then
-            charge_capacity  
+            charge_capacity
         when current<0 then
             discharge_capacity
         end ah,
-    case 
+    case
         when current>0 then
-            cell_id || ' c: ' || cycle_index  
+            cell_id || ' c: ' || cycle_index
         when current<0 then
             cell_id || ' d: ' || cycle_index
         end series
 FROM cycle_timeseries
-where 
-    cell_id IN {cell_id} and 
-    (MOD(cycle_index,{step})=0 or cycle_index = 1 or cycle_index = ( SELECT MAX(cycle_index) FROM cycle_stats WHERE cell_id IN {cell_id} and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))) and 
+where
+    cell_id IN {cell_id} and
+    (MOD(cycle_index,{step})=0 or cycle_index = 1 or cycle_index = ( SELECT MAX(cycle_index) FROM cycle_stats WHERE cell_id IN {cell_id} and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))) and
     email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
 order by cycle_index, test_time, series) as foo where series is not null
 """
@@ -72,7 +72,7 @@ JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[V,C]')
 ORDER BY r.cell_id,
          r.test_time,
          r.cycle_time,
-         KEY 
+         KEY
 """
 ABUSE_TEST_TEMPRATURES="""
 SELECT KEY || ': ' || r.cell_id AS series_1,
@@ -84,9 +84,9 @@ FROM
   (SELECT abuse_timeseries.cell_id,
           test_time,
           json_build_object(
-            'Tbp',below_punch_temperature,   
+            'Tbp',below_punch_temperature,
             'Tap', above_punch_temperature,
-            'Tlb', left_bottom_temperature, 
+            'Tlb', left_bottom_temperature,
             'Trb', right_bottom_temperature,
             'Tpt', pos_terminal_temperature,
             'Tnp', neg_terminal_temperature
@@ -94,7 +94,7 @@ FROM
    FROM abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
    WHERE cell_id IN {cell_id} and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) AS r
 JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[Tbp,Tap,Tlb,Trb,Tpt,Tnp]')
-where value <> '0' 
+where value <> '0'
 ORDER BY r.cell_id,
          r.test_time,
          KEY
@@ -114,7 +114,7 @@ FROM
    FROM abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
    WHERE cell_id IN {cell_id}  and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) AS r
 JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[F,D]')
-where value <> '0' 
+where value <> '0'
 ORDER BY r.cell_id,
          r.test_time,
          KEY
@@ -133,7 +133,7 @@ FROM
    FROM abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
    WHERE cell_id IN {cell_id} and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) AS r
 JOIN LATERAL json_each_text(r.line) ON (KEY ~ '[v]')
-where value <> '0' 
+where value <> '0'
 ORDER BY r.cell_id,
          r.test_time,
          KEY
@@ -143,12 +143,12 @@ SELECT {columns}, cell_id
 FROM
     cycle_timeseries
 WHERE cell_id IN ({cell_ids}) and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
-        {filters}
+    {filters}
 """
 STATS_DATA="""
 SELECT {columns}, cell_id
 FROM
     cycle_stats
 WHERE cell_id IN ({cell_ids}) and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
-        {filters}
+    {filters}
 """

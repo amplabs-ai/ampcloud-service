@@ -1,4 +1,5 @@
 from app.response import Response
+import logging
 from app.archive_constants import display_names
 
 def get_display_timeseries():

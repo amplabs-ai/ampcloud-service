@@ -7,7 +7,7 @@ def get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id=None
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
                     not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
@@ -38,7 +38,7 @@ def get_energy_and_capacity_decay_service(cell_id, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
                     not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
@@ -68,7 +68,7 @@ def get_efficiency_service(cell_id, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
                     not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
@@ -98,7 +98,7 @@ def get_compare_by_cycle_time_service(cell_id, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
                     not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
@@ -128,7 +128,7 @@ def get_force_and_displacement_service(cell_id, email, sample, dashboard_id=None
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
                     not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
@@ -158,7 +158,7 @@ def get_test_tempratures_service(cell_id, email, sample, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
                     not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
@@ -188,7 +188,7 @@ def get_voltage_service(cell_id, email, sample, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":   
+        if dashboard_id and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or\
                     not(set(cell_id).issubset(set(dashboard_data.cell_id.split(',')))):
@@ -219,8 +219,8 @@ def get_timeseries_columns_data_service(data, email):
         ao = ArchiveOperator()
         ao.set_session()
         columns = (',').join(data['columns'])
-        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids']) 
-        filters = ('and ').join(data['filters'])
+        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
+        filters = 'and ' + ('and ').join(data['filters']) if data.get('filters') else ""
         archive_cells = ao.get_all_data_from_timeseries_query(columns, cell_ids, email, filters)
         records = []
         series = {}
@@ -234,6 +234,7 @@ def get_timeseries_columns_data_service(data, email):
             records.append({"id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
+        print(err)
         logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
@@ -245,8 +246,8 @@ def get_stats_columns_data_service(data, email):
         ao = ArchiveOperator()
         ao.set_session()
         columns = (',').join(data['columns'])
-        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids']) 
-        filters = 'and' + ('and ').join(data['filters']) if data.get('filters') else ""
+        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
+        filters = 'and ' + ('and ').join(data['filters']) if data.get('filters') else ""
         archive_cells = ao.get_all_data_from_stats_query(columns, cell_ids, email, filters)
         records = []
         series = {}

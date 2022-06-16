@@ -1,12 +1,12 @@
-// ====== python code files ====== 
+// ====== python code files ======
 import sourceCode from "../chartConfig/chartSourceCode";
 
 const _createChartDataSeries = (data, xAxis, yAxis, chartId) => {
 	let x = [];
 	data.forEach((d) => {
 		x.push({
-			type: chartId === "timeSeries" ? "scatter" : "line",
-			symbolSize: chartId === "timeSeries" ? 5 : 10,
+			type: chartId === "timeSeries" || chartId === "plotter" ? "scatter" : "line",
+			symbolSize: chartId === "timeSeries" || chartId === "plotter" ? 5 : 10,
 			name: d.id,
 			showSymbol: false,
 			datasetId: d.id,
@@ -35,7 +35,7 @@ const _createChartLegend = (data, chartId) => {
 		// top: window.screen.width < 1200 ? "auto" : "16%",
 		// bottom: window.screen.width < 1200 ? "0" : "auto",
 		icon:
-			chartId === "timeSeries"
+			chartId === "timeSeries" || chartId === "plotter"
 				? "pin"
 				: "path://M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z",
 		pageTextStyle: {
@@ -186,7 +186,9 @@ export const getChartMetadata = (chartName) => {
 			};
 			break;
 		default:
-			break;
+			// for showing chart on plotter page
+			console.log("chart configs", JSON.parse(chartName));
+			return JSON.parse(chartName);
 	}
 	return result;
 };
