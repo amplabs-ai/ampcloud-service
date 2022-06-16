@@ -13,7 +13,7 @@ for (let i = 10; i < 36; i++) {
 	children.push(<Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>);
 }
 
-const Plotter = () => {
+const DataViewer = () => {
 	const navigate = useNavigate();
 
 	const plottingChart = useRef(null);
@@ -119,6 +119,7 @@ const Plotter = () => {
 				skipEmptyLines: true,
 				dynamicTyping: true,
 				complete: function (results) {
+					console.log(results);
 					setAvailableCol(results.data[0]);
 					setData(results.data);
 				},
@@ -255,4 +256,4 @@ const Plotter = () => {
 	);
 };
 
-export default Plotter;
+export default DataViewer;

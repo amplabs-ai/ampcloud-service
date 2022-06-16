@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
-import DashboardFilterBar2 from "./DashboardFilterBar2";
+import DashboardFilterBar2 from "./DashboardFilterBar";
 import WorkerBuilder from "../../worker/woker-builder";
 import Worker from "../../worker/worker";
 import ViewCodeModal from "../ViewCodeModal";
@@ -16,7 +16,7 @@ let CHART_API_ENDPOINTS = {
 
 const instance = new WorkerBuilder(Worker);
 
-const ChartContainer2 = () => {
+const ChartContainer = () => {
 	const { state, action, dashboardRef } = useDashboard();
 	const [disableSelection, setDisableSelection] = useState(true);
 	const [stepFromFilter, setStepFromFilter] = useState("");
@@ -304,4 +304,4 @@ const ChartContainer2 = () => {
 	);
 };
 
-export default ChartContainer2;
+export default ChartContainer;

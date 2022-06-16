@@ -11,7 +11,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import b64toBlob from "../../utility/b64ToBlob";
 import copyToClipboard from "../../utility/copyToClipboard";
-import DashSharePrivate from ".././DashSharePrivate";
+import DashSharePrivate from "./DashSharePrivate";
 import HelmetMetaData from "../../components/HelmetMetaData";
 
 const Title = Typography;

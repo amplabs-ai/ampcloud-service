@@ -2,7 +2,7 @@ import { Button, Input, message } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import { useAuth0Token } from "../utility/useAuth0Token";
+import { useAuth0Token } from "../../utility/useAuth0Token";
 
 const DashSharePrivate = (props) => {
 	const [sharedWith, setSharedWith] = useState([]);
@@ -34,7 +34,7 @@ const DashSharePrivate = (props) => {
 			shared_to: sharedWith,
 			cell_id: props.cellIds,
 			test: props.dashboard,
-			step: props.step, 
+			step: props.step,
 			is_public: false,
 		});
 

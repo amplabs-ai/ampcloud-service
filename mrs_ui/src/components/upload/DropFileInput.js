@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import blankFileImage from "../assets/images/file-blank-solid-240.png";
-import uploadImg from "../assets/images/cloud-upload-regular-240.png";
+import blankFileImage from "../../assets/images/file-blank-solid-240.png";
+import uploadImg from "../../assets/images/cloud-upload-regular-240.png";
 import "./drop-file-input.css";
 import {
   Progress,

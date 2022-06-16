@@ -4,8 +4,8 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import axios from "axios";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
-import { useAuth0 } from "@auth0/auth0-react";
-import { useAuth0Token } from "../utility/useAuth0Token";
+import { useAuth0Token } from "../../utility/useAuth0Token";
+import { useDashboard } from "../../context/DashboardContext";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -138,15 +138,17 @@ const SideBar = (props) => {
 	const [checkedCellIds, setCheckedCellIds] = useState([]);
 	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false);
 	const [error, setError] = useState(null);
-	// const { getAccessTokenSilently } = useAuth0();
 
+	const { state, action } = useDashboard();
 	const accessToken = useAuth0Token();
 
 	useEffect(() => {
 		if (accessToken) {
 			setIsCelldataLoaded(false);
-			let endpoint = props.testType === "abuse-test" ? "/cells/abuse/meta" : "/cells/cycle/meta";
+			let endpoint = "/cells/cycle/meta";
 			// const accessToken = await getAccessTokenSilently();
+			setCheckedCellIds([]);
+			setCheckedKeys([]);
 			axios
 				.get(endpoint, {
 					headers: {
@@ -168,7 +170,7 @@ const SideBar = (props) => {
 					setError(err);
 				});
 		}
-	}, [props.refresh, accessToken]);
+	}, [state.refreshSidebar, accessToken]);
 
 	const findObjectAndParents = (item, title) => {
 		if (item.title.toLowerCase().includes(title.toLowerCase()) || !title) {
@@ -203,19 +205,22 @@ const SideBar = (props) => {
 	};
 
 	const onLoad = () => {
-		props.onLoadCellIds(checkedCellIds);
+		action.loadCellData(checkedCellIds);
+		// props.onLoadCellIds(checkedCellIds);
 	};
 
 	const onClear = () => {
 		setCheckedKeys([]);
 		setCheckedCellIds([]);
 		setFilteredTreeData(treeData);
-		props.onLoadCellIds([]);
-		props.onEditCellIds([]);
+		// props.onLoadCellIds([]);
+		// props.onEditCellIds([]);
+		action.clearDashboard();
 	};
 
 	const onEdit = () => {
-		props.onEditCellIds(checkedCellIds);
+		// props.onEditCellIds(checkedCellIds);
+		action.editCellData(checkedCellIds);
 	};
 
 	return (
@@ -231,7 +236,7 @@ const SideBar = (props) => {
 					left: 0,
 					top: 80,
 					bottom: 0,
-					padding: "0.5rem 0.3rem",
+					padding: "0.5rem 0.5rem",
 					// borderRight: "1px solid #D3D3D3",
 					borderRadius: "5px",
 					marginRight: "5px",
@@ -241,7 +246,7 @@ const SideBar = (props) => {
 				theme="light"
 				className="shadow"
 			>
-				<SimpleBarReact style={{ height: "90vh" }}>
+				<SimpleBarReact style={{ maxHeight: "90vh" }}>
 					<Button
 						style={{ float: "right" }}
 						onClick={() => {
@@ -257,19 +262,19 @@ const SideBar = (props) => {
 							<Search className="py-2" placeholder="Search" onChange={(e) => onChange(e)} />
 							<div className="row justify-content-around pb-2">
 								<div className="col-md-6">
-									<Button type="primary" block onClick={() => onClear()}>
+									<Button type="primary" block onClick={() => onClear()} disabled={!checkedKeys.length}>
 										Clear
 									</Button>
 								</div>
 								<div className="col-md-6">
-									<Button type="primary" block onClick={() => onLoad()}>
+									<Button type="primary" block onClick={() => onLoad()} disabled={!checkedKeys.length}>
 										Load
 									</Button>
 								</div>
 							</div>
 							<div className="row pb-3">
 								<div className="col-md-12">
-									<Button type="primary" block onClick={() => onEdit()}>
+									<Button type="primary" block onClick={() => onEdit()} disabled={!checkedKeys.length}>
 										View Metadata
 									</Button>
 								</div>

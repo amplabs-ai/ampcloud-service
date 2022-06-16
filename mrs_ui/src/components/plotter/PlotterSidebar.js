@@ -5,7 +5,7 @@ import axios from "axios";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
 import { useAuth0Token } from "../../utility/useAuth0Token";
-import { useDashboard } from "../../context/DashboardContext";
+import { usePlotter } from "../../context/PlotterContext";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -130,7 +130,7 @@ const _generateTreeData = (data) => {
 	return x;
 };
 
-const SideBar = (props) => {
+const PlotterSidebar = () => {
 	const [checkedKeys, setCheckedKeys] = useState([]);
 	const [sideBarCollapse, setSideBarCollapse] = useState(false);
 	const [filteredTreeData, setFilteredTreeData] = useState([]);
@@ -139,8 +139,7 @@ const SideBar = (props) => {
 	const [isCelldataLoaded, setIsCelldataLoaded] = useState(false);
 	const [error, setError] = useState(null);
 
-	const { state, action } = useDashboard();
-
+	const { state, action } = usePlotter();
 	const accessToken = useAuth0Token();
 
 	useEffect(() => {
@@ -207,21 +206,13 @@ const SideBar = (props) => {
 
 	const onLoad = () => {
 		action.loadCellData(checkedCellIds);
-		// props.onLoadCellIds(checkedCellIds);
 	};
 
 	const onClear = () => {
 		setCheckedKeys([]);
 		setCheckedCellIds([]);
 		setFilteredTreeData(treeData);
-		// props.onLoadCellIds([]);
-		// props.onEditCellIds([]);
 		action.clearDashboard();
-	};
-
-	const onEdit = () => {
-		// props.onEditCellIds(checkedCellIds);
-		action.editCellData(checkedCellIds);
 	};
 
 	return (
@@ -273,13 +264,6 @@ const SideBar = (props) => {
 									</Button>
 								</div>
 							</div>
-							<div className="row pb-3">
-								<div className="col-md-12">
-									<Button type="primary" block onClick={() => onEdit()} disabled={!checkedKeys.length}>
-										View Metadata
-									</Button>
-								</div>
-							</div>
 							{error ? <Result status="warning" extra={<p>Error loading data!</p>} /> : null}
 							<div style={{ minHeight: "100%" }}>
 								{isCelldataLoaded ? (
@@ -305,9 +289,8 @@ const SideBar = (props) => {
 					)}
 				</SimpleBarReact>
 			</Sider>
-			{/* <Divider type="vertical" className="handle" /> */}
 		</>
 	);
 };
 
-export default SideBar;
+export default PlotterSidebar;

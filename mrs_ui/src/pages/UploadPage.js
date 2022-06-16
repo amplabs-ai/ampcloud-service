@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import DropFileInput from "../components/DropFileInput";
+import DropFileInput from "../components/upload/DropFileInput";
 import styles from "./UploadPage.module.css";
 import axios from "axios";
-import { Radio, Typography, Progress, message, Alert, Divider } from "antd";
+import { Radio, Typography, message, Alert } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import pako from "pako";
 import { useTransition, animated } from "react-spring";
-import UploadPageForms from "../components/UploadPageForms";
-import ProcessUpload from "../components/ProcessUpload";
-import { FaCloudUploadAlt } from "react-icons/fa";
+import UploadPageForms from "../components/upload/UploadPageForms";
+import ProcessUpload from "../components/upload/ProcessUpload";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useAuth0Token } from "../utility/useAuth0Token";
 
@@ -257,7 +256,7 @@ const UploadPage = () => {
 					if (res.data.records) {
 						if (parseInt(res.data.records.percentage) === 100) {
 							// redirect user
-							let navigateTo = pageType === "cycle-test" ? "/dashboard/cycle-test" : "/dashboard/abuse-test";
+							let navigateTo = pageType === "cycle-test" ? "/dashboard" : "/dashboard/abuse-test";
 							setTimeout(() => navigate(navigateTo), 1000);
 							clearInterval(intervalId);
 						} else if (parseInt(res.data.records.percentage) === -1) {
@@ -296,18 +295,6 @@ const UploadPage = () => {
 										processingProgress={processingProgress}
 										styles={styles}
 									/>
-									{/* <div className={styles.processingStatusBar}>
-										<Title className="py-4" level={2}>
-											{processingProgressMsg}
-										</Title>
-										<Progress
-											type="circle"
-											width="300px"
-											status={Math.floor(parseInt(processingProgress.percentage)) === -1 ? "exception" : "active"}
-											percent={Math.floor(processingProgress.percentage)}
-											format={(percent) => <div className="fs-4">{percent}%</div>}
-										/>
-									</div> */}
 								</animated.div>
 							) : (
 								<animated.div style={style}>
@@ -339,17 +326,11 @@ const UploadPage = () => {
 											showIcon
 										/>
 									</div>
-
 									<UploadPageForms pageType={pageType} ref={uploadPageFormsRef} />
-
 									{pageType !== "cycle-test" && (
 										<div className="my-2">
 											<Title level={5}>File-Type:</Title>
-											<Radio.Group
-												// defaultValue={fileUploadType}
-												onChange={(e) => setFileUploadType(e.target.value)}
-												buttonStyle="solid"
-											>
+											<Radio.Group onChange={(e) => setFileUploadType(e.target.value)} buttonStyle="solid">
 												{pageType === "cycle-test" ? (
 													<>
 														<Radio.Button value="arbin">arbin</Radio.Button>

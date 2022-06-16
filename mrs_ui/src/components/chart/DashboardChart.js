@@ -1,5 +1,5 @@
 import { Alert } from "antd";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import ReactEcharts from "echarts-for-react";
 import initialChartOptions from "../../chartConfig/initialConfigs";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
@@ -29,6 +29,7 @@ const DashboardChart = (props) => {
 		chartRef.current.getEchartsInstance().dispatchAction({
 			type: "restore",
 		});
+		console.log("asdw", chartConfig(props.chartName, props.data));
 		// if (props.data && props.data.length) {
 		// chartRef.current.getEchartsInstance().showLoading();
 		chartRef.current.getEchartsInstance().setOption({
@@ -47,7 +48,7 @@ const DashboardChart = (props) => {
 				},
 				feature: {
 					myTool: {
-						show: true,
+						show: !(props.usage === "plotter"),
 						title: "View Code",
 						icon: `path://M9,22 L15,2 M17,17 L22,12 L17,7 M7,17 L2,12 L7,7`,
 						onclick: function () {

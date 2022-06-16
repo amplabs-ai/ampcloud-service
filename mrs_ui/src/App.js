@@ -7,14 +7,11 @@ import LandingPage from "./pages/LandingPage";
 import Navbar from "./components/Navbar";
 import UploadPage from "./pages/UploadPage";
 import PageNotFound from "./pages/PageNotFound";
-import PlotterPage from "./pages/PlotterPage";
-import PublicDataDashboard from "./pages/PublicDataDashboard";
+import DataViewerPage from "./pages/DataViewerPage";
 import RedirectRoute from "./routes/RedirectRoute";
 import SharedDashboard from "./components/SharedDashboard";
 import { Auth0Provider, withAuthenticationRequired } from "@auth0/auth0-react";
-import { AccessTokenContextProvider } from "./context/AccessTokenContext";
-import Dashboard2 from "./components/dashboard/Dashboard2";
-import DashboardPage2 from "./pages/DashboardPage2";
+import PlotterPage from "./pages/PlotterPage";
 
 const domain = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -57,7 +54,6 @@ const App = () => {
 					<p>My Token = {window.token}</p>
 					<BackTop />
 					<Navbar />
-					{/* <AccessTokenContextProvider> */}
 					<Routes>
 						<Route
 							path="/"
@@ -73,13 +69,11 @@ const App = () => {
 							<Route path="abuse-test" element={<UploadPage />} />
 						</Route>
 						<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
-						<Route path="/plotter" element={<PrivateRoute component={PlotterPage} />}></Route>
-						<Route path="/dashboard/public" element={<PublicDataDashboard />} exact></Route>
-						<Route path="/dashboard2" element={<DashboardPage2 />}></Route>
+						<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
+						<Route path="/plotter" element={<PlotterPage />}></Route>
 						<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>
-					{/* </AccessTokenContextProvider> */}
 				</Auth0ProviderWithRedirectCallback>
 			</Router>
 		</>
