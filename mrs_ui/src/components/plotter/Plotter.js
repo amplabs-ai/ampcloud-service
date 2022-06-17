@@ -11,12 +11,8 @@ const { TabPane } = Tabs;
 const Plotter = () => {
 	const { state, action } = usePlotter();
 
-	const handleFilterChange = (cellIds) => {
-		console.log("handleFilterChange", cellIds);
-	};
-
-	const handleCellIdChange = (cellIds) => {
-		console.log(cellIds);
+	const handleCellIdChange = (cellIds) => { 
+		action.setCheckedCellIds(cellIds);
 	};
 
 	return (
@@ -27,7 +23,7 @@ const Plotter = () => {
 					<Content>
 						{state.selectedCellIds.length ? (
 							<>
-								<PlotterFilterbar />
+								<PlotterFilterbar onCellIdChange={handleCellIdChange} />
 								<div className="card shadow p-3">
 									<SeriesPlot type="timeseries" />
 									<SeriesPlot type="cycleseries" />

@@ -54,14 +54,14 @@ const PlotterFilterbar = (props) => {
 				setCellIds([...cellIdData]);
 				setSelectedRowKeys(cellIdData.map((c) => c.key));
 				setSelectedRows([...cellIdData]);
-				action.setCheckedCellIds(cellIdData);
+				props.onCellIdChange(cellIdData);
 				setTableLoading(false);
 			} else {
 				// error
 				setCellIds([]);
 				setSelectedRowKeys([]);
 				setSelectedRows([]);
-				action.setCheckedCellIds([]);
+				props.onCellIdChange([]);
 				setTableLoading(false);
 			}
 		}
@@ -138,7 +138,7 @@ const PlotterFilterbar = (props) => {
 			});
 	};
 
-	// =========Filter================
+	// =========SEARCH================
 	let searchInput;
 	const getColumnSearchProps = (dataIndex) => ({
 		filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -203,7 +203,7 @@ const PlotterFilterbar = (props) => {
 		clearFilters();
 		setSearchText("");
 	};
-	// =======Filter END==============
+	// =======SEARCH END==============
 	const columns = [
 		{
 			title: "Cell Id",
