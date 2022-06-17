@@ -18,7 +18,7 @@ const Navbar = () => {
 					className="nav-link"
 					onClick={async (e) => {
 						e.preventDefault();
-						logout();
+						logout({ returnTo: window.location.origin });
 					}}
 					to="/"
 				>

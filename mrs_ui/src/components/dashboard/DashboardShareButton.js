@@ -196,7 +196,7 @@ const DashboardShareButton = (props, ref) => {
 
 	return (
 		<>
-			<HelmetMetaData image={metaImageDash}></HelmetMetaData>
+			{/* <HelmetMetaData image={metaImageDash}></HelmetMetaData> */}
 			<Modal
 				title="Share Dashboard"
 				centered

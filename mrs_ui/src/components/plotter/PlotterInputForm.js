@@ -43,6 +43,7 @@ const PlotterInputForm = (props) => {
 	};
 
 	const onReset = () => {
+		props.onPlotReset();
 		form.resetFields();
 	};
 
