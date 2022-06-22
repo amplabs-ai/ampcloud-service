@@ -39,7 +39,7 @@ const PlotterInputForm = (props) => {
 	}, [props.type]);
 
 	const onFinish = (values) => {
-		props.onPlot(values);
+		props.onPlot(values, axisOptions);
 	};
 
 	const onReset = () => {
@@ -59,7 +59,13 @@ const PlotterInputForm = (props) => {
 						},
 					]}
 				>
-					<Select style={{ width: "100%" }} placeholder="Select X-Axis" loading={loading}>
+					<Select
+						showSearch
+						style={{ width: "100%" }}
+						placeholder="Select X-Axis"
+						loading={loading}
+						dropdownMatchSelectWidth={false}
+					>
 						{Object.keys(axisOptions).map((c, i) => (
 							<Option key={i} value={axisOptions[c]}>
 								{c}
@@ -76,7 +82,13 @@ const PlotterInputForm = (props) => {
 						},
 					]}
 				>
-					<Select style={{ width: "100%" }} placeholder="Select Y-Axis" loading={loading}>
+					<Select
+						showSearch
+						style={{ width: "100%" }}
+						placeholder="Select Y-Axis"
+						loading={loading}
+						dropdownMatchSelectWidth={false}
+					>
 						{Object.keys(axisOptions).map((c, i) => (
 							<Option key={i} value={axisOptions[c]}>
 								{c}
@@ -107,7 +119,7 @@ const PlotterInputForm = (props) => {
 											},
 										]}
 									>
-										<Select placeholder="Select Column">
+										<Select placeholder="Column" size="small" showSearch dropdownMatchSelectWidth={false}>
 											{Object.keys(axisOptions).map((c, i) => (
 												<Option key={i} value={axisOptions[c]}>
 													{c}
@@ -125,7 +137,7 @@ const PlotterInputForm = (props) => {
 											},
 										]}
 									>
-										<Select placeholder="Select Operation">
+										<Select showSearch size="small" placeholder="Operation" dropdownMatchSelectWidth={false}>
 											{FILTER_OPERATORS.map((c, i) => (
 												<Option key={i} value={c}>
 													{c}
@@ -143,7 +155,7 @@ const PlotterInputForm = (props) => {
 											},
 										]}
 									>
-										<Input type="number" placeholder="Enter Value" />
+										<Input size="small" type="number" placeholder="Value" />
 									</Form.Item>
 									<MinusCircleOutlined onClick={() => remove(name)} />
 								</Space>

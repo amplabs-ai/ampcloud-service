@@ -57,7 +57,7 @@ const Navbar = () => {
 								</li>
 								<li className="nav-item">
 									<Link className="nav-link" to="/data-viewer">
-										Data-Viewer
+										CSV-Viewer
 									</Link>
 								</li>
 								<li className="nav-item">
