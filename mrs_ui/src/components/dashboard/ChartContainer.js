@@ -7,6 +7,7 @@ import Worker from "../../worker/worker";
 import ViewCodeModal from "../ViewCodeModal";
 import DashboardChart from "../chart/DashboardChart";
 import { Spin } from "antd";
+import DashboardFilterBar from "./DashboardFilterBar";
 
 let CHART_API_ENDPOINTS = {
 	energyAndDecay: "/echarts/energyAndCapacityDecay",
@@ -240,7 +241,7 @@ const ChartContainer = () => {
 				setModalVisible={setModalVisible}
 				searchParams={searchParams}
 			/>
-			<DashboardFilterBar2
+			<DashboardFilterBar
 				onFilterChange={handleFilterChange}
 				onCellIdChange={handleCellIdChange}
 				disableSelection={disableSelection}

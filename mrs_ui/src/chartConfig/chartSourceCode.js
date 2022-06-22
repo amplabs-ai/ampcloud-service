@@ -1,5 +1,5 @@
 const sourceCode = {
-  cycleIndexChart: `
+	cycleIndexChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -52,7 +52,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  timeSeriesChart: `
+	timeSeriesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -107,7 +107,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  efficiencyChart: `
+	efficiencyChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -162,7 +162,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  cycleQtyByStepChart: `
+	cycleQtyByStepChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -216,7 +216,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  cycleQtyByStepWithCapacityChart: `
+	cycleQtyByStepWithCapacityChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -269,7 +269,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  compareByCycleTimeChart: `
+	compareByCycleTimeChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -324,7 +324,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  forceAndDisplacementChart: `
+	forceAndDisplacementChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -379,7 +379,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  testTempraturesChart: `
+	testTempraturesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -433,7 +433,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-  voltageChart: `
+	voltageChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -486,6 +486,117 @@ if response:
 
     #Plot the chart
     plot_chart(df)
+    `,
+	plotterChart_timeSeries: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/timeseries"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accessToken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.scatter(df, x=req_data['columns'][0], y=req_data['columns'][1], color="cell_id", labels=__col_labels__ title = "Timeseries Plot")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./TimeSeriesPlot.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+if response['records'][0]:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    plot_chart(df)
+
+
+    `,
+	plotterChart_cycleSeries: `
+plotterChart_cycleSeries
+
+
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/timeseries"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accessToken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.scatter(df, x=req_data['columns'][0], y=req_data['columns'][1], color="cell_id", labels=__col_labels__ title = "Timeseries Plot")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./TimeSeriesPlot.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+if response['records'][0]:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    plot_chart(df)
+
+
     `,
 };
 
