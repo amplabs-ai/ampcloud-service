@@ -1,11 +1,11 @@
 import axios from "axios";
+import { message } from "antd";
 import React, { useEffect, useState } from "react";
 import sourceCode from "../../chartConfig/chartSourceCode";
 import { usePlotter } from "../../context/PlotterContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import DashboardChart from "../chart/DashboardChart";
 import ViewCodeModal from "../ViewCodeModal";
-import PlotlyExample from "./PlotlyExample";
 import PlotterInputForm from "./PlotterInputForm";
 import ViewCode from "./ViewCode";
 
@@ -74,7 +74,7 @@ const SeriesPlot = (props) => {
 		let data = JSON.stringify({
 			cell_ids: state.checkedCellIds.map((c) => c.cell_id),
 			columns: [values["x-axis"], values["y-axis"]],
-			filters: values.filters?.map((f) => Object.values(f).join("")) || [],
+			filters: values.filters || [],
 		});
 
 		axios({
@@ -102,6 +102,10 @@ const SeriesPlot = (props) => {
 				setReplaceInCode(replaceInCode);
 			})
 			.catch(function (error) {
+				if(error.response.data.status == 400){
+					message.error(error.response.data.detail);
+					message.error(error.response.data.detail)
+				}
 				setChartLoadSpiner(false);
 				setChartLoadingError(true);
 				setData([]);

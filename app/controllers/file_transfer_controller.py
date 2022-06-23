@@ -7,6 +7,9 @@ from app.utilities.with_authentication import with_authentication
 from flask import make_response, request, g
 from app.response import Response
 import logging
+from io import BytesIO
+import zipfile
+from flask import send_file
 
 lock = threading.Lock()
 
@@ -67,20 +70,23 @@ def upload_file(tester):
 def download_cycle_timeseries(cell_id):
     email = g.user
     try:
-
+        memory_file = BytesIO()
         dashboard_id = request.args.to_dict().get('dashboard_id')
         start_time = datetime.datetime.now()
         status, detail, *resp = download_cycle_timeseries_service(cell_id[0], email, dashboard_id)
         if resp:
-            resp = make_response(resp[0].to_csv(index=False))
-            resp.headers["Content-Disposition"] = "attachment; filename={}".format(
-                f"{cell_id[0]}_cycle_timeseries.csv")
-            resp.headers["Content-Type"] = "text/csv"
+            with zipfile.ZipFile(memory_file, 'w') as zf:
+                zip_info = zipfile.ZipInfo(f"{cell_id[0]}_cycle_timeseries.csv")
+                zip_info.compress_type = zipfile.ZIP_DEFLATED
+                zf.writestr(zip_info, resp[0].to_csv(None, encoding='utf-8', index=False))
+            memory_file.seek(0)
+            size = float(len(memory_file.getvalue())/1000)
             end_time = datetime.datetime.now()
-            size = float(resp.content_length/1000)
+
             logging.info("User {email} Action DOWNLOAD_CYCLE_TIMESERIES file {filename} size {size} type CYCLE_TIMESERIES download_time {time}".format(
                     email=email, filename=f"{cell_id[0]}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
-            return resp
+            
+            return send_file(memory_file, attachment_filename=f"{cell_id[0]}_cycle_timeseries.zip", as_attachment=True)
         else:
             return Response(status, detail).to_dict(), status
     except Exception as err:
@@ -93,19 +99,21 @@ def download_cycle_timeseries(cell_id):
 def download_cycle_data(cell_id):
     email = g.user
     try:
+        memory_file = BytesIO()
         dashboard_id = request.args.to_dict().get('dashboard_id')
         start_time = datetime.datetime.now()
         status, detail, *resp = download_cycle_data_service(cell_id[0], email, dashboard_id)
         if resp:
-            resp = make_response(resp[0].to_csv(index=False))
-            resp.headers["Content-Disposition"] = "attachment; filename={}".format(
-                f"{cell_id[0]}_cycle_data.csv")
-            resp.headers["Content-Type"] = "text/csv"
+            with zipfile.ZipFile(memory_file, 'w') as zf:
+                zip_info = zipfile.ZipInfo(f"{cell_id[0]}_cycle.csv")
+                zip_info.compress_type = zipfile.ZIP_DEFLATED
+                zf.writestr(zip_info, resp[0].to_csv(None, encoding='utf-8', index=False))
+            memory_file.seek(0)
+            size = float(len(memory_file.getvalue())/1000)
             end_time = datetime.datetime.now()
-            size = float(resp.content_length/1000)
             logging.info("User {email} Action DOWNLOAD_CYCLE_DATA file {filename} size {size} type CYCLE_DATA download_time {time}".format(
-                    email=email, filename=f"{cell_id[0]}_cycle_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
-            return resp
+                    email=email, filename=f"{cell_id[0]}_cycle.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+            return send_file(memory_file, attachment_filename=f"{cell_id[0]}_cycle.zip", as_attachment=True)
         else:
             return Response(status, detail).to_dict(), status
     except Exception as err:

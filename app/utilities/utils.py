@@ -389,14 +389,14 @@ def calc_cycle_quantities(df):
     # step_ordinal = 1
 
     for x in tmp_arr:
+        if x[1] < 0:
+            x[8] = "Discharge"
+        elif x[1] > 0:
+            x[8] = "Charge"
+        else:
+            x[8] = "Rest"
 
         if step_index_present:
-            if x[1] < 0:
-                x[8] = "Discharge"
-            elif x[1] > 0:
-                x[8] = "Charge"
-            else:
-                x[8] = "Rest"
             if not step_time_present:
                 if step_start == -1:
                     initial_step_time = x[0]
@@ -471,13 +471,12 @@ def calc_cycle_quantities(df):
         df_tmp.index += df.index[0]
         df[LABEL.STEP_TIME.value] = df_tmp[LABEL.STEP_TIME.value]
 
-        df_tmp = pd.DataFrame(data=tmp_arr[:, [8]], columns=[LABEL.STEP_TYPE.value])
-        df_tmp.index += df.index[0]
-        df[LABEL.STEP_TYPE.value] = df_tmp[LABEL.STEP_TYPE.value]
 
         # df_tmp = pd.DataFrame(data=tmp_arr[:, [11]], columns=[LABEL.STEP_DATAPOINT_ORDINAL.value])
         # df_tmp.index += df.index[0]
-
+    df_tmp = pd.DataFrame(data=tmp_arr[:, [8]], columns=[LABEL.STEP_TYPE.value])
+    df_tmp.index += df.index[0]
+    df[LABEL.STEP_TYPE.value] = df_tmp[LABEL.STEP_TYPE.value]
     df_tmp = pd.DataFrame(data=tmp_arr[:, [7]],
                           columns=[LABEL.CYCLE_TIME.value])
     df_tmp.index += df.index[0]

@@ -318,6 +318,7 @@ display_names = {
     "Net Energy (Wh)":"net_energy",
     "Cycle Charge Energy (Wh)":"cycle_charge_energy",
     "Discharge Energy (Wh)":"discharge_energy",
+    "Discharge Capacity (Ah)":"discharge_capacity",
     "Cumulative Discharge Energy (Wh)":"cumulative_discharge_energy",
     "Cycle Discharge Energy (Wh)":"cycle_discharge_energy",
     "Environment Temperature (C)":"environment_temperature",
