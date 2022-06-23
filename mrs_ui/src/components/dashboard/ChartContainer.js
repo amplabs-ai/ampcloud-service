@@ -51,6 +51,15 @@ const ChartContainer = () => {
 	const [codeContent, setCodeContent] = useState("");
 
 	useEffect(() => {
+		setChartLoadingError((prev)=> {
+			return {...prev,
+				cycleIndex: false,
+				timeSeries: false,
+				efficiency: false,
+				cycleQtyByStep: false,
+				cycleQtyByStepWithCapacity: false,
+			}
+		})
 		let check = true;
 		Object.values(chartsLoaded).forEach((c) => {
 			if (!c) {

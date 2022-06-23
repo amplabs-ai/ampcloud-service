@@ -1,6 +1,7 @@
 from app.archive_constants import RESPONSE_MESSAGE
 from app.model import ArchiveOperator
 import logging
+from sqlalchemy.exc import DataError
 
 
 def get_cycle_quantities_by_step_service(cell_id, step, email, dashboard_id=None):
@@ -220,7 +221,10 @@ def get_timeseries_columns_data_service(data, email):
         ao.set_session()
         columns = (',').join(data['columns'])
         cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
-        filters = 'and ' + ('and ').join(data['filters']) if data.get('filters') else ""
+        filters = ""
+        for filter in data['filters']:
+            filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
+            filters = filters+f"and {filter_str}"
         archive_cells = ao.get_all_data_from_timeseries_query(columns, cell_ids, email, filters)
         records = []
         series = {}
@@ -233,6 +237,8 @@ def get_timeseries_columns_data_service(data, email):
         for key, value in series.items():
             records.append({"id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+    except DataError as err:
+        return 400, str(err.__dict__['orig']).split('\n')[0]
     except Exception as err:
         print(err)
         logging.error(err)
@@ -247,7 +253,10 @@ def get_stats_columns_data_service(data, email):
         ao.set_session()
         columns = (',').join(data['columns'])
         cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
-        filters = 'and ' + ('and ').join(data['filters']) if data.get('filters') else ""
+        filters = ""
+        for filter in data['filters']:
+            filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
+            filters = filters+f"and {filter_str}"
         archive_cells = ao.get_all_data_from_stats_query(columns, cell_ids, email, filters)
         records = []
         series = {}
@@ -260,6 +269,8 @@ def get_stats_columns_data_service(data, email):
         for key, value in series.items():
             records.append({"id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+    except DataError as err:
+        return 400, str(err.__dict__['orig']).split('\n')[0]
     except Exception as err:
         logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']

@@ -467,21 +467,12 @@ class ArchiveOperator:
 
 
     def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters):
-        try:
-            result = self.session.execute(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
-            print(result)
-            return result
-        except Exception as err:
-            print(err)
-            pass
+        result = self.session.execute(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
+        return result
 
     def get_all_data_from_stats_query(self, columns, cell_ids, email, filters):
-        try:
-            result = self.session.execute(STATS_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
-            return result
-        except Exception as err:
-            print(err)
-            pass
+        result = self.session.execute(STATS_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
+        return result
 
     # DASHBOARD
     def get_shared_dashboard_by_id(self, dashboard_id):

@@ -74,15 +74,16 @@ const PlotterFilterbar = (props) => {
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
+				responseType:'arraybuffer',
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
 				var a = document.createElement("a");
-				var blob = new Blob([data], { type: "text/csv" });
+				var blob = new Blob([data], { type: "application/zip" });
 				a.href = window.URL.createObjectURL(blob);
-				a.download = k + " (Cycle Data).csv";
+				a.download = k + " (Cycle Data).zip";
 				a.click();
 				setLoading(false);
 			})
@@ -121,15 +122,16 @@ const PlotterFilterbar = (props) => {
 		axios
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
+				responseType:'arraybuffer',
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
 				var a = document.createElement("a");
-				var blob = new Blob([data], { type: "text/csv" });
+				var blob = new Blob([data], { type: "application/zip" });
 				a.href = window.URL.createObjectURL(blob);
-				a.download = k + " (Time Series).csv";
+				a.download = k + " (Time Series).zip";
 				a.click();
 				setLoading(false);
 			})

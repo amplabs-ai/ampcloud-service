@@ -5,7 +5,7 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
-const FILTER_OPERATORS = [">", "<", "=", ">=", "<=", "<>"];
+const FILTER_OPERATORS = [">", "<", "=", ">=", "<=", "!="];
 
 const PlotterInputForm = (props) => {
 	const [form] = Form.useForm();
@@ -155,7 +155,7 @@ const PlotterInputForm = (props) => {
 											},
 										]}
 									>
-										<Input size="small" type="number" placeholder="Value" />
+										<Input size="small" placeholder="Value" />
 									</Form.Item>
 									<MinusCircleOutlined onClick={() => remove(name)} />
 								</Space>
