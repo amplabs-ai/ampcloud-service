@@ -9,6 +9,7 @@ import ChartContainer from "./ChartContainer";
 import DashboardShareButton from "./DashboardShareButton";
 import SideBar from "./Sidebar";
 import ViewMetadata from "./ViewMetadata";
+import Plotter from "./Plot/Plotter";
 
 const { Content } = Layout;
 
@@ -87,6 +88,8 @@ const Dashboard = (props) => {
 									<ChartContainer />
 								) : state.shallShowEdit ? (
 									<ViewMetadata />
+								) : state.shallShowMeta ? (
+									<Plotter />
 								) : (
 									<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
 										<Empty description={<span>No Data Loaded</span>} />

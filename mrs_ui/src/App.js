@@ -11,7 +11,6 @@ import DataViewerPage from "./pages/DataViewerPage";
 import RedirectRoute from "./routes/RedirectRoute";
 import SharedDashboard from "./components/SharedDashboard";
 import { Auth0Provider, withAuthenticationRequired } from "@auth0/auth0-react";
-import PlotterPage from "./pages/PlotterPage";
 
 const domain = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -70,7 +69,7 @@ const App = () => {
 						</Route>
 						<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
 						<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
-						<Route path="/plotter" element={<PlotterPage />}></Route>
+						{/* <Route path="/plotter" element={<PlotterPage />}></Route> */}
 						<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>

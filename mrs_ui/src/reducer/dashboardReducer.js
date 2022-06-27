@@ -7,6 +7,7 @@ const dashboardReducer = (state, action) => {
 				selectedCellIds: payload.selectedCellIds,
 				shallShowEdit: false,
 				shallShowChart: true,
+				shallShowMeta: false,
 			};
 		case "EDIT_CELL_IDS":
 			return {
@@ -14,6 +15,16 @@ const dashboardReducer = (state, action) => {
 				selectedCellIds: payload.selectedCellIds,
 				shallShowEdit: true,
 				shallShowChart: false,
+				shallShowMeta: false,
+
+			};
+		case "PLOT_CELL_IDS":
+			return {
+				...state,
+				selectedCellIds: payload.selectedCellIds,
+				shallShowEdit: false,
+				shallShowChart: false,
+				shallShowMeta: true,
 			};
 		case "CLEAR_DASHBOARD":
 			return {
@@ -21,6 +32,7 @@ const dashboardReducer = (state, action) => {
 				selectedCellIds: [],
 				shallShowEdit: false,
 				shallShowChart: false,
+				shallShowMeta: false,
 			};
 		case "SET_DASHBOARD_ID":
 			return {
@@ -54,6 +66,11 @@ const dashboardReducer = (state, action) => {
 				...state,
 				appliedStep: payload.appliedStep,
 			};
+		case "SET_CHECKED_CELL_IDS":
+			return {
+				...state,
+				checkedCellIds: payload.checkedCellIds,
+			};
 		default:
 			throw new Error(`No case for type ${type} found in dashboardReducer.`);
 	}
@@ -63,12 +80,14 @@ export const initialState = {
 	selectedCellIds: [],
 	shallShowEdit: false,
 	shallShowChart: false,
+	shallShowMeta: false,
 	dashboardId: null,
 	dashboardType: "private",
 	dashboardError: "",
 	refreshSidebar: false,
 	appliedStep: localStorage.getItem("step") || 500,
 	shareDisabled: true,
+	checkedCellIds: [],
 };
 
 export default dashboardReducer;

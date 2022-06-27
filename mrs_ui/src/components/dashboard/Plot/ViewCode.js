@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, Typography, message } from "antd";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import copyToClipboard from "../../utility/copyToClipboard";
+import copyToClipboard from "../../../utility/copyToClipboard";
 
 const { Text } = Typography;
 

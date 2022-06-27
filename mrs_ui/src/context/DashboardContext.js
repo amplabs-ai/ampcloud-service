@@ -14,6 +14,14 @@ export const DashboardProvider = ({ children }) => {
 			},
 		});
 	};
+	const plotCellData = (selectedCellIds) => {
+		dispatch({
+			type: "PLOT_CELL_IDS",
+			payload: {
+				selectedCellIds,
+			},
+		});
+	};
 
 	const editCellData = (selectedCellIds) => {
 		dispatch({
@@ -75,11 +83,18 @@ export const DashboardProvider = ({ children }) => {
 			payload: { appliedStep },
 		});
 	};
+	const setCheckedCellIds = (checkedCellIds) => {
+		dispatch({
+			type: "SET_CHECKED_CELL_IDS",
+			payload: { checkedCellIds },
+		});
+	};
 
 	const value = {
 		state: state,
 		action: {
 			loadCellData,
+			plotCellData,
 			editCellData,
 			clearDashboard,
 			setDashboardId,
@@ -88,6 +103,7 @@ export const DashboardProvider = ({ children }) => {
 			refreshSidebar,
 			setShareDisabled,
 			setAppliedStep,
+			setCheckedCellIds,
 		},
 		dashboardRef: useRef(null),
 	};

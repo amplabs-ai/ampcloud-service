@@ -78,6 +78,7 @@ const ChartContainer = () => {
 				console.log("first");
 				cancelReqToken[s].cancel();
 			}
+			action.setShareDisabled(true);
 		};
 	}, []);
 

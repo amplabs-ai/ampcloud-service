@@ -50,14 +50,15 @@ const Navbar = () => {
 						{/* {auth.user.isLoggedIn && ( */}
 						{isAuthenticated && (
 							<>
-								<li className="nav-item">
-									<Link className="nav-link" to="/plotter">
-										Plotter
+								{/* <li className="nav-item">
+									<Link className="nav-link" to="/view-metadata">
+										View-MetaData
 									</Link>
-								</li>
+								</li> */}
+
 								<li className="nav-item">
 									<Link className="nav-link" to="/data-viewer">
-										CSV-Viewer
+										Data-Viewer
 									</Link>
 								</li>
 								<li className="nav-item">
