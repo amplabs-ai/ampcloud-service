@@ -1,5 +1,5 @@
 const sourceCode = {
-	cycleIndexChart: `
+cycleIndexChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -52,7 +52,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	timeSeriesChart: `
+timeSeriesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -107,7 +107,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	efficiencyChart: `
+efficiencyChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -162,7 +162,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	cycleQtyByStepChart: `
+cycleQtyByStepChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -216,7 +216,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	cycleQtyByStepWithCapacityChart: `
+cycleQtyByStepWithCapacityChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -269,7 +269,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	compareByCycleTimeChart: `
+compareByCycleTimeChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -324,7 +324,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	forceAndDisplacementChart: `
+forceAndDisplacementChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -379,7 +379,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	testTempraturesChart: `
+testTempraturesChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -433,7 +433,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	voltageChart: `
+voltageChart: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido
@@ -487,7 +487,7 @@ if response:
     #Plot the chart
     plot_chart(df)
     `,
-	plotterChart_timeSeries: `
+plotterChart_timeSeries: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido requests
@@ -500,16 +500,23 @@ warnings.filterwarnings('ignore')
 import json
 import requests
 
+# import graph_objects from plotly package
+
 # PyData Libraries
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
+import plotly.graph_objects as go
+
+# import make_subplots function from plotly.subplots
+# to make grid of plots
+from plotly.subplots import make_subplots
 
 def get_amplabs_chartdata(req_data):
     url = "https://www.amplabs.ai/echarts/timeseries"
     payload = json.dumps(req_data)
     headers = {
-    'Authorization': 'Bearer __accessToken__',
+    'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
@@ -520,13 +527,24 @@ def get_amplabs_chartdata(req_data):
         return None
 
 def plot_chart(df):
-    fig = px.scatter(df, x=req_data['columns'][0], y=req_data['columns'][1], color="cell_id", labels=__col_labels__ title = "Timeseries Plot")
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    x = req_data['columns'][0]
+    req_data['columns'].pop(0)
+    for cell_id in req_data['cell_ids']:
+        df_cell_id = df[df['cell_id']==cell_id]
+        for y in req_data['columns']:
+            fig.add_trace(
+            go.Scatter(x=df_cell_id[x], y=df_cell_id[y],  name=f"{cell_id}: {col_mapping[y]}"),
+            secondary_y=False)
     fig.update_traces(mode="markers", hovertemplate=None)
     fig.update_layout(hovermode="x")
+    fig.update_layout(title_text="Timeseries plot")
+    fig.update_xaxes(title_text="__xlabel__")
     pio.write_image(fig, file='./TimeSeriesPlot.png', format="png", scale=1, width=1200, height=800)
 
 
 #Fetch Data from Amplabs API
+col_mapping = __mapping__
 req_data = __req_data__
 response = get_amplabs_chartdata(req_data)
 
@@ -541,10 +559,7 @@ if response['records'][0]:
 
 
     `,
-	plotterChart_cycleSeries: `
-plotterChart_cycleSeries
-
-
+plotterChart_cycleSeries: `
 # Download python packages to your system using pip install
 import sys
 !{sys.executable} -m pip install pandas plotly kaleido requests
@@ -557,16 +572,23 @@ warnings.filterwarnings('ignore')
 import json
 import requests
 
+# import graph_objects from plotly package
+
 # PyData Libraries
 import pandas as pd
 import plotly.express as px
 import plotly.io as pio
+import plotly.graph_objects as go
+
+# import make_subplots function from plotly.subplots
+# to make grid of plots
+from plotly.subplots import make_subplots
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/timeseries"
+    url = "https://www.amplabs.ai/echarts/stats"
     payload = json.dumps(req_data)
     headers = {
-    'Authorization': 'Bearer __accessToken__',
+    'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
@@ -577,13 +599,24 @@ def get_amplabs_chartdata(req_data):
         return None
 
 def plot_chart(df):
-    fig = px.scatter(df, x=req_data['columns'][0], y=req_data['columns'][1], color="cell_id", labels=__col_labels__ title = "Timeseries Plot")
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    x = req_data['columns'][0]
+    req_data['columns'].pop(0)
+    for cell_id in req_data['cell_ids']:
+        df_cell_id = df[df['cell_id']==cell_id]
+        for y in req_data['columns']:
+            fig.add_trace(
+            go.Scatter(x=df_cell_id[x], y=df_cell_id[y],  name=f"{cell_id}: {col_mapping[y]}"),
+            secondary_y=False)
     fig.update_traces(mode="markers", hovertemplate=None)
     fig.update_layout(hovermode="x")
-    pio.write_image(fig, file='./TimeSeriesPlot.png', format="png", scale=1, width=1200, height=800)
+    fig.update_layout(title_text="CycleSeries plot")
+    fig.update_xaxes(title_text="__xlabel__")
+    pio.write_image(fig, file='./CycleSeriesPlot.png', format="png", scale=1, width=1200, height=800)
 
 
 #Fetch Data from Amplabs API
+col_mapping = __mapping__
 req_data = __req_data__
 response = get_amplabs_chartdata(req_data)
 

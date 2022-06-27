@@ -223,7 +223,10 @@ def get_timeseries_columns_data_service(data, email):
         cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
         filters = ""
         for filter in data['filters']:
-            filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
+            if filter['operation'] == '%':
+                filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
+            else:
+                filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
             filters = filters+f"and {filter_str}"
         archive_cells = ao.get_all_data_from_timeseries_query(columns, cell_ids, email, filters)
         records = []
@@ -255,7 +258,10 @@ def get_stats_columns_data_service(data, email):
         cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
         filters = ""
         for filter in data['filters']:
-            filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
+            if filter['operation'] == '%':
+                filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
+            else:
+                filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
             filters = filters+f"and {filter_str}"
         archive_cells = ao.get_all_data_from_stats_query(columns, cell_ids, email, filters)
         records = []
