@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { audit } from "../../auditAction/audit";
-import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../../chartConfig/cellIdViewCode";
+import { audit } from "../../../auditAction/audit";
+import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../../../chartConfig/cellIdViewCode";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import { SearchOutlined } from "@ant-design/icons";
 import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography } from "antd";
-import { useAuth0Token } from "../../utility/useAuth0Token";
+import { useAuth0Token } from "../../../utility/useAuth0Token";
 import axios from "axios";
 import Highlighter from "react-highlight-words";
-import ViewCodeModal from "../ViewCodeModal";
-import { useDashboard } from "../../context/DashboardContext";
-import { usePlotter } from "../../context/PlotterContext";
+import ViewCodeModal from "../../ViewCodeModal";
+import { useDashboard } from "../../../context/DashboardContext";
+
 
 const { Text } = Typography;
 
@@ -28,7 +28,7 @@ const PlotterFilterbar = (props) => {
 	const [searchedColumn, setSearchedColumn] = useState("");
 	const accessToken = useAuth0Token();
 
-	const { state, action } = usePlotter();
+	const { state, action } = useDashboard();
 
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
