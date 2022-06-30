@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import logo from "../assets/images/amplabsLogo.png";
-import { Link, useNavigate } from "react-router-dom";
-import { Menu, Dropdown, Avatar, Image } from "antd";
+import { Link } from "react-router-dom";
+import { Menu, Dropdown, Avatar } from "antd";
 import { FaAngleDown } from "react-icons/fa";
 // import { useAuth0 } from "@auth0/auth0-react";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -45,10 +45,42 @@ const Navbar = () => {
 				>
 					<span className="navbar-toggler-icon"></span>
 				</button>
-				<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+				<div className="collapse navbar-collapse justify-content" id="navbarNav">
 					<ul className="navbar-nav">
-						{/* {auth.user.isLoggedIn && ( */}
-						{isAuthenticated && (
+						<>
+							<li className="nav-item">
+								<Link className="nav-link" to="/cloud" >
+									Cloud
+								</Link>
+							</li>
+							<li className="nav-item">
+								<Link className="nav-link" to="/community">
+									Community
+								</Link>
+							</li>
+							<li className="nav-item">
+								<Link className="nav-link" to="/pricing">
+									Pricing
+								</Link>
+							</li>
+						</>
+					</ul>
+				</div>
+				{isAuthenticated || (<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+					<ul className="navbar-nav">
+						<li className="nav-item">
+							<Link className="nav-link" to="/dashboard" style={{ border: "0.5px solid white", padding: "10px 30px" }}>
+								Go to Console
+							</Link>
+						</li>
+					</ul>
+				</div>)}
+
+
+
+				{isAuthenticated && (
+					<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+						<ul className="navbar-nav">
 							<>
 								{/* <li className="nav-item">
 									<Link className="nav-link" to="/view-metadata">
@@ -58,7 +90,7 @@ const Navbar = () => {
 
 								<li className="nav-item">
 									<Link className="nav-link" to="/data-viewer">
-										Data-Viewer
+										CSV-Viewer
 									</Link>
 								</li>
 								<li className="nav-item">
@@ -90,9 +122,10 @@ const Navbar = () => {
 									</Dropdown>
 								</li>
 							</>
-						)}
-					</ul>
-				</div>
+
+						</ul>
+					</div>
+				)}
 			</div>
 		</nav>
 	);

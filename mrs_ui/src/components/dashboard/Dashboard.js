@@ -65,8 +65,8 @@ const Dashboard = (props) => {
 					<PageHeader
 						className="site-page-header mb-1 shadow"
 						title="Cycle Test Dashboard"
-						backIcon={<FaArrowLeft title="go to upload" />}
-						onBack={() => navigate("/upload")}
+						// backIcon={<FaArrowLeft title="go to upload" />}
+						// onBack={() => navigate("/upload")}
 						ghost={false}
 						extra={
 							state.dashboardType === "private" ? (

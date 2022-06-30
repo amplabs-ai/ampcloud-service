@@ -186,3 +186,57 @@ def get_abuse_timeseries_json(cell_id):
     except Exception as err:
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
+
+
+@with_authentication()
+def download_timeseries_plot_data():
+    email = g.user
+    try:
+        data = request.json
+        memory_file = BytesIO()
+        start_time = datetime.datetime.now()
+        status, detail, *resp = download_timeseries_plot_data_service(data, email)
+        if resp:
+            with zipfile.ZipFile(memory_file, 'w') as zf:
+                zip_info = zipfile.ZipInfo("timeseries_plot.csv")
+                zip_info.compress_type = zipfile.ZIP_DEFLATED
+                zf.writestr(zip_info, resp[0].to_csv(None, encoding='utf-8', index=False))
+            memory_file.seek(0)
+            size = float(len(memory_file.getvalue())/1000)
+            end_time = datetime.datetime.now()
+            logging.info("User {email} Action DOWNLOAD_TIMESERIES_PLOT_DATA file {filename} size {size} type TIMESERIES_DATA download_time {time}".format(
+                    email=g.user, filename="timeseries_plot.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+            return send_file(memory_file, attachment_filename="timeseries_plot.zip", as_attachment=True)
+        else:
+            return Response(status, detail).to_dict(), status
+    except Exception as err:
+        logging.error("User {email} Action DOWNLOAD_TIMESERIES_PLOT_DATA error UNKNOWN".format(email=g.user))
+        logging.error(err)
+        return Response(500, "Failed").to_dict(), 500
+
+
+@with_authentication()
+def download_stats_plot_data():
+    email = g.user
+    try:
+        data = request.json
+        memory_file = BytesIO()
+        start_time = datetime.datetime.now()
+        status, detail, *resp = download_stats_plot_data_service(data, email)
+        if resp:
+            with zipfile.ZipFile(memory_file, 'w') as zf:
+                zip_info = zipfile.ZipInfo("stats_plot.csv")
+                zip_info.compress_type = zipfile.ZIP_DEFLATED
+                zf.writestr(zip_info, resp[0].to_csv(None, encoding='utf-8', index=False))
+            memory_file.seek(0)
+            size = float(len(memory_file.getvalue())/1000)
+            end_time = datetime.datetime.now()
+            logging.info("User {email} Action DOWNLOAD_STATS_PLOT_DATA file {filename} size {size} type CYCLE_DATA download_time {time}".format(
+                    email=g.user, filename="stats_plot.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+            return send_file(memory_file, attachment_filename="stats_plot.zip", as_attachment=True)
+        else:
+            return Response(status, detail).to_dict(), status
+    except Exception as err:
+        logging.error("User {email} Action DOWNLOAD_STATS_PLOT_DATA error UNKNOWN".format(email=email))
+        logging.error(err)
+        return Response(500, "Failed").to_dict(), 500

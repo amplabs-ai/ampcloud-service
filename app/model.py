@@ -466,11 +466,15 @@ class ArchiveOperator:
                 ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
 
 
-    def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters):
+    def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters, get_df=False):
+        if get_df:
+            return pd.read_sql(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters), self.session.bind)
         result = self.session.execute(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
         return result
 
-    def get_all_data_from_stats_query(self, columns, cell_ids, email, filters):
+    def get_all_data_from_stats_query(self, columns, cell_ids, email, filters, get_df=False):
+        if get_df:
+            return pd.read_sql(STATS_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters), self.session.bind)
         result = self.session.execute(STATS_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
         return result
 

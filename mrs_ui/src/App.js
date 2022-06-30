@@ -3,8 +3,11 @@ import "./App.css";
 import { BackTop, Spin } from "antd";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
-import LandingPage from "./pages/LandingPage";
+import Landing from "./pages/Landing";
 import Navbar from "./components/Navbar";
+import Cloud from "./components/Cloud";
+import Pricing from "./components/Pricing";
+import Community from "./components/Community";
 import UploadPage from "./pages/UploadPage";
 import PageNotFound from "./pages/PageNotFound";
 import DataViewerPage from "./pages/DataViewerPage";
@@ -58,19 +61,23 @@ const App = () => {
 							path="/"
 							element={
 								<RedirectRoute>
-									<LandingPage />
+									<Landing />
 								</RedirectRoute>
 							}
 							exact
 						/>
+
 						<Route path="/upload" element={<PrivateRoute component={UploadPage} />}>
 							<Route path="cycle-test" element={<UploadPage />} />
 							<Route path="abuse-test" element={<UploadPage />} />
 						</Route>
 						<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
 						<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
-						{/* <Route path="/plotter" element={<PlotterPage />}></Route> */}
+
 						<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
+						<Route path="/cloud/" element={<Cloud />} />
+						<Route path="/community/" element={<Community />} />
+						<Route path="/pricing/" element={<Pricing />} exact />
 						<Route path="*" element={<PageNotFound />} />
 					</Routes>
 				</Auth0ProviderWithRedirectCallback>

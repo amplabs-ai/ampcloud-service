@@ -143,12 +143,12 @@ SELECT {columns}, cell_id
 FROM
     cycle_timeseries
 WHERE cell_id IN ({cell_ids}) and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
-    {filters}
+    {filters} order by cell_id, test_datapoint_ordinal
 """
 STATS_DATA="""
 SELECT {columns}, cell_id
 FROM
     cycle_stats
 WHERE cell_id IN ({cell_ids}) and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
-    {filters}
+    {filters} order by cell_id, cycle_index
 """
