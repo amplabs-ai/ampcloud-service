@@ -271,22 +271,22 @@ const SideBar = (props) => {
 									</Button>
 								</div>
 								<div className="col-md-6">
-									<Button type="primary" block onClick={() => onLoad()} disabled={!checkedKeys.length}>
-										Load
+									<Button type="primary" block onClick={() => onPlot()} disabled={!checkedKeys.length}>
+										Plot
 									</Button>
 								</div>
 							</div>
 							<div className="row pb-2">
 								<div className="col-md-12">
-									<Button type="primary" block onClick={() => onPlot()} disabled={!checkedKeys.length}>
-										Plot
+									<Button type="primary" block onClick={() => onLoad()} disabled={!checkedKeys.length}>
+										Load Dashboard
 									</Button>
 								</div>
 							</div>
 							<div className="row pb-3">
 								<div className="col-md-12">
 									<Button type="primary" block onClick={() => onMeta()} disabled={!checkedKeys.length}>
-										ViewMetadata
+										View Metadata
 									</Button>
 								</div>
 							</div>

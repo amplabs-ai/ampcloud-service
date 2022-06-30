@@ -6,6 +6,7 @@ from app.model import ArchiveOperator
 from app.utilities.file_reader import read_generic, read_maccor, read_arbin, read_ornlabuse, read_snlabuse
 from app.utilities.utils import calc_abuse_stats, status, calc_cycle_stats
 from collections import OrderedDict
+from sqlalchemy.exc import DataError
 
 
 def init_file_upload_service(email, data):
@@ -186,3 +187,51 @@ def download_abuse_timeseries_service(cell_id, email, dashboard_id=None):
     df = ao.get_df_abuse_ts_with_cell_id(cell_id, email)
     ao.release_session()
     return 200, "Records Retrieved", df
+
+
+def download_timeseries_plot_data_service(data, email):
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        columns = (',').join(data['columns'])
+        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
+        filters = ""
+        for filter in data['filters']:
+            if filter['operation'] == '%':
+                filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
+            else:
+                filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
+            filters = filters+f"and {filter_str}"
+        df = ao.get_all_data_from_timeseries_query(columns, cell_ids, email, filters, get_df = True)
+        return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], df
+    except DataError as err:
+        return 400, str(err.__dict__['orig']).split('\n')[0]
+    except Exception as err:
+        logging.error(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()
+
+
+def download_stats_plot_data_service(data, email):
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        columns = (',').join(data['columns'])
+        cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
+        filters = ""
+        for filter in data['filters']:
+            if filter['operation'] == '%':
+                filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
+            else:
+                filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
+            filters = filters+f"and {filter_str}"
+        df = ao.get_all_data_from_stats_query(columns, cell_ids, email, filters, get_df = True)
+        return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], df
+    except DataError as err:
+        return 400, str(err.__dict__['orig']).split('\n')[0]
+    except Exception as err:
+        logging.error(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()

@@ -11,6 +11,7 @@ from flask_compress import Compress
 from app.controllers.dashboard_share_controller import dashboard_audit, dashboard_share_linkedin, dashboard_share_url, \
     dashboard_share_validate_id
 from app.controllers.echarts_controller import get_timeseries_columns_data, get_stats_columns_data
+from app.controllers.file_transfer_controller import download_timeseries_plot_data, download_stats_plot_data
 import logging
 
 # Create and configure logger
@@ -41,6 +42,8 @@ app.add_url_rule('/dashboard/share-id', 'dashboard_share_url', dashboard_share_u
 app.add_url_rule('/dashboard/share-linkedin', 'dashboard_share_linkedin', dashboard_share_linkedin, methods=['POST'])
 app.add_url_rule('/echarts/timeseries', 'get_timeseries_columns_data', get_timeseries_columns_data, methods=['POST'])
 app.add_url_rule('/echarts/stats', 'get_stats_columns_data', get_stats_columns_data, methods=['POST'])
+app.add_url_rule('/download/plot/timeseries','download_timeseries_plot_data', download_timeseries_plot_data, methods=['POST'])
+app.add_url_rule('/download/plot/stats','download_stats_plot_data', download_stats_plot_data, methods=['POST'])
 
 @app.route("/")
 def my_index():

@@ -14,7 +14,7 @@ const SeriesPlot = (props) => {
 const [data, setData] = useState([]);
 const [filteredData, setFilteredData] = useState([]);
 const [modalVisible, setModalVisible] = useState(false);
-
+const [reqData, setReqData] = useState({})
 const [replaceInCode, setReplaceInCode] = useState(null);
 
 const accessToken = useAuth0Token();
@@ -90,11 +90,11 @@ const handlePlot = (values, colDisplayNames) => {
 	});
 	let endpoint =
 	props.type === "timeseries" ? "/echarts/timeseries" : "/echarts/stats";
-	let data = JSON.stringify({
+	let data = {
 	cell_ids: state.checkedCellIds.map((c) => c.cell_id),
 	columns: [values["x-axis"], ...values["y-axis"]],
 	filters: values.filters || [],
-	});
+	};
 
 	axios({
 	method: "post",
@@ -103,16 +103,17 @@ const handlePlot = (values, colDisplayNames) => {
 		Authorization: "Bearer " + accessToken,
 		"Content-Type": "application/json",
 	},
-	data: data,
+	data: JSON.stringify(data),
 	})
 	.then(function (response) {
+    setReqData(data)
 		setChartLoadSpiner(false);
 		console.log(response.data?.records);
 		setData(response.data?.records[0]);
 		setFilteredData(response.data?.records[0]);
 		let replaceInCode = {
 		__accesstoken__: accessToken,
-		__req_data__: data,
+		__req_data__: JSON.stringify(data),
 		__xlabel__: xAxisLabel,
 		__mapping__: JSON.stringify(displayColMap),
 		};
@@ -168,6 +169,7 @@ return (
 			shallShowLoadSpinner={chartLoadSpiner}
 			formatCode={doShowCode}
 			usage="plotter"
+      reqData={reqData}
 		/>
 		{/* <PlotlyExample data={filteredData} /> */}
 		</div>
