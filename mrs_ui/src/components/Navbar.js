@@ -9,7 +9,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { UserOutlined } from "@ant-design/icons";
 
 const Navbar = () => {
-	const { logout, isAuthenticated, user } = useAuth0();
+	const { logout, isAuthenticated, user, isLoading } = useAuth0();
 
 	const userProfileMenu = (
 		<Menu>
@@ -45,40 +45,7 @@ const Navbar = () => {
 				>
 					<span className="navbar-toggler-icon"></span>
 				</button>
-				<div className="collapse navbar-collapse justify-content" id="navbarNav">
-					<ul className="navbar-nav">
-						<>
-							<li className="nav-item">
-								<Link className="nav-link" to="/cloud" >
-									Cloud
-								</Link>
-							</li>
-							<li className="nav-item">
-								<Link className="nav-link" to="/community">
-									Community
-								</Link>
-							</li>
-							<li className="nav-item">
-								<Link className="nav-link" to="/pricing">
-									Pricing
-								</Link>
-							</li>
-						</>
-					</ul>
-				</div>
-				{isAuthenticated || (<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
-					<ul className="navbar-nav">
-						<li className="nav-item">
-							<Link className="nav-link" to="/dashboard" style={{ border: "0.5px solid white", padding: "10px 30px" }}>
-								Go to Console
-							</Link>
-						</li>
-					</ul>
-				</div>)}
-
-
-
-				{isAuthenticated && (
+				{isAuthenticated ? (
 					<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 						<ul className="navbar-nav">
 							<>
@@ -125,7 +92,41 @@ const Navbar = () => {
 
 						</ul>
 					</div>
-				)}
+				) : !isLoading ? ((
+					<>
+						<div className="collapse navbar-collapse justify-content" id="navbarNav">
+							<ul className="navbar-nav">
+								<>
+									<li className="nav-item">
+										<Link className="nav-link" to="/cloud" >
+											Cloud
+										</Link>
+									</li>
+									<li className="nav-item">
+										<Link className="nav-link" to="/community">
+											Community
+										</Link>
+									</li>
+									<li className="nav-item">
+										<Link className="nav-link" to="/pricing">
+											Pricing
+										</Link>
+									</li>
+								</>
+							</ul>
+						</div>
+
+
+						<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+							<ul className="navbar-nav">
+								<li className="nav-item">
+									<Link className="nav-link" to="/dashboard" style={{ border: "0.5px solid white", padding: "10px 30px" }}>
+										Go to Console
+									</Link>
+								</li>
+							</ul>
+						</div></>
+				)) : null}
 			</div>
 		</nav>
 	);

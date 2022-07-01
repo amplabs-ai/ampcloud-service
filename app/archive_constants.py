@@ -51,6 +51,7 @@ class TESTER(Enum):
 
 
 class ARCHIVE_TABLE(Enum):
+    USER_PLAN = "user_plan"
     ABUSE_META = "abuse_metadata"
     ABUSE_TS = "abuse_timeseries"
     CELL_META = "cell_metadata"

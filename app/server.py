@@ -1,4 +1,5 @@
 from app.archive_constants import AMPLABS_DB_URL
+from app.controllers.user_controller import get_user_plan
 import connexion
 from connexion import ProblemException
 import os
@@ -44,6 +45,7 @@ app.add_url_rule('/echarts/timeseries', 'get_timeseries_columns_data', get_times
 app.add_url_rule('/echarts/stats', 'get_stats_columns_data', get_stats_columns_data, methods=['POST'])
 app.add_url_rule('/download/plot/timeseries','download_timeseries_plot_data', download_timeseries_plot_data, methods=['POST'])
 app.add_url_rule('/download/plot/stats','download_stats_plot_data', download_stats_plot_data, methods=['POST'])
+app.add_url_rule('/user/get_user_plan', 'get_user_plan', get_user_plan, methods=['GET'])
 
 @app.route("/")
 def my_index():

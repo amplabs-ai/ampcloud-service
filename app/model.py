@@ -23,6 +23,20 @@ import numpy as np
 
 Model = declarative_base()
 
+class UserPlan(Model):
+    __tablename__ = ARCHIVE_TABLE.USER_PLAN.value
+    email = Column(TEXT, primary_key=True)
+    stripe_customer_id = Column(TEXT, nullable=True)
+    stripe_subscription_id = Column(TEXT, nullable=True)
+    plan_type = Column(TEXT, nullable=False)
+    state = Column(TEXT, nullable=False)
+
+    def to_dict(self):
+        data_dict = {}
+        for column in self.__table__.columns:
+            data_dict[column.name] = getattr(self, column.name)
+        data_dict.pop(LABEL.EMAIL.value, None)
+        return data_dict
 
 class AbuseMeta(Model):
     __tablename__ = ARCHIVE_TABLE.ABUSE_META.value
