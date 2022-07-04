@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./App.css";
 import { BackTop, Spin } from "antd";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ import DataViewerPage from "./pages/DataViewerPage";
 import RedirectRoute from "./routes/RedirectRoute";
 import SharedDashboard from "./components/SharedDashboard";
 import { Auth0Provider, withAuthenticationRequired } from "@auth0/auth0-react";
+import { UserPlanProvider } from "./context/UserPlanContext";
 
 const domain = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -53,33 +54,35 @@ const App = () => {
 					audience="https://amplabs.server"
 					useRefreshTokens={true}
 				>
-					<p>My Token = {window.token}</p>
-					<BackTop />
-					<Navbar />
-					<Routes>
-						<Route
-							path="/"
-							element={
-								<RedirectRoute>
-									<Landing />
-								</RedirectRoute>
-							}
-							exact
-						/>
+					<UserPlanProvider>
+						<p>My Token = {window.token}</p>
+						<BackTop />
+						<Navbar />
+						<Routes>
+							<Route
+								path="/"
+								element={
+									<RedirectRoute>
+										<Landing />
+									</RedirectRoute>
+								}
+								exact
+							/>
 
-						<Route path="/upload" element={<PrivateRoute component={UploadPage} />}>
-							<Route path="cycle-test" element={<UploadPage />} />
-							<Route path="abuse-test" element={<UploadPage />} />
-						</Route>
-						<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
-						<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
+							<Route path="/upload" element={<PrivateRoute component={UploadPage} />}>
+								<Route path="cycle-test" element={<UploadPage />} />
+								<Route path="abuse-test" element={<UploadPage />} />
+							</Route>
+							<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
+							<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
 
-						<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
-						<Route path="/cloud/" element={<Cloud />} />
-						<Route path="/community/" element={<Community />} />
-						<Route path="/pricing/" element={<Pricing />} exact />
-						<Route path="*" element={<PageNotFound />} />
-					</Routes>
+							<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
+							<Route path="/cloud/" element={<Cloud />} />
+							<Route path="/community/" element={<Community />} />
+							<Route path="/pricing/" element={<Pricing />} exact />
+							<Route path="*" element={<PageNotFound />} />
+						</Routes>
+					</UserPlanProvider>
 				</Auth0ProviderWithRedirectCallback>
 			</Router>
 		</>

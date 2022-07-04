@@ -1,10 +1,12 @@
 import { createContext, useContext, useReducer, useRef } from "react";
 import dashboardReducer, { initialState } from "../reducer/dashboardReducer";
+import { useUserPlan } from "./UserPlanContext";
 
 const DashboardContext = createContext();
 
 export const DashboardProvider = ({ children }) => {
 	const [state, dispatch] = useReducer(dashboardReducer, initialState);
+	const userPlan = useUserPlan();
 
 	const loadCellData = (selectedCellIds) => {
 		dispatch({
@@ -14,13 +16,29 @@ export const DashboardProvider = ({ children }) => {
 			},
 		});
 	};
+
+	const checkUserPlanOnPlot = (selectedCellIds) => {
+		if (userPlan === "beta") {
+			for (let i = 0; i < selectedCellIds.length; i++) {
+				if (selectedCellIds[i].includes("private_")) {
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
 	const plotCellData = (selectedCellIds) => {
-		dispatch({
-			type: "PLOT_CELL_IDS",
-			payload: {
-				selectedCellIds,
-			},
-		});
+		if (checkUserPlanOnPlot(selectedCellIds)) {
+			dispatch({
+				type: "PLOT_CELL_IDS",
+				payload: {
+					selectedCellIds,
+				},
+			});
+		} else {
+			setSubsPromptModalVisible(true);
+		}
 	};
 
 	const editCellData = (selectedCellIds) => {
@@ -90,6 +108,15 @@ export const DashboardProvider = ({ children }) => {
 		});
 	};
 
+	const setSubsPromptModalVisible = (value) => {
+		dispatch({
+			type: "SHOW_SUBSCRIPTION_MODAL",
+			payload: {
+				shallShowSubsModal: value,
+			},
+		});
+	};
+
 	const value = {
 		state: state,
 		action: {
@@ -104,6 +131,7 @@ export const DashboardProvider = ({ children }) => {
 			setShareDisabled,
 			setAppliedStep,
 			setCheckedCellIds,
+			setSubsPromptModalVisible,
 		},
 		dashboardRef: useRef(null),
 	};

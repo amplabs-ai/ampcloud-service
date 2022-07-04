@@ -16,7 +16,6 @@ const dashboardReducer = (state, action) => {
 				shallShowEdit: true,
 				shallShowChart: false,
 				shallShowMeta: false,
-
 			};
 		case "PLOT_CELL_IDS":
 			return {
@@ -71,6 +70,11 @@ const dashboardReducer = (state, action) => {
 				...state,
 				checkedCellIds: payload.checkedCellIds,
 			};
+		case "SHOW_SUBSCRIPTION_MODAL":
+			return {
+				...state,
+				shallShowSubsModal: payload.shallShowSubsModal,
+			};
 		default:
 			throw new Error(`No case for type ${type} found in dashboardReducer.`);
 	}
@@ -88,6 +92,7 @@ export const initialState = {
 	appliedStep: localStorage.getItem("step") || 500,
 	shareDisabled: true,
 	checkedCellIds: [],
+	shallShowSubsModal: false,
 };
 
 export default dashboardReducer;

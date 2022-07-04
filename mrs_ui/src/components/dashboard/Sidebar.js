@@ -6,6 +6,8 @@ import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import { useDashboard } from "../../context/DashboardContext";
+import { useUserPlan } from "../../context/UserPlanContext";
+import SubsPrompt from "../SubsPrompt";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -142,6 +144,8 @@ const SideBar = (props) => {
 	const { state, action } = useDashboard();
 	const accessToken = useAuth0Token();
 
+	const userPlan = useUserPlan();
+
 	useEffect(() => {
 		if (accessToken) {
 			setIsCelldataLoaded(false);
@@ -158,6 +162,7 @@ const SideBar = (props) => {
 				.then((res) => {
 					if (res.status === 200 && res.data) {
 						let treeData = _generateTreeData(res.data.records[0]);
+						console.log("treeData", treeData);
 						setTreeData(treeData);
 						setFilteredTreeData(() => {
 							setIsCelldataLoaded(true);
@@ -208,9 +213,10 @@ const SideBar = (props) => {
 		action.loadCellData(checkedCellIds);
 		// props.onLoadCellIds(checkedCellIds);
 	};
+
 	const onPlot = () => {
+		console.log("onPlot", checkedCellIds);
 		action.plotCellData(checkedCellIds);
-		// props.onLoadCellIds(checkedCellIds);
 	};
 
 	const onClear = () => {

@@ -7,9 +7,13 @@ import { FaAngleDown } from "react-icons/fa";
 import { useAuth0 } from "@auth0/auth0-react";
 
 import { UserOutlined } from "@ant-design/icons";
+import { useUserPlan } from "../context/UserPlanContext";
 
 const Navbar = () => {
 	const { logout, isAuthenticated, user, isLoading } = useAuth0();
+
+	const userplan = useUserPlan();
+	console.log("userplan", userplan);
 
 	const userProfileMenu = (
 		<Menu>
