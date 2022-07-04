@@ -10,6 +10,7 @@ import DashboardShareButton from "./DashboardShareButton";
 import SideBar from "./Sidebar";
 import ViewMetadata from "./ViewMetadata";
 import Plotter from "./Plot/Plotter";
+import SubsPrompt from "../SubsPrompt";
 
 const { Content } = Layout;
 
@@ -47,8 +48,17 @@ const Dashboard = (props) => {
 		}
 	}, [props.dashboardId, props.type, accessToken]);
 
+	const closeSubsPrompModal = () => {
+		action.setSubsPromptModalVisible(false);
+	};
+
 	return (
 		<>
+			<SubsPrompt
+				handleOk={closeSubsPrompModal}
+				handleCancel={closeSubsPrompModal}
+				isModalVisible={state.shallShowSubsModal}
+			/>
 			{state.dashboardError ? (
 				<Result
 					status="500"
