@@ -22,7 +22,7 @@ def get_cellmeta_service(email, test, dashboard_id=None):
                 archive_cells = ao.get_all_cell_meta_from_table_with_id(cell_id, email, test)
                 records = [cell.to_dict() for cell in archive_cells]
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
-
+        records = []
         archive_cells = ao.get_all_cell_meta_for_community()
         records = [add_type(cell.to_dict(), "type", "public/community") for cell in archive_cells]
         archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)

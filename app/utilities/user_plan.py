@@ -19,7 +19,7 @@ def set_user_plan():
                         "email": g.user,
                         "stripe_customer_id": None,
                         "stripe_subscription_id": None,
-                        "user_plan": "COMMUNITY",
+                        "plan_type": "COMMUNITY",
                         "state": "SUCCESS"
                     }
                     ao.add_user_plan(data)
@@ -29,5 +29,6 @@ def set_user_plan():
                 g.user_plan = "COMMUNITY"
             finally:
                 ao.release_session()
+            return f(*args, **kwargs)
         return decorated_function
     return decorator
