@@ -2,6 +2,7 @@ from builtins import float, print
 import datetime
 import threading
 from app.services.file_transfer_service import *
+from app.utilities.user_plan import set_user_plan
 from app.utilities.utils import status
 from app.utilities.with_authentication import with_authentication
 from flask import make_response, request, g
@@ -15,8 +16,11 @@ lock = threading.Lock()
 
 
 @with_authentication()
+@set_user_plan()
 def init_file_upload():
     try:
+        if g.user_plan == 'BETA':
+            return Response(405, "Not Allowed"), 405
         email = g.user
         data = request.form.to_dict()
         status, detail = init_file_upload_service(email, data)
@@ -28,6 +32,8 @@ def init_file_upload():
 
 @with_authentication()
 def upload_file(tester):
+    if g.user_plan == 'BETA':
+        return Response(405, "Not Allowed"), 405
     email = g.user
     data = request.form.to_dict()
     try:

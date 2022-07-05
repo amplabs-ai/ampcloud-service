@@ -10,14 +10,17 @@ LIVE_DB_URL = "<your-db-string>"
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
+# Stripe
+STRIPE_ENDPOINT_SECRET = 'whsec_bc922d341e2f5460a6b0038f867350c6d12007718e85ebe81e2c74ec3fcfe435'
+STRIPE_API_KEY = ""
 
 # Amplabs DB
-AMPLABS_DB_URL = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "development" \
+AMPLABS_DB_URL = "postgresql://appperfect:postgres@localhost:5432/dbname" if ENV == "development" \
                  else "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
 # linkedin share constants
 LINKEDIN_CLIENT_ID = '78opgrui0xx0ng'
 LINKEDIN_CLIENT_SECRET = 'hGAIpqZh5swxgM6v'
-LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard' if ENV == 'production' else 'http://localhost:3000/dashboard/cycle-test'
+LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard' if ENV == 'production' else 'https://localhost:3000/dashboard/cycle-test'
 LINKEDIN_REDIRECT_URI_DASH_ABUSE= 'https://www.amplabs.ai/dashboard/abuse-test' if ENV == 'production' else 'http://localhost:3000/dashboard/abuse-test'
 
 #Auth0
