@@ -412,7 +412,9 @@ class ArchiveOperator:
                                                    or_(CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CellMeta.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())),
                                                    CellMeta.test == test).all()
     def get_all_cell_meta_for_community(self):
-        return self.session.execute("SELECT * from cell_metadata where email in (select email from user_plan where plan_type = 'COMMUNITY'")
+        return self.session.query(CellMeta).filter(
+                                                   or_(CellMeta.email.in_([BATTERY_ARCHIVE, DATA_MATR_IO]),CellMeta.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())),
+                                                   ).all()
     # TEST METADATA
     def get_all_test_metadata_from_table(self, test_model, email):
         return self.get_all_data_from_table_with_email(test_model, email)
@@ -602,7 +604,7 @@ class ArchiveOperator:
         user_plan = UserPlan(**data)
         self.session.add(user_plan)
 
-    def updste_user_plan(self, data):
+    def update_user_plan(self, data):
         self.session.query(UserPlan).filter(UserPlan.email == data['email']).update(data)
 
     # BASIC

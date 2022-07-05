@@ -11,11 +11,11 @@ DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
 # Stripe
-STRIPE_ENDPOINT_SECRET = 'whsec_bc922d341e2f5460a6b0038f867350c6d12007718e85ebe81e2c74ec3fcfe435'
-STRIPE_API_KEY = ""
+STRIPE_ENDPOINT_SECRET = 'whsec_v2BBSemFu23LM5p9dq1leMTlGvyPbOx9'
+STRIPE_API_KEY = "sk_test_51LAf3qDNtGhk05MqaSbFQjpcR7Hlaytn8GumTDr5Aunv4TbAKMTuGXiFZt7JwPE1BL88BjhYtj3Kpa9VZ3nNlhln00IbN4NxAW"
 
 # Amplabs DB
-AMPLABS_DB_URL = "postgresql://appperfect:postgres@localhost:5432/dbname" if ENV == "development" \
+AMPLABS_DB_URL = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "development" \
                  else "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
 # linkedin share constants
 LINKEDIN_CLIENT_ID = '78opgrui0xx0ng'

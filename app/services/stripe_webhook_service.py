@@ -17,11 +17,11 @@ def handle_customer_subscription_create(create_event_obj):
                 "email": customer_email,
                 "stripe_customer_id": customer_id,
                 "stripe_subscription_id": subscription_id,
-                "user_plan": "ANALYST",
+                "plan_type": "ANALYST",
                 "state": "SUCCESS"
             }
         if ao.get_all_data_from_table_with_email(UserPlan, customer_email):
-            ao.updste_user_plan(data)
+            ao.update_user_plan(data)
         else:
             ao.add_user_plan(data)
         return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']
@@ -46,7 +46,7 @@ def handle_customer_subscription_update(update_event_obj):
                 "email": customer_email,
                 "stripe_customer_id": customer_id,
                 "stripe_subscription_id": subscription_id,
-                "user_plan": "COMMUNITY",
+                "plan_type": "COMMUNITY",
                 "state": "SUCCESS"
             }
             ao.add_user_plan(data)
@@ -69,10 +69,10 @@ def handle_customer_subscription_delete(delete_event_obj):
                 "email": customer_email,
                 "stripe_customer_id": None,
                 "stripe_subscription_id": None,
-                "user_plan": "COMMUNITY",
+                "plan_type": "COMMUNITY",
                 "state": "SUCCESS"
             }
-        ao.add_user_plan(data)  
+        ao.update_user_plan(data)  
         return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']
     except Exception as err:
         logging.error(err)

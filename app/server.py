@@ -1,6 +1,6 @@
 from app.archive_constants import AMPLABS_DB_URL
 from app.controllers.stripe_webhook import webhook
-from app.controllers.user_controller import get_user_plan
+from app.controllers.user_controller import get_user_plan, update_user_plan
 import connexion
 from connexion import ProblemException
 import os
@@ -32,7 +32,7 @@ app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(401, unauthorized_exception)
 app.add_error_handler(ProblemException, problem_exception)
-CORS(app.app, origins=["https://localhost:3000", "https://www.amplabs.ai"], supports_credentials=True)
+CORS(app.app, origins=["https://localhost:3000", "https://www.amplabs.ai", "https://65.1.73.220:4000"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 
@@ -47,6 +47,7 @@ app.add_url_rule('/echarts/stats', 'get_stats_columns_data', get_stats_columns_d
 app.add_url_rule('/download/plot/timeseries','download_timeseries_plot_data', download_timeseries_plot_data, methods=['POST'])
 app.add_url_rule('/download/plot/stats','download_stats_plot_data', download_stats_plot_data, methods=['POST'])
 app.add_url_rule('/user/get_user_plan', 'get_user_plan', get_user_plan, methods=['GET'])
+app.add_url_rule('user/update_user_plan', 'update_user_plan', update_user_plan, method=['POST'])
 app.add_url_rule('/stripe/webhook', 'webhook', webhook, methods=['POST'])
 
 @app.route("/")
@@ -64,4 +65,4 @@ if __name__ == "__main__":
     engine_ = create_engine(app.app.config['DATABASE_URI'], echo=True)
     Model.metadata.create_all(engine_)
 
-    app.run(debug=True, host='0.0.0.0', port='4000')
+    app.run(debug=True, host='0.0.0.0',port='4000',ssl_context='adhoc')
