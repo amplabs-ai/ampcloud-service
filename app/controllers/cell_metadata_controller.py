@@ -2,12 +2,14 @@ from asyncio import constants
 import gzip
 import json
 from app.services.cell_meta_data_service import *
+from app.utilities.user_plan import set_user_plan
 from app.utilities.with_authentication import with_authentication
 from flask import request, g
 from app.response import Response
 
 
 @with_authentication(allow_public=True)
+@set_user_plan()
 def get_cells(test):
     email = g.user
     dashboard_id = request.args.to_dict().get('dashboard_id')

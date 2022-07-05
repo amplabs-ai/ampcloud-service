@@ -7,6 +7,7 @@ from sqlalchemy import (
     Integer,
     TEXT,
     Float,
+    or_,
     select,
 )
 from sqlalchemy.ext.declarative import declarative_base
@@ -374,14 +375,14 @@ class ArchiveOperator:
     def get_df_cycle_ts_with_cell_id(self, cell_id, email):
         sql = self.session.query(CycleTimeSeries).filter(
             CycleTimeSeries.cell_id == cell_id,
-            CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO])).order_by('cycle_index',
+            or_(CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CycleTimeSeries.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index',
                                                                                         'test_time').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
         sql = self.session.query(CycleStats).filter(
             CycleStats.cell_id == cell_id,
-            CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO])).order_by('cycle_index').statement
+            or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CycleStats.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_abuse_ts_with_cell_id(self, cell_id, email):
@@ -408,16 +409,17 @@ class ArchiveOperator:
 
     def get_all_cell_meta_from_table_with_id(self, cell_id, email, test):
         return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id),
-                                                   CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),
+                                                   or_(CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CellMeta.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())),
                                                    CellMeta.test == test).all()
-
+    def get_all_cell_meta_for_community(self):
+        return self.session.execute("SELECT * from cell_metadata where email in (select email from user_plan where plan_type = 'COMMUNITY'")
     # TEST METADATA
     def get_all_test_metadata_from_table(self, test_model, email):
         return self.get_all_data_from_table_with_email(test_model, email)
 
     def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
         return self.session.query(test_model).filter(test_model.cell_id.in_(cell_id),
-                                                     test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO])).all()
+                                                     or_(test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO],test_model.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())))).all()
 
     # ECHARTS
 
@@ -593,6 +595,15 @@ class ArchiveOperator:
 
     def update_table_with_index(self, table, index, data):
         self.session.query(table).filter(table.index == index).update(data)
+
+    # User plan
+
+    def add_user_plan(self, data):
+        user_plan = UserPlan(**data)
+        self.session.add(user_plan)
+
+    def updste_user_plan(self, data):
+        self.session.query(UserPlan).filter(UserPlan.email == data['email']).update(data)
 
     # BASIC
 

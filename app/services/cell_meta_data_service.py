@@ -1,7 +1,7 @@
 import logging
 from app.archive_constants import RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO, TEST_TYPE
 from app.model import AbuseMeta, AbuseTimeSeries, ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries
-
+from flask import g
 
 def get_cellmeta_service(email, test, dashboard_id=None):
 
@@ -23,12 +23,15 @@ def get_cellmeta_service(email, test, dashboard_id=None):
                 records = [cell.to_dict() for cell in archive_cells]
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
 
-        archive_cells = ao.get_all_cell_meta(email, test)
-        records = [add_type(cell.to_dict(), "type", "private") for cell in archive_cells]
+        archive_cells = ao.get_all_cell_meta_for_community()
+        records = [add_type(cell.to_dict(), "type", "public/community") for cell in archive_cells]
         archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
         records.extend([add_type(cell.to_dict(), "type", "public/battery-archive") for cell in archive_cells_ba])
         archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
         records.extend([add_type(cell.to_dict(), "type", "public/data.matr.io") for cell in archive_cells_dm])
+        if g.user_plan in {"BETA", "ANALYST"}:
+            archive_cells = ao.get_all_cell_meta(email, test)
+            records.extend([add_type(cell.to_dict(), "type", "private") for cell in archive_cells_dm])
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
@@ -44,8 +47,10 @@ def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id=None):
             row_dict['type'] = "public/battery-archive"
         elif row.email == DATA_MATR_IO:
             row_dict['type'] = "public/data.matr.io"
-        else:
+        elif row.email == email:
             row_dict['type'] = "private"
+        else:
+            row_dict['type'] = "public/community"
         return row_dict
     try:
         ao = ArchiveOperator()

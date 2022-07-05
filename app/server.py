@@ -1,3 +1,4 @@
+from app.controllers.stripe_webhook import webhook
 from app.controllers.user_controller import get_user_plan
 import connexion
 from connexion import ProblemException
@@ -46,6 +47,7 @@ app.add_url_rule('/echarts/stats', 'get_stats_columns_data', get_stats_columns_d
 app.add_url_rule('/download/plot/timeseries','download_timeseries_plot_data', download_timeseries_plot_data, methods=['POST'])
 app.add_url_rule('/download/plot/stats','download_stats_plot_data', download_stats_plot_data, methods=['POST'])
 app.add_url_rule('/user/get_user_plan', 'get_user_plan', get_user_plan, methods=['GET'])
+app.add_url_rule('/stripe/webhook', 'webhook', webhook, methods=['POST'])
 
 @app.route("/")
 def my_index():
