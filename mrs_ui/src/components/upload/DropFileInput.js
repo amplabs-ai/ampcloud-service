@@ -9,7 +9,6 @@ import { FaCloudUploadAlt } from "react-icons/fa";
 import Papa from "papaparse";
 
 const { Text } = Typography;
-
 const REQUIRED_HEADERS = ["test_time", "cycle", "current", "voltage"];
 
 const DropFileInput = (props) => {
@@ -254,7 +253,7 @@ const DropFileInput = (props) => {
 						value=""
 						accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"
 						onChange={onFileDrop}
-						// multiple
+					// multiple
 					/>
 				</div>
 			)}
@@ -269,7 +268,7 @@ const DropFileInput = (props) => {
 							}}
 							icon={<FaCloudUploadAlt />}
 							size="large"
-							// loading={uploadBtnDisatrybled}
+						// loading={uploadBtnDisatrybled}
 						>
 							&nbsp;&nbsp;Upload
 						</Button>
