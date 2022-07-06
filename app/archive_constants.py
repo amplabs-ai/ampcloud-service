@@ -1,5 +1,6 @@
 from enum import Enum, auto
-
+import random
+import string 
 ENV = "development"
 SLASH = "/"
 
@@ -13,7 +14,8 @@ GA_API_HOST = ""
 # Stripe
 STRIPE_ENDPOINT_SECRET = 'whsec_v2BBSemFu23LM5p9dq1leMTlGvyPbOx9'
 STRIPE_API_KEY = "sk_test_51LAf3qDNtGhk05MqaSbFQjpcR7Hlaytn8GumTDr5Aunv4TbAKMTuGXiFZt7JwPE1BL88BjhYtj3Kpa9VZ3nNlhln00IbN4NxAW"
-
+JWT_SECRET_FOR_PLAN_UPDATE = ''.join(random.choices(string.ascii_uppercase +
+                             string.digits, k = 10))
 # Amplabs DB
 AMPLABS_DB_URL = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "development" \
                  else "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"

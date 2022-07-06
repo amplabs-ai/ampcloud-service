@@ -29,8 +29,8 @@ def update_user_plan_service(email):
                 "plan_type": "COMMUNITY",
                 "state": "SUCCESS"
             }
-        ao.update_user_plan(data)
-        return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED']
+            ao.update_user_plan(data)
+        return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']
     except Exception as err:
         logging.error(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
