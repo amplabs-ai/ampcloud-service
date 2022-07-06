@@ -29,7 +29,7 @@ def update_user_plan_service(email):
                 "plan_type": "COMMUNITY",
                 "state": "SUCCESS"
             }
-        ao.updste_user_plan(data)
+        ao.update_user_plan(data)
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED']
     except Exception as err:
         logging.error(err)
