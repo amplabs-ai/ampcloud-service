@@ -2,7 +2,7 @@ import { Button, Empty, Layout, PageHeader, Result } from "antd";
 import axios from "axios";
 import React, { useEffect } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import ChartContainer from "./ChartContainer";
@@ -15,6 +15,8 @@ import SubsPrompt from "../SubsPrompt";
 const { Content } = Layout;
 
 const Dashboard = (props) => {
+	const location = useLocation();
+
 	const navigate = useNavigate();
 	const { state, action, dashboardRef } = useDashboard();
 	const accessToken = useAuth0Token();

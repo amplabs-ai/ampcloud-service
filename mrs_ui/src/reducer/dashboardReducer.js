@@ -54,6 +54,7 @@ const dashboardReducer = (state, action) => {
 				...state,
 				refreshSidebar: !state.refreshSidebar,
 				selectedCellIds: payload.selectedCellIdsAfterRefresh,
+				shallShowChart: payload.selectedCellIdsAfterRefresh.length !== 0,
 			};
 		case "SET_SHARE_DISABLED":
 			return {

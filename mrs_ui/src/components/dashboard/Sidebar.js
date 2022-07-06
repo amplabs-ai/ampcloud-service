@@ -8,6 +8,7 @@ import { useAuth0Token } from "../../utility/useAuth0Token";
 import { useDashboard } from "../../context/DashboardContext";
 import { useUserPlan } from "../../context/UserPlanContext";
 import SubsPrompt from "../SubsPrompt";
+import { useLocation } from "react-router-dom";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -145,14 +146,38 @@ const SideBar = (props) => {
 	const accessToken = useAuth0Token();
 
 	const userPlan = useUserPlan();
+	const location = useLocation();
+	const userEnteredFileKey = [];
+	useEffect(() => {
+		//   if (location.state !== null) {
+		console.log("location", location);
+		if (
+			location.state &&
+			location.state.from === "upload" &&
+			location.state.cellId
+		) {
+			const { cellId } = location.state;
+			setCheckedKeys(["cell_private_" + cellId]);
+			setCheckedCellIds(["private_" + cellId]);
+			//   action.plotCellData(["private_" + cellId]);
+			action.loadCellData(["private_" + cellId]);
 
+			userEnteredFileKey.push("cell_private_" + cellId);
+		}
+		//       //   const defaultSelctecKey = "cell_private_" + cellId;
+		//       //     action.setCheckedCellIds(defaultSelctecKey);
+		//       //     action.loadCellData(defaultSelctecKey);
+		//       //   //   action.plotCellData(defaultSelctecKey);
+		//       //   console.log(defaultSelctecKey, "default keys");
+		//     }
+	}, [location.state]);
 	useEffect(() => {
 		if (accessToken) {
 			setIsCelldataLoaded(false);
 			let endpoint = "/cells/cycle/meta";
 			// const accessToken = await getAccessTokenSilently();
-			setCheckedCellIds([]);
-			setCheckedKeys([]);
+			// setCheckedCellIds([]);
+			// setCheckedKeys([]);
 			axios
 				.get(endpoint, {
 					headers: {

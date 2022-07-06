@@ -9,6 +9,8 @@ import axios from "axios";
 import Highlighter from "react-highlight-words";
 import ViewCodeModal from "../ViewCodeModal";
 import { useDashboard } from "../../context/DashboardContext";
+import { useNavigate } from "react-router-dom";
+
 
 const { Text } = Typography;
 
@@ -28,6 +30,8 @@ const DashboardFilterBar = (props) => {
 	const [searchedColumn, setSearchedColumn] = useState("");
 	const accessToken = useAuth0Token();
 	const { state, action } = useDashboard();
+	const navigate = useNavigate();
+
 
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
@@ -126,7 +130,7 @@ const DashboardFilterBar = (props) => {
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
-				responseType:'arraybuffer',
+				responseType: 'arraybuffer',
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -174,7 +178,7 @@ const DashboardFilterBar = (props) => {
 		axios
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
-				responseType:'arraybuffer',
+				responseType: 'arraybuffer',
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},

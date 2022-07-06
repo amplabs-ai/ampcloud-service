@@ -64,6 +64,11 @@ const Navbar = () => {
 										CSV-Viewer
 									</Link>
 								</li>
+								<li className="nav-item" style={{ display: "none" }}>
+									<Link className="nav-link" to="/pricing">
+										Pricing
+									</Link>
+								</li>
 								<li className="nav-item">
 									{/* <Dropdown overlay={uploadMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
