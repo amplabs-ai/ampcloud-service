@@ -41,6 +41,11 @@ const _generateTreeData = (data) => {
 			key: "private",
 			children: [],
 		},
+		{
+			title: "Public",
+			key: "public",
+			children: [],
+		},
 	];
 	let amplabsDirInfo = {};
 	let dataMatrIoDirInfo = {
@@ -119,6 +124,12 @@ const _generateTreeData = (data) => {
 				break;
 			case "private":
 				x[2].children.push({
+					title: cellId,
+					key: "cell_" + cellType + cellId,
+				});
+				break;
+			case "public/user":
+				x[3].children.push({
 					title: cellId,
 					key: "cell_" + cellType + cellId,
 				});
@@ -335,7 +346,7 @@ const SideBar = (props) => {
 											checkedKeys={checkedKeys}
 											treeData={filteredTreeData}
 											autoExpandParent={true}
-											defaultExpandedKeys={["amplabs", "datamatrio", "private"]}
+											defaultExpandedKeys={["amplabs", "datamatrio", "private", "public"]}
 										/>
 									</>
 								) : (

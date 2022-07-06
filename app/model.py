@@ -24,6 +24,7 @@ import numpy as np
 
 Model = declarative_base()
 
+
 class UserPlan(Model):
     __tablename__ = ARCHIVE_TABLE.USER_PLAN.value
     email = Column(TEXT, primary_key=True)
@@ -38,6 +39,7 @@ class UserPlan(Model):
             data_dict[column.name] = getattr(self, column.name)
         data_dict.pop(LABEL.EMAIL.value, None)
         return data_dict
+
 
 class AbuseMeta(Model):
     __tablename__ = ARCHIVE_TABLE.ABUSE_META.value
@@ -173,7 +175,7 @@ class CycleStats(Model):
     cycle_time = Column(Float, nullable=True)
     test_time = Column(Float, nullable=True)
     cycle_duration = Column(Float, nullable=True)
-    cycle_total_rest_time = Column(Float, nullable= True)
+    cycle_total_rest_time = Column(Float, nullable=True)
 
     # Current
     cycle_max_current = Column(Float, nullable=True)
@@ -358,7 +360,8 @@ class ArchiveOperator:
         self.session.commit()
 
     def remove_cell_from_table(self, table, cell_id, email):
-        self.session.query(table).filter(table.cell_id == cell_id, table.email == email).delete()
+        self.session.query(table).filter(
+            table.cell_id == cell_id, table.email == email).delete()
 
     def remove_cell_from_archive(self, cell_id, email):
         self.remove_cell_from_table(CellMeta, cell_id, email)
@@ -375,14 +378,14 @@ class ArchiveOperator:
     def get_df_cycle_ts_with_cell_id(self, cell_id, email):
         sql = self.session.query(CycleTimeSeries).filter(
             CycleTimeSeries.cell_id == cell_id,
-            or_(CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CycleTimeSeries.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index',
-                                                                                        'test_time').statement
+            or_(CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CycleTimeSeries.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index',
+                                                                                                                                                                                                                 'test_time').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
         sql = self.session.query(CycleStats).filter(
             CycleStats.cell_id == cell_id,
-            or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CycleStats.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index').statement
+            or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CycleStats.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_abuse_ts_with_cell_id(self, cell_id, email):
@@ -409,19 +412,23 @@ class ArchiveOperator:
 
     def get_all_cell_meta_from_table_with_id(self, cell_id, email, test):
         return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id),
-                                                   or_(CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CellMeta.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())),
+                                                   or_(CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CellMeta.email.in_(
+                                                       self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())),
                                                    CellMeta.test == test).all()
+
     def get_all_cell_meta_for_community(self):
         return self.session.query(CellMeta).filter(
-                                                   or_(CellMeta.email.in_([BATTERY_ARCHIVE, DATA_MATR_IO]),CellMeta.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())),
-                                                   ).all()
+            or_(CellMeta.email.in_(self.session.query(UserPlan.email).filter(
+                UserPlan.plan_type == 'COMMUNITY').subquery())), CellMeta.test == 'cycle'
+        ).all()
     # TEST METADATA
+
     def get_all_test_metadata_from_table(self, test_model, email):
         return self.get_all_data_from_table_with_email(test_model, email)
 
     def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
         return self.session.query(test_model).filter(test_model.cell_id.in_(cell_id),
-                                                     or_(test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO],test_model.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())))).all()
+                                                     or_(test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO], test_model.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())))).all()
 
     # ECHARTS
 
@@ -435,11 +442,13 @@ class ArchiveOperator:
 
     def get_all_data_from_ECAD_query(self, cell_id, email):
         if len(cell_id) > 1:
-            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email))
+            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(
+                cell_id=tuple(cell_id), email=email))
             return self.session.execute(
                 ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email))
         else:
-            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
+            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(
+                cell_id=("('" + cell_id[0] + "')"), email=email))
             return self.session.execute(
                 ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
 
@@ -483,17 +492,18 @@ class ArchiveOperator:
             return self.session.execute(
                 ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
 
-
     def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters, get_df=False):
         if get_df:
             return pd.read_sql(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters), self.session.bind)
-        result = self.session.execute(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
+        result = self.session.execute(TIMESERIES_DATA.format(
+            columns=columns, cell_ids=cell_ids, email=email, filters=filters))
         return result
 
     def get_all_data_from_stats_query(self, columns, cell_ids, email, filters, get_df=False):
         if get_df:
             return pd.read_sql(STATS_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters), self.session.bind)
-        result = self.session.execute(STATS_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters))
+        result = self.session.execute(STATS_DATA.format(
+            columns=columns, cell_ids=cell_ids, email=email, filters=filters))
         return result
 
     # DASHBOARD
@@ -569,7 +579,8 @@ class ArchiveOperator:
 
         if model == 'cycle_timeseries':
             df_list = np.array_split(df, 8)
-            futures = [ArchiveOperator.executor.submit(insert_df, df) for df in df_list]
+            futures = [ArchiveOperator.executor.submit(
+                insert_df, df) for df in df_list]
             wait(futures)
         else:
             df.to_sql(model,
@@ -593,7 +604,8 @@ class ArchiveOperator:
         return self.select_table_with_id(table, cell_id, email).all()
 
     def update_table_with_cell_id_email(self, table, cell_id, email, data):
-        self.session.query(table).filter(table.email == email, table.cell_id == cell_id).update(data)
+        self.session.query(table).filter(
+            table.email == email, table.cell_id == cell_id).update(data)
 
     def update_table_with_index(self, table, index, data):
         self.session.query(table).filter(table.index == index).update(data)
@@ -605,7 +617,8 @@ class ArchiveOperator:
         self.session.add(user_plan)
 
     def update_user_plan(self, data):
-        self.session.query(UserPlan).filter(UserPlan.email == data['email']).update(data)
+        self.session.query(UserPlan).filter(
+            UserPlan.email == data['email']).update(data)
 
     # BASIC
 
