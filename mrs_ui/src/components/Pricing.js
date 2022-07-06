@@ -82,6 +82,10 @@ const Pricing = () => {
         padding: 24,
         background: "#e7f7ff",
     }
+    const stripeGateway = () => {
+        window.open("https://buy.stripe.com/test_eVa00Zefu0BCeBi3cd");
+    };
+
     return (
         <>
 
@@ -107,7 +111,7 @@ const Pricing = () => {
                                             <h3 style={{ textAlign: "left" }}>Community</h3>
                                             {/* <p className='justify-content'>Use our most basic plan at no cost.See Features Below</p> */}
                                             <h4><b>Free</b></h4>
-                                            <Button type="primary" ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "#DEE9F3" }}><b>Get Started</b>
+                                            <Button type="primary" href='/dashboard' ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "#DEE9F3" }}><b>Get Started</b>
                                             </Button>
                                         </Card>
                                     </Col>
@@ -116,7 +120,7 @@ const Pricing = () => {
                                             <h3 className="text-white" style={{ textAlign: "left" }}>Analyst</h3>
                                             {/* <p className='justify-content'>Use our most popular plan! See Features Below</p> */}
                                             <h4 className="text-white"><b>$25/month</b></h4>
-                                            <Button type="primary" ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
+                                            <Button type="primary" onClick={stripeGateway} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
                                             </Button>
                                         </Card>
                                     </Col>

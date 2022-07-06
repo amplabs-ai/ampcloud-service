@@ -257,7 +257,9 @@ const UploadPage = () => {
 						if (parseInt(res.data.records.percentage) === 100) {
 							// redirect user
 							let navigateTo = pageType === "cycle-test" ? "/dashboard" : "/dashboard/abuse-test";
-							setTimeout(() => navigate(navigateTo), 1000);
+							setTimeout(() => navigate(navigateTo, {
+								state: { from: "upload", cellId: cellId },
+							}), 1000);
 							clearInterval(intervalId);
 						} else if (parseInt(res.data.records.percentage) === -1) {
 							setprocessingProgressMsg(res.data.records.message || "Oops! Error occured while processing uploads...");

@@ -80,7 +80,7 @@ export const DashboardProvider = ({ children }) => {
 	const refreshSidebar = (cellIdDeleted) => {
 		let selectedCellIdsAfterRefresh = state.selectedCellIds;
 		if (cellIdDeleted) {
-			selectedCellIdsAfterRefresh = selectedCellIdsAfterRefresh.findIndex((cell) => !cell.includes(cellIdDeleted));
+			selectedCellIdsAfterRefresh = selectedCellIdsAfterRefresh.filter((cell) => !cell.includes(cellIdDeleted));
 		}
 		dispatch({
 			type: "REFRESH_SIDEBAR",
