@@ -24,7 +24,7 @@ def get_cellmeta_service(email, test, dashboard_id=None):
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []
         archive_cells = ao.get_all_cell_meta_for_community()
-        records = [add_type(cell.to_dict(), "type", "public/community") for cell in archive_cells]
+        records = [add_type(cell.to_dict(), "type", "public/user") for cell in archive_cells]
         archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
         records.extend([add_type(cell.to_dict(), "type", "public/battery-archive") for cell in archive_cells_ba])
         archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
@@ -50,7 +50,7 @@ def get_cellmeta_with_id_service(cell_id, email, test, dashboard_id=None):
         elif row.email == email:
             row_dict['type'] = "private"
         else:
-            row_dict['type'] = "public/community"
+            row_dict['type'] = "public/user"
         return row_dict
     try:
         ao = ArchiveOperator()
