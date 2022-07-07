@@ -30,13 +30,13 @@ export const UserPlanProvider = ({ children }) => {
 		}
 	}, [accessToken]);
 
-	if (!userPlan) {
-		return (
-			<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
-				<Spin size="large" />
-			</div>
-		);
-	}
+	// if (!userPlan) {
+	// 	return (
+	// 		<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+	// 			<Spin size="large" />
+	// 		</div>
+	// 	);
+	// }
 
 	return <UserPlanContext.Provider value={userPlan}>{children}</UserPlanContext.Provider>;
 };
