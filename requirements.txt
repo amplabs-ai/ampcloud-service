@@ -19,3 +19,5 @@ tables
 marshmallow
 flask-compress
 python-dotenv==0.20.0
+stripe==3.5.0
+pympler==1.0.1

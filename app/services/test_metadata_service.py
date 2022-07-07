@@ -24,8 +24,10 @@ def get_testmeta_by_cell_id_service(cell_id, test_model, email):
             row_dict['type'] = "public/battery-archive"
         elif row.email == DATA_MATR_IO:
             row_dict['type'] = "public/data.matr.io"
+        elif row.email == email:
+            row_dict['type'] = "private"
         else:
-            row_dict['type'] = "private" 
+            row_dict['type'] = "public/user" 
         return row_dict
     try:
         ao = ArchiveOperator()

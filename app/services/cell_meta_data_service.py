@@ -34,10 +34,9 @@ def get_cellmeta_service(email, test, dashboard_id=None):
         archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
         records.extend([add_type(cell.to_dict(), "type",
                        "public/data.matr.io") for cell in archive_cells_dm])
-        if g.user_plan in {"BETA", "ANALYST"}:
-            archive_cells = ao.get_all_cell_meta(email, test)
-            records.extend([add_type(cell.to_dict(), "type", "private")
-                           for cell in archive_cells])
+        archive_cells = ao.get_all_cell_meta(email, test)
+        records.extend([add_type(cell.to_dict(), "type", "private")
+                        for cell in archive_cells])
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)

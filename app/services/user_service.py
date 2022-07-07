@@ -9,7 +9,18 @@ def get_user_plan_service(email):
         ao = ArchiveOperator()
         ao.set_session()
         user_plan = ao.get_all_data_from_table_with_email(UserPlan, email)
-        records = [plan.to_dict() for plan in user_plan]   
+        if user_plan:
+            records = [plan.to_dict() for plan in user_plan]  
+        else:
+            data = {
+                        "email": g.user,
+                        "stripe_customer_id": None,
+                        "stripe_subscription_id": None,
+                        "plan_type": "COMMUNITY",
+                        "state": "SUCCESS"
+                    }
+            ao.add_user_plan(data) 
+            records = [data]
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
         logging.error(err)
