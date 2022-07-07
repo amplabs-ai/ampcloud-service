@@ -11,6 +11,7 @@ import ViewCodeModal from "../ViewCodeModal";
 import { useDashboard } from "../../context/DashboardContext";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth0 } from "@auth0/auth0-react";
 
 const { Text } = Typography;
 
@@ -32,6 +33,9 @@ const DashboardFilterBar = (props) => {
 	const { state, action } = useDashboard();
 	const navigate = useNavigate();
 
+	const {
+		user: { email },
+	} = useAuth0();
 
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
@@ -124,13 +128,14 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const downloadCycleData = (k) => {
+		audit(`cycle_data_download`, { email });
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
-				responseType: 'arraybuffer',
+				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -158,27 +163,28 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const viewCycleDataCode = (k) => {
-		audit(`cycle_dash_cellId__cycle_viewcode`, accessToken);
+		audit(`cycle_dash_cellId__cycle_viewcode`, { email });
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
-		audit(`cycle_dash_cellId__ts_viewcode`, accessToken);
+		audit(`cycle_dash_cellId__ts_viewcode`, { email });
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const downloadTimeSeriesData = (k) => {
+		audit(`time_series_data_download`, { email });
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
 		axios
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
-				responseType: 'arraybuffer',
+				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -215,7 +221,7 @@ const DashboardFilterBar = (props) => {
 					<Button
 						type="primary"
 						onClick={() => {
-							audit(`cycle_test_dash_cellId_search`, accessToken);
+							audit(`cycle_test_dash_cellId_search`, { email });
 							handleSearch(selectedKeys, confirm, dataIndex);
 						}}
 						icon={<SearchOutlined />}
