@@ -49,7 +49,7 @@ def handle_customer_subscription_update(update_event_obj):
                 "plan_type": "COMMUNITY",
                 "state": "SUCCESS"
             }
-            ao.add_user_plan(data)
+            ao.update_user_plan(data)
         return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']
     except Exception as err:
         logging.error(err)
@@ -65,10 +65,11 @@ def handle_customer_subscription_delete(delete_event_obj):
         customer_id = delete_event_obj['customer']
         customer = stripe.Customer.retrieve(customer_id, api_key=STRIPE_API_KEY)
         customer_email = customer['email']
+        subscription_id = delete_event_obj['id']
         data = {
                 "email": customer_email,
-                "stripe_customer_id": None,
-                "stripe_subscription_id": None,
+                "stripe_customer_id": customer_id,
+                "stripe_subscription_id": subscription_id,
                 "plan_type": "COMMUNITY",
                 "state": "SUCCESS"
             }

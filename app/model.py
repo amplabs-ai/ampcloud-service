@@ -378,14 +378,14 @@ class ArchiveOperator:
     def get_df_cycle_ts_with_cell_id(self, cell_id, email):
         sql = self.session.query(CycleTimeSeries).filter(
             CycleTimeSeries.cell_id == cell_id,
-            or_(CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CycleTimeSeries.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index',
+            or_(CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CycleTimeSeries.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY', UserPlan.stripe_customer_id.is_(None)).subquery()))).order_by('cycle_index',
                                                                                                                                                                                                                  'test_time').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
         sql = self.session.query(CycleStats).filter(
             CycleStats.cell_id == cell_id,
-            or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CycleStats.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery()))).order_by('cycle_index').statement
+            or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CycleStats.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY', UserPlan.stripe_customer_id.is_(None)).subquery()))).order_by('cycle_index').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_abuse_ts_with_cell_id(self, cell_id, email):
@@ -413,13 +413,13 @@ class ArchiveOperator:
     def get_all_cell_meta_from_table_with_id(self, cell_id, email, test):
         return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id),
                                                    or_(CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CellMeta.email.in_(
-                                                       self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())),
+                                                       self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY', UserPlan.stripe_customer_id.is_(None)).subquery())),
                                                    CellMeta.test == test).all()
 
     def get_all_cell_meta_for_community(self):
         return self.session.query(CellMeta).filter(
             or_(CellMeta.email.in_(self.session.query(UserPlan.email).filter(
-                UserPlan.plan_type == 'COMMUNITY').subquery())), CellMeta.test == 'cycle'
+                UserPlan.plan_type == 'COMMUNITY', UserPlan.stripe_customer_id.is_(None)).subquery())), CellMeta.test == 'cycle'
         ).all()
     # TEST METADATA
 
@@ -428,7 +428,7 @@ class ArchiveOperator:
 
     def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
         return self.session.query(test_model).filter(test_model.cell_id.in_(cell_id),
-                                                     or_(test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO], test_model.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY').subquery())))).all()
+                                                     or_(test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), test_model.email.in_(self.session.query(UserPlan.email).filter(UserPlan.plan_type == 'COMMUNITY', UserPlan.stripe_customer_id.is_(None)).subquery()))).all()
 
     # ECHARTS
 
@@ -613,8 +613,10 @@ class ArchiveOperator:
     # User plan
 
     def add_user_plan(self, data):
-        user_plan = UserPlan(**data)
-        self.session.add(user_plan)
+        user_plan_obj = UserPlan(**data)
+        self.session.add(user_plan_obj)
+        self.session.flush()
+
 
     def update_user_plan(self, data):
         self.session.query(UserPlan).filter(

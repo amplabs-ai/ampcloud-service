@@ -181,7 +181,7 @@ const SideBar = (props) => {
 		//     }
 	}, [location.state]);
 	useEffect(() => {
-		if (accessToken) {
+		if (accessToken && userPlan) {
 			setIsCelldataLoaded(false);
 			let endpoint = "/cells/cycle/meta";
 			// const accessToken = await getAccessTokenSilently();
@@ -209,7 +209,7 @@ const SideBar = (props) => {
 					setError(err);
 				});
 		}
-	}, [state.refreshSidebar, accessToken]);
+	}, [state.refreshSidebar, accessToken, userPlan]);
 
 	const findObjectAndParents = (item, title) => {
 		if (item.title.toLowerCase().includes(title.toLowerCase()) || !title) {

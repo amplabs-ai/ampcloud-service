@@ -1,7 +1,7 @@
 import React from "react";
 import logo from "../assets/images/amplabsLogo.png";
 import { Link } from "react-router-dom";
-import { Menu, Dropdown, Avatar } from "antd";
+import { Menu, Dropdown, Avatar, Button } from "antd";
 import { FaAngleDown } from "react-icons/fa";
 // import { useAuth0 } from "@auth0/auth0-react";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -29,6 +29,10 @@ const Navbar = () => {
 					Sign-out
 				</Link>
 			</Menu.Item>
+			<Menu.Item>
+				<Button type="text" href='/pricing' >Manage Plan</Button>
+			</Menu.Item>
+
 		</Menu>
 	);
 
