@@ -18,22 +18,25 @@ export const UserPlanProvider = ({ children }) => {
 					},
 				})
 				.then(function (response) {
-					let res = response?.data?.records[0][0]
+					let res = response?.data?.records[0][0];
+					console.log("userPlan", res);
 					if (res) {
 						setUserPlan(res.plan_type);
 					}
 				})
 				.catch((err) => {
-					console.log('get user plan err', err)
+					console.log("get user plan err", err);
 				});
 		}
 	}, [accessToken]);
 
-	// if (!userPlan) {
-	// 	return (<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
-	// 		<Spin size="large" />
-	// 	</div>)
-	// }
+	if (!userPlan) {
+		return (
+			<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
+				<Spin size="large" />
+			</div>
+		);
+	}
 
 	return <UserPlanContext.Provider value={userPlan}>{children}</UserPlanContext.Provider>;
 };

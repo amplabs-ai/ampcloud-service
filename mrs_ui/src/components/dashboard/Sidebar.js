@@ -13,7 +13,7 @@ import { useLocation } from "react-router-dom";
 const { Search } = Input;
 const { Sider } = Layout;
 
-const _generateTreeData = (data) => {
+const _generateTreeData = (data, userPlan) => {
 	let x = [
 		{
 			title: "Battery Archive",
@@ -37,14 +37,15 @@ const _generateTreeData = (data) => {
 			],
 		},
 		{
-			title: "Private",
-			key: "private",
-			children: [],
-		},
-		{
 			title: "Public",
 			key: "public",
 			children: [],
+		},
+		{
+			title: "Private",
+			key: "private",
+			children: [],
+			disabled: userPlan?.toLowerCase() !== "analyst",
 		},
 	];
 	let amplabsDirInfo = {};
@@ -122,16 +123,17 @@ const _generateTreeData = (data) => {
 					key: "cell_" + cellType + cellId,
 				});
 				break;
-			case "private":
+			case "public/user":
 				x[2].children.push({
 					title: cellId,
 					key: "cell_" + cellType + cellId,
 				});
 				break;
-			case "public/user":
+			case "private":
 				x[3].children.push({
 					title: cellId,
 					key: "cell_" + cellType + cellId,
+					disabled: userPlan?.toLowerCase() !== "analyst",
 				});
 				break;
 			default:
@@ -162,11 +164,7 @@ const SideBar = (props) => {
 	useEffect(() => {
 		//   if (location.state !== null) {
 		console.log("location", location);
-		if (
-			location.state &&
-			location.state.from === "upload" &&
-			location.state.cellId
-		) {
+		if (location.state && location.state.from === "upload" && location.state.cellId) {
 			const { cellId } = location.state;
 			setCheckedKeys(["cell_private_" + cellId]);
 			setCheckedCellIds(["private_" + cellId]);
@@ -197,7 +195,7 @@ const SideBar = (props) => {
 				})
 				.then((res) => {
 					if (res.status === 200 && res.data) {
-						let treeData = _generateTreeData(res.data.records[0]);
+						let treeData = _generateTreeData(res.data.records[0], userPlan);
 						console.log("treeData", treeData);
 						setTreeData(treeData);
 						setFilteredTreeData(() => {
