@@ -10,6 +10,8 @@ import UploadPageForms from "../components/upload/UploadPageForms";
 import ProcessUpload from "../components/upload/ProcessUpload";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useAuth0Token } from "../utility/useAuth0Token";
+import { audit } from "../auditAction/audit";
+import mixpanel from "mixpanel-browser";
 
 const { Title } = Typography;
 
@@ -95,6 +97,7 @@ const UploadPage = () => {
 	};
 
 	const doFileUpload = (cellId) => {
+		mixpanel.time_event("file_upload");
 		setReUpload(false);
 		let endpoint = _getUploadEndpoint();
 		_initializeUploadProgress();
@@ -214,29 +217,10 @@ const UploadPage = () => {
 			});
 	};
 
-	const _shallRedirectToDashboard = (clearIntervalId, response) => {
-		let redirect = true;
-		if (!response.data.records) {
-			setReUpload(true);
-			setTimeout(() => {
-				clearInterval(clearIntervalId);
-			}, 1000);
-		}
-		for (const key in response.data.records) {
-			const file = response.data.records[key];
-			if (file.percentage === -1) {
-				redirect = false;
-				setReUpload(true);
-				setTimeout(() => {
-					clearInterval(clearIntervalId);
-				}, 1000);
-				// setUploadProgress({});
-				break;
-			}
-		}
-		if (redirect) {
-			setTimeout(() => navigate("/dashboard"), 1500);
-		}
+	const _getFileSize = () => {
+		let size = 0;
+		files.map((f) => (size += f.size));
+		return size;
 	};
 
 	const getStatus = (cellId) => {
@@ -255,11 +239,17 @@ const UploadPage = () => {
 				.then((res) => {
 					if (res.data.records) {
 						if (parseInt(res.data.records.percentage) === 100) {
+							// fire mixpanel event
+							mixpanel.track("file_upload", { file_size: _getFileSize() });
 							// redirect user
 							let navigateTo = pageType === "cycle-test" ? "/dashboard" : "/dashboard/abuse-test";
-							setTimeout(() => navigate(navigateTo, {
-								state: { from: "upload", cellId: cellId },
-							}), 1000);
+							setTimeout(
+								() =>
+									navigate(navigateTo, {
+										state: { from: "upload", cellId: cellId },
+									}),
+								1000
+							);
 							clearInterval(intervalId);
 						} else if (parseInt(res.data.records.percentage) === -1) {
 							setprocessingProgressMsg(res.data.records.message || "Oops! Error occured while processing uploads...");

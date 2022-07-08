@@ -33,9 +33,7 @@ const DashboardFilterBar = (props) => {
 	const { state, action } = useDashboard();
 	const navigate = useNavigate();
 
-	const {
-		user: { email },
-	} = useAuth0();
+	const { user } = useAuth0();
 
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
@@ -128,7 +126,7 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const downloadCycleData = (k) => {
-		audit(`cycle_data_download`, { email });
+		audit(`cycle_data_download`, user);
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
@@ -163,21 +161,21 @@ const DashboardFilterBar = (props) => {
 	};
 
 	const viewCycleDataCode = (k) => {
-		audit(`cycle_dash_cellId__cycle_viewcode`, { email });
+		audit(`cycle_dash_cellId__cycle_viewcode`, user);
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
-		audit(`cycle_dash_cellId__ts_viewcode`, { email });
+		audit(`cycle_dash_cellId__ts_viewcode`, user);
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const downloadTimeSeriesData = (k) => {
-		audit(`time_series_data_download`, { email });
+		audit(`time_series_data_download`, user);
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
@@ -221,7 +219,7 @@ const DashboardFilterBar = (props) => {
 					<Button
 						type="primary"
 						onClick={() => {
-							audit(`cycle_test_dash_cellId_search`, { email });
+							audit(`cycle_test_dash_cellId_search`, user);
 							handleSearch(selectedKeys, confirm, dataIndex);
 						}}
 						icon={<SearchOutlined />}

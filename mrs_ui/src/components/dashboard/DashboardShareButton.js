@@ -113,7 +113,7 @@ const DashboardShareButton = (props, ref) => {
 	}, [accessToken]);
 
 	const doShareDashboard = () => {
-		audit(`${props.dashboard}_dash_share`, accessToken);
+		audit(`${props.dashboard}_dash_share`, user);
 		setMetaImageDash(null);
 		localStorage.setItem("dashImage", null);
 		setShallShowShareDashModal(true);
