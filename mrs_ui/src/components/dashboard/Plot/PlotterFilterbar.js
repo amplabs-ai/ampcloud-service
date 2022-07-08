@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { audit } from "../../../auditAction/audit";
-import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../../../chartConfig/cellIdViewCode";
+import {
+	cycleDataCodeContent,
+	timeSeriesDataCodeContent,
+	abuseCellIdViewCode,
+} from "../../../chartConfig/cellIdViewCode";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import { SearchOutlined } from "@ant-design/icons";
 import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography } from "antd";
@@ -9,7 +13,7 @@ import axios from "axios";
 import Highlighter from "react-highlight-words";
 import ViewCodeModal from "../../ViewCodeModal";
 import { useDashboard } from "../../../context/DashboardContext";
-
+import { useAuth0 } from "@auth0/auth0-react";
 
 const { Text } = Typography;
 
@@ -27,6 +31,7 @@ const PlotterFilterbar = (props) => {
 	const [searchText, setSearchText] = useState("");
 	const [searchedColumn, setSearchedColumn] = useState("");
 	const accessToken = useAuth0Token();
+	const { user } = useAuth0();
 
 	const { state, action } = useDashboard();
 
@@ -74,7 +79,7 @@ const PlotterFilterbar = (props) => {
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
-				responseType:'arraybuffer',
+				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -102,14 +107,14 @@ const PlotterFilterbar = (props) => {
 	};
 
 	const viewCycleDataCode = (k) => {
-		audit(`cycle_dash_cellId__cycle_viewcode`, accessToken);
+		audit(`cycle_dash_cellId__cycle_viewcode`, user);
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
-		audit(`cycle_dash_cellId__ts_viewcode`, accessToken);
+		audit(`cycle_dash_cellId__ts_viewcode`, user);
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
@@ -122,7 +127,7 @@ const PlotterFilterbar = (props) => {
 		axios
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
-				responseType:'arraybuffer',
+				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -159,7 +164,7 @@ const PlotterFilterbar = (props) => {
 					<Button
 						type="primary"
 						onClick={() => {
-							audit(`cycle_test_dash_cellId_search`, accessToken);
+							audit(`cycle_test_dash_cellId_search`, user);
 							handleSearch(selectedKeys, confirm, dataIndex);
 						}}
 						icon={<SearchOutlined />}

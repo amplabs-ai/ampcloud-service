@@ -66,4 +66,5 @@ if __name__ == "__main__":
     engine_ = create_engine(app.app.config['DATABASE_URI'], echo=True)
     Model.metadata.create_all(engine_)
 
-    app.run(debug=True, host='0.0.0.0',port='4000',ssl_context='adhoc')
+    # app.run(debug=True, host='0.0.0.0',port='4000',ssl_context='adhoc')
+    app.run(debug=True, host='0.0.0.0',port='4000')

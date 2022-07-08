@@ -1,19 +1,27 @@
-import React from "react";
+import React, { useEffect } from "react";
 import logo from "../assets/images/amplabsLogo.png";
-import { Link } from "react-router-dom";
 import { Menu, Dropdown, Avatar, Button } from "antd";
+import { Link, useLocation } from "react-router-dom";
 import { FaAngleDown } from "react-icons/fa";
 // import { useAuth0 } from "@auth0/auth0-react";
 import { useAuth0 } from "@auth0/auth0-react";
 
 import { UserOutlined } from "@ant-design/icons";
 import { useUserPlan } from "../context/UserPlanContext";
+import { audit } from "../auditAction/audit";
+import mixpanel from "mixpanel-browser";
 
 const Navbar = () => {
 	const { logout, isAuthenticated, user, isLoading } = useAuth0();
 
-	const userplan = useUserPlan();
-	console.log("userplan", userplan);
+	let location = useLocation();
+
+	useEffect(() => {
+		if (user?.email) {
+			console.log("loca ", location);
+			audit("user_route_navigate", { ...user, pathName: location.pathname });
+		}
+	}, [location, user]);
 
 	const userProfileMenu = (
 		<Menu>
@@ -22,6 +30,7 @@ const Navbar = () => {
 					className="nav-link"
 					onClick={async (e) => {
 						e.preventDefault();
+						audit("logout", user);
 						logout({ returnTo: window.location.origin });
 					}}
 					to="/"
@@ -30,9 +39,10 @@ const Navbar = () => {
 				</Link>
 			</Menu.Item>
 			<Menu.Item>
-				<Button type="text" href='/pricing' >Manage Plan</Button>
+				<Button type="text" href="/pricing">
+					Manage Plan
+				</Button>
 			</Menu.Item>
-
 		</Menu>
 	);
 
@@ -102,16 +112,15 @@ const Navbar = () => {
 									</Dropdown>
 								</li>
 							</>
-
 						</ul>
 					</div>
-				) : !isLoading ? ((
+				) : !isLoading ? (
 					<>
 						<div className="collapse navbar-collapse justify-content" id="navbarNav">
 							<ul className="navbar-nav">
 								<>
 									<li className="nav-item">
-										<Link className="nav-link" to="/cloud" >
+										<Link className="nav-link" to="/cloud">
 											Cloud
 										</Link>
 									</li>
@@ -129,17 +138,21 @@ const Navbar = () => {
 							</ul>
 						</div>
 
-
 						<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 							<ul className="navbar-nav">
 								<li className="nav-item">
-									<Link className="nav-link" to="/dashboard" style={{ border: "0.5px solid white", padding: "10px 30px" }}>
+									<Link
+										className="nav-link"
+										to="/dashboard"
+										style={{ border: "0.5px solid white", padding: "10px 30px" }}
+									>
 										Go to Console
 									</Link>
 								</li>
 							</ul>
-						</div></>
-				)) : null}
+						</div>
+					</>
+				) : null}
 			</div>
 		</nav>
 	);
