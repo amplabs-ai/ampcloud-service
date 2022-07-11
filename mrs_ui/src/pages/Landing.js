@@ -6,7 +6,6 @@ import styles from "./LandingPage.module.css";
 const Landing = () => {
     const auth = useAuth0();
     const { loginWithRedirect } = useAuth0();
-    console.log("from context", auth);
     const aboutAnim = useSpring({
         delay: 500,
         from: { x: -900, opacity: 0 },

@@ -34,7 +34,6 @@ const DashboardChart = (props) => {
 		chartRef.current.getEchartsInstance().dispatchAction({
 			type: "restore",
 		});
-		console.log("asdw", chartConfig(props.chartName, props.data));
 		// if (props.data && props.data.length) {
 		// chartRef.current.getEchartsInstance().showLoading();
 		chartRef.current.getEchartsInstance().setOption({

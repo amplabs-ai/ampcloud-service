@@ -45,7 +45,6 @@ const PlotterFilterbar = (props) => {
 
 	useEffect(() => {
 		if (accessToken && state.selectedCellIds.length) {
-			console.log("state.selectedCellIds", state.selectedCellIds);
 			let data;
 			data = _cleanCellIds(state.selectedCellIds);
 			let cellIdData = [];

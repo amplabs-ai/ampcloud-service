@@ -178,9 +178,7 @@ const DropFileInput = (props) => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: function (results) {
-        console.log("re-parse", results.data);
-      },
+      complete: function (results) {},
     });
 
     if (file.size) {

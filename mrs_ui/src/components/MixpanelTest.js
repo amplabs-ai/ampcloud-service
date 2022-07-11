@@ -8,7 +8,6 @@ mixpanel.init("1808e36e2fdfd13139a1df86c970aa1b", { debug: true });
 const MixpanelTest = () => {
 	const auth = useAuth0();
 	const handleBtnClick = () => {
-		console.log(auth);
 		mixpanel.track("Test", {
 			email: auth.user.email,
 		});

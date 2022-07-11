@@ -27,7 +27,6 @@ const PlotterInputForm = (props) => {
           signal: controller.signal,
         })
         .then((res) => {
-          console.log("plotterinputform", res);
           setAxisOptions(res.data?.records);
           setLoading(false);
         })
@@ -49,7 +48,6 @@ const PlotterInputForm = (props) => {
   };
 
   const handleYAxisDeselect = (value) => {
-    // setAxisOptions((prev) => console.log(prev));
     setSelectedYaxes(selectedYaxes.filter((c) => c !== value));
   };
 

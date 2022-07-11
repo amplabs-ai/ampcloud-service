@@ -45,7 +45,6 @@ const DashboardFilterBar = (props) => {
 
 	useEffect(() => {
 		if (accessToken && state.selectedCellIds.length) {
-			console.log("state.selectedCellIds", state.selectedCellIds);
 			let data;
 			data = _cleanCellIds(state.selectedCellIds);
 			let cellIdData = [];
@@ -76,7 +75,6 @@ const DashboardFilterBar = (props) => {
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", record.cell_id);
-		console.log("delete cell", record.cell_id);
 		axios
 			.delete(`/cells`, {
 				params: params,

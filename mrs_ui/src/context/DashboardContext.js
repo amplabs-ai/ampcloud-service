@@ -18,7 +18,7 @@ export const DashboardProvider = ({ children }) => {
 	};
 
 	const checkUserPlanOnPlot = (selectedCellIds) => {
-		if (userPlan === "beta") {
+		if (userPlan === "BETA") {
 			for (let i = 0; i < selectedCellIds.length; i++) {
 				if (selectedCellIds[i].includes("private_")) {
 					return false;

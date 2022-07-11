@@ -20,7 +20,6 @@ const Dashboard = (props) => {
 	const navigate = useNavigate();
 	const { state, action, dashboardRef } = useDashboard();
 	const accessToken = useAuth0Token();
-	console.log("state", state);
 
 	// if used in shared dashboard
 	useEffect(() => {

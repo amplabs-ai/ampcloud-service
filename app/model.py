@@ -613,9 +613,12 @@ class ArchiveOperator:
     # User plan
 
     def add_user_plan(self, data):
-        user_plan_obj = UserPlan(**data)
-        self.session.add(user_plan_obj)
-        self.session.flush()
+        df = pd.DataFrame([data])
+        df.to_sql("user_plan",
+                             con=self.session.bind,
+                             if_exists='append',
+                             chunksize=1000,
+                             index=False)
 
 
     def update_user_plan(self, data):
