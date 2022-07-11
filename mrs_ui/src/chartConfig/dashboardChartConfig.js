@@ -231,7 +231,6 @@ export const getChartMetadata = (chartName) => {
       break;
     default:
       // for showing chart on plotter page
-      console.log("chart configs", JSON.parse(chartName));
       return JSON.parse(chartName);
   }
   return result;

@@ -107,8 +107,8 @@ const handlePlot = (values, colDisplayNames) => {
 	})
 	.then(function (response) {
     setReqData(data)
+		response.data = typeof response.data == "string" ? JSON.parse(response.data.replace(/\bNaN\b/g, "null")) : response.data;
 		setChartLoadSpiner(false);
-		console.log(response.data?.records);
 		setData(response.data?.records[0]);
 		setFilteredData(response.data?.records[0]);
 		let replaceInCode = {
@@ -128,7 +128,6 @@ const handlePlot = (values, colDisplayNames) => {
 		setChartLoadingError(true);
 		setData([]);
 		setFilteredData([]);
-		console.log(error);
 		setReplaceInCode(null);
 		setCodeContent("");
 	});

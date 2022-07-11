@@ -45,7 +45,7 @@ const _generateTreeData = (data, userPlan) => {
 			title: "Private",
 			key: "private",
 			children: [],
-			disabled: userPlan?.toLowerCase() !== "analyst",
+			disabled: !userPlan?.includes("PRO"),
 		},
 	];
 	let amplabsDirInfo = {};
@@ -133,7 +133,7 @@ const _generateTreeData = (data, userPlan) => {
 				x[3].children.push({
 					title: cellId,
 					key: "cell_" + cellType + cellId,
-					disabled: userPlan?.toLowerCase() !== "analyst",
+					disabled: !userPlan?.includes("PRO"),
 				});
 				break;
 			default:
@@ -163,7 +163,6 @@ const SideBar = (props) => {
 	const userEnteredFileKey = [];
 	useEffect(() => {
 		//   if (location.state !== null) {
-		console.log("location", location);
 		if (location.state && location.state.from === "upload" && location.state.cellId) {
 			const { cellId } = location.state;
 			setCheckedKeys(["cell_private_" + cellId]);
@@ -177,7 +176,6 @@ const SideBar = (props) => {
 		//       //     action.setCheckedCellIds(defaultSelctecKey);
 		//       //     action.loadCellData(defaultSelctecKey);
 		//       //   //   action.plotCellData(defaultSelctecKey);
-		//       //   console.log(defaultSelctecKey, "default keys");
 		//     }
 	}, [location.state]);
 	useEffect(() => {
@@ -196,7 +194,6 @@ const SideBar = (props) => {
 				.then((res) => {
 					if (res.status === 200 && res.data) {
 						let treeData = _generateTreeData(res.data.records[0], userPlan);
-						console.log("treeData", treeData);
 						setTreeData(treeData);
 						setFilteredTreeData(() => {
 							setIsCelldataLoaded(true);
@@ -249,7 +246,6 @@ const SideBar = (props) => {
 	};
 
 	const onPlot = () => {
-		console.log("onPlot", checkedCellIds);
 		action.plotCellData(checkedCellIds);
 	};
 

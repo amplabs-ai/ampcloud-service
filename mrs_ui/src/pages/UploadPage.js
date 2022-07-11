@@ -148,7 +148,6 @@ const UploadPage = () => {
 					.then((response) => {
 						if (response.data.status === 200) {
 							if (response.data.detail === "Success") {
-								console.log("upload finish", file.name);
 							}
 						}
 					})

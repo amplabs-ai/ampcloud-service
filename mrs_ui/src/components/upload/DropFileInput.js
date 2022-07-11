@@ -162,7 +162,6 @@ const DropFileInput = (props) => {
 			header: true,
 			skipEmptyLines: true,
 			complete: function (results) {
-				console.log("re-parse", results.data);
 			},
 		});
 

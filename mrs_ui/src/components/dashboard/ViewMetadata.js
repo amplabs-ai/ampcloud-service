@@ -190,7 +190,6 @@ const ViewMetadata = (props) => {
 				newData.push(item);
 			}
 		}
-		console.log("before save api", newData, state.selectedCellIds);
 		axios
 			.patch(endpoint, newData, {
 				headers: {
@@ -200,7 +199,6 @@ const ViewMetadata = (props) => {
 			.then((response) => {
 				action.refreshSidebar();
 				getTestMetadata(newData.map((d) => d.cell_id));
-				// console.log("asdw", JSON.stringify(getSearchParams(newData.map((d) => d.cell_id))));
 				setShallShowLoad(false);
 				message.success("Updated Successfully!");
 				message.success("Updated Successfully!");

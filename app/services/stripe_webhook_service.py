@@ -13,11 +13,12 @@ def handle_customer_subscription_create(create_event_obj):
         customer = stripe.Customer.retrieve(customer_id, api_key=STRIPE_API_KEY)
         customer_email = customer['email']
         subscription_id = create_event_obj['id']
+        product = stripe.Product.retrieve(create_event_obj['plan']['product'], api_key=STRIPE_API_KEY)['name']
         data = {
                 "email": customer_email,
                 "stripe_customer_id": customer_id,
                 "stripe_subscription_id": subscription_id,
-                "plan_type": "ANALYST",
+                "plan_type": product.upper(),
                 "state": "SUCCESS"
             }
         if ao.get_all_data_from_table_with_email(UserPlan, customer_email):

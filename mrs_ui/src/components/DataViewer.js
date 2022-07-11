@@ -119,7 +119,6 @@ const DataViewer = () => {
 				skipEmptyLines: true,
 				dynamicTyping: true,
 				complete: function (results) {
-					console.log(results);
 					setAvailableCol(results.data[0]);
 					setData(results.data);
 				},

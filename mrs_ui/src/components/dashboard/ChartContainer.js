@@ -75,7 +75,6 @@ const ChartContainer = () => {
 	useEffect(() => {
 		return () => {
 			for (const s in getCancelReqToken()) {
-				console.log("first");
 				cancelReqToken[s].cancel();
 			}
 			action.setShareDisabled(true);
@@ -176,7 +175,6 @@ const ChartContainer = () => {
 			.then((result) => {
 				handleChartLoadSpinner(apiType, false);
 				result = typeof result.data == "string" ? JSON.parse(result.data.replace(/\bNaN\b/g, "null")) : result.data;
-				console.log(`${apiType} data`, result.records[0]);
 				switch (apiType) {
 					case "energyAndDecay":
 						setChartData((prev) => {
@@ -216,13 +214,11 @@ const ChartContainer = () => {
 				}
 			})
 			.catch((err) => {
-				console.log(`${apiType} err`, err);
 				handleChartLoadingError(apiType, true);
 			});
 	};
 
 	const handleCellIdChange = async (selectedCellIds) => {
-		console.log("selected cellIds", selectedCellIds);
 
 		setLoading(true);
 		getSearchParams(selectedCellIds, stepFromFilter);
@@ -230,7 +226,6 @@ const ChartContainer = () => {
 		instance.postMessage({ chartData, selectedCellIds });
 		instance.onmessage = (message) => {
 			if (message) {
-				console.log("Message from worker", message.data);
 				setFilteredData(message.data);
 				setLoading(false);
 				setDisableSelection(false);

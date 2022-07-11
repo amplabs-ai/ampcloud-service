@@ -11,7 +11,6 @@ export const UserPlanProvider = ({ children }) => {
 	const accessToken = useAuth0Token();
 
 	const auth0 = useAuth0();
-	console.log("from context", auth0);
 
 	useEffect(() => {
 		if (accessToken) {
@@ -23,13 +22,11 @@ export const UserPlanProvider = ({ children }) => {
 				})
 				.then(function (response) {
 					let res = response?.data?.records[0][0];
-					console.log("userPlan", res);
 					if (res) {
 						setUserPlan(res.plan_type);
 					}
 				})
 				.catch((err) => {
-					console.log("get user plan err", err);
 				});
 		}
 	}, [accessToken]);
