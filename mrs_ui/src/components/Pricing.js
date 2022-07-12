@@ -25,7 +25,7 @@ const columns = [
         title: <Card style={{ backgroundImage: `url(${background})`, backgroundSize: 'cover', width: 220 }} className="text-white">
             <h3 className="text-white" >Pro</h3>
             <h4 className="text-white"><b>$25/Month</b></h4>
-            <Button type="primary" onClick={() => window.open("https://buy.stripe.com/test_eVa00Zefu0BCeBi3cd", "_blank")} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
+            <Button type="primary" onClick={() => window.open("https://buy.stripe.com/14keVK8I6aLxgsUcMM", "_blank")} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
             </Button>
         </Card>,
         dataIndex: 'Pro',

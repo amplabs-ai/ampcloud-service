@@ -18,8 +18,7 @@ def handle_customer_subscription_create(create_event_obj):
                 "email": customer_email,
                 "stripe_customer_id": customer_id,
                 "stripe_subscription_id": subscription_id,
-                "plan_type": product.upper(),
-                "state": "SUCCESS"
+                "plan_type": product.upper()
             }
         if ao.get_all_data_from_table_with_email(UserPlan, customer_email):
             ao.update_user_plan(data)
@@ -47,8 +46,7 @@ def handle_customer_subscription_update(update_event_obj):
                 "email": customer_email,
                 "stripe_customer_id": customer_id,
                 "stripe_subscription_id": subscription_id,
-                "plan_type": "COMMUNITY",
-                "state": "SUCCESS"
+                "plan_type": "COMMUNITY"
             }
             ao.update_user_plan(data)
         return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']
@@ -71,8 +69,7 @@ def handle_customer_subscription_delete(delete_event_obj):
                 "email": customer_email,
                 "stripe_customer_id": customer_id,
                 "stripe_subscription_id": subscription_id,
-                "plan_type": "COMMUNITY",
-                "state": "SUCCESS"
+                "plan_type": "COMMUNITY"
             }
         ao.update_user_plan(data)  
         return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']

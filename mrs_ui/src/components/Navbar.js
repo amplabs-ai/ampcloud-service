@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import logo from "../assets/images/amplabsLogo.png";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, Dropdown, Avatar, Button, Col, message } from "antd";
 import { FaAngleDown } from "react-icons/fa";
 import { useAuth0 } from "@auth0/auth0-react";
@@ -28,9 +28,11 @@ const Navbar = () => {
 		try {
 			await navigator.clipboard.writeText(copyMe);
 			message.success('Token Copied');
+			message.success('Token Copied');
 		}
 		catch (err) {
 			message.success('Token Copy Failed');
+			message.success('Token Copied');
 		}
 	};
 	const addToBasket = () => { }
@@ -64,7 +66,7 @@ const Navbar = () => {
 			<div className="container-fluid">
 				<a className="navbar-brand" style={{ position: 'relative' }} href="/">
 					<img style={{ maxWidth: "125px", display: "block" }} src={logo} alt="AMPLABS" />
-					<span className="rounded-pill bg-danger text-white " style={{ fontSize: 11, padding: "1.6px 3px", border: "2px solid #dcdddd", position: " absolute", bottom: 23, left: 112 }}><b>BETA</b></span>
+					<span className="rounded-pill bg-danger text-white " style={{ fontSize: 9, padding: "1.6px 3px", border: "2px solid #dcdddd", position: " absolute", bottom: 23, left: 112 }}><b>BETA</b></span>
 				</a>
 				<button
 					className="navbar-toggler"

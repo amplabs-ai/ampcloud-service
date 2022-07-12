@@ -21,8 +21,7 @@ def set_user_plan():
                         "email": g.user,
                         "stripe_customer_id": None,
                         "stripe_subscription_id": None,
-                        "plan_type": "COMMUNITY",
-                        "state": "SUCCESS"
+                        "plan_type": "COMMUNITY"
                     }
                     ao.add_user_plan(data)
                     g.user_plan = "COMMUNITY"

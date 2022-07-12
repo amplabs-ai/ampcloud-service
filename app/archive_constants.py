@@ -1,24 +1,25 @@
 from enum import Enum, auto
 import random
 import string 
-ENV = "development"
+ENV = "production"
 SLASH = "/"
 
 DEGREE = 3
 CELL_LIST_FILE_NAME = "cell_list.xlsx"
 TEST_DB_URL = "sqlite:///tests/test_data/db/bas-test.db"
 LIVE_DB_URL = "<your-db-string>"
+
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
 # Stripe
-STRIPE_ENDPOINT_SECRET = 'whsec_v2BBSemFu23LM5p9dq1leMTlGvyPbOx9'
-STRIPE_API_KEY = "sk_test_51LAf3qDNtGhk05MqaSbFQjpcR7Hlaytn8GumTDr5Aunv4TbAKMTuGXiFZt7JwPE1BL88BjhYtj3Kpa9VZ3nNlhln00IbN4NxAW"
+STRIPE_ENDPOINT_SECRET = 'whsec_NvFfYQYyWentyw5Cts5vSk6Tq410cTP3'
+STRIPE_API_KEY = "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"
 JWT_SECRET_FOR_PLAN_UPDATE = ''.join(random.choices(string.ascii_uppercase +
                              string.digits, k = 10))
 # Amplabs DB
-AMPLABS_DB_URL = "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "development" \
-                 else "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
+AMPLABS_DB_URL = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "production" \
+                 else "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
 # linkedin share constants
 LINKEDIN_CLIENT_ID = '78opgrui0xx0ng'
 LINKEDIN_CLIENT_SECRET = 'hGAIpqZh5swxgM6v'
@@ -26,7 +27,7 @@ LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard' if ENV == '
 LINKEDIN_REDIRECT_URI_DASH_ABUSE= 'https://www.amplabs.ai/dashboard/abuse-test' if ENV == 'production' else 'http://localhost:3000/dashboard/abuse-test'
 
 #Auth0
-AUTH0_DOMAIN = "dev-lnxjzkkj.us.auth0.com"
+AUTH0_DOMAIN = "auth.amplabs.ai" if ENV == 'production' else "dev-lnxjzkkj.us.auth0.com"
 AUTH0_AUDIENCE = "https://amplabs.server"
 AUTH0_ALGORITHMS = ["RS256"]
 

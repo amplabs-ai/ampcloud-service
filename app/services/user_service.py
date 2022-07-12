@@ -16,8 +16,7 @@ def get_user_plan_service(email):
                         "email": g.user,
                         "stripe_customer_id": None,
                         "stripe_subscription_id": None,
-                        "plan_type": "COMMUNITY",
-                        "state": "SUCCESS"
+                        "plan_type": "COMMUNITY"
                     }
             ao.add_user_plan(data) 
             records = [data]
@@ -37,8 +36,7 @@ def update_user_plan_service(email):
                 "email": email,
                 "stripe_customer_id": None,
                 "stripe_subscription_id": None,
-                "plan_type": "COMMUNITY",
-                "state": "SUCCESS"
+                "plan_type": "COMMUNITY"
             }
             ao.update_user_plan(data)
         return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']
