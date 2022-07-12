@@ -40,7 +40,7 @@ const DashboardShareButton = (props, ref) => {
 	const { user } = useAuth0(); // auth context
 
 	useEffect(() => {
-		if ([...searchParamsForCode].length) {
+		if ([...searchParamsForCode].length && accessToken) {
 			let code = searchParamsForCode.get("code");
 			let state = searchParamsForCode.get("state");
 			if (code && state.includes("amplabs")) {

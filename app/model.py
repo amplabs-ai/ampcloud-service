@@ -31,7 +31,6 @@ class UserPlan(Model):
     stripe_customer_id = Column(TEXT, nullable=True)
     stripe_subscription_id = Column(TEXT, nullable=True)
     plan_type = Column(TEXT, nullable=False)
-    state = Column(TEXT, nullable=False)
 
     def to_dict(self):
         data_dict = {}

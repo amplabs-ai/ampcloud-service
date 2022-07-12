@@ -20,8 +20,7 @@ def get_cellmeta_service(email, test, dashboard_id=None):
             else:
                 cell_id = dashboard_data.cell_id.split(',')
                 email = dashboard_data.shared_by
-                archive_cells = ao.get_all_cell_meta_from_table_with_id(
-                    cell_id, email, test)
+                archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, email, test)
                 records = [cell.to_dict() for cell in archive_cells]
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []

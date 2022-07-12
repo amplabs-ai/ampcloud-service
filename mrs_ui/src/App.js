@@ -50,7 +50,7 @@ const App = () => {
 				<Auth0ProviderWithRedirectCallback
 					domain={domain}
 					clientId={clientId}
-					redirectUri="https://localhost:3000"
+					redirectUri="https://www.amplabs.ai"
 					audience="https://amplabs.server"
 					useRefreshTokens={true}
 				>
