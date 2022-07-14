@@ -1,8 +1,5 @@
-from app.archive_constants import (LABEL, DEGREE, TEST_TYPE, TESTER, OUTPUT_LABELS,
-                               SLASH, ARCHIVE_TABLE, CELL_LIST_FILE_NAME)
-from app.converter import (split_cycle_metadata, split_abuse_metadata,
-                       calc_cycle_stats, calc_abuse_stats)
-from app.aio import CellTestReader
+from app.archive_constants import (TEST_TYPE, ARCHIVE_TABLE)
+from app.utilities.utils import calc_abuse_stats, calc_cycle_stats, split_abuse_metadata, split_cycle_metadata
 
 
 class TestTypeException(Exception):
@@ -39,16 +36,17 @@ class ArchiveCell:
             self.test_ts_table = ARCHIVE_TABLE.CYCLE_TS.value
             self.test_meta_table = ARCHIVE_TABLE.CYCLE_META.value
             self.test_stats_table = ARCHIVE_TABLE.CYCLE_STATS.value
-        if data is not None: self.data = data
-        else: self.load_data()
+        # if data is not None: self.data = data
+        # else: self.load_data()
+        self.data = data
         if stat: self.stat = stat
         else: self.stat = self.calc_stats()
 
-    def load_data(self):
-        ctr = CellTestReader(self.tester, self.test_type)
-        self.data = ctr.read_data(self.file_path)
-        self.data[LABEL.CELL_ID.value] = self.cell_id
-        return self
+    # def load_data(self):
+    #     ctr = CellTestReader(self.tester, self.test_type)
+    #     self.data = ctr.read_data(self.file_path)
+    #     self.data[LABEL.CELL_ID.value] = self.cell_id
+    #     return self
 
     def is_supported_test_type(self, test_type):
         for T in TEST_TYPE:

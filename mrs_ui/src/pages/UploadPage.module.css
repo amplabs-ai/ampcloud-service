@@ -1,0 +1,23 @@
+.wrapper {
+  padding-top: 1rem;
+  width: 100%;
+}
+
+@media only screen and (max-width: 600px) {
+  .uploadSection {
+    height: 300px;
+    padding: 0px 0px;
+  }
+}
+
+.errorMsg {
+  color: red;
+}
+
+.processingStatusBar {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}

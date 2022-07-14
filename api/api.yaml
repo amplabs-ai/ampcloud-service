@@ -1,38 +1,800 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: Battery Archive API
+  title: AmpLabs API
+
 paths:
-  /:
+  /healthcheck:
     get:
-      summary: Root Path
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: root
+      summary: Health check
+      x-openapi-router-controller: app.controllers.auth_controller
+      operationId: health_check
       tags:
-        - general
+        - Healthcheck
       responses:
         "200":
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Cells"
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: Successfull
+  /cells/{test}/meta:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches metadata for all cells for the email logged in.
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: get_cells
+      tags:
+        - Cell Meta
+      parameters:
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
+    patch:
+      security:
+        - BearerAuth: []
+      summary: Fetches metadata for all cells for the email logged in.
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: update_cell_metadata
+      tags:
+        - Cell Meta
+      parameters:
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
+  /cells/{test}/metaWithId:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches metadata for given cell id for the email logged in.
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: get_cell_with_id
+      tags:
+        - Cell Meta
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell Id
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
+  /cells:
+    delete:
+      security:
+        - BearerAuth: []
+      summary: Delete all data for a cell from archive for the email logged in.
+      x-openapi-router-controller: app.controllers.cell_metadata_controller
+      operationId: delete_cell
+      tags:
+        - Cell Meta
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to delete
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Internal Server Error
+  /cells/tests/{test}/meta:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches test metadata of test.
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: get_testmeta
+      tags:
+        - Test Meta
+      parameters:
+        - name: test
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+    patch:
+      security:
+        - BearerAuth: []
+      summary: Fetches test metadata of test.
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: update_test_metadata
+      tags:
+        - Test Meta
+      parameters:
+        - name: test
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /cells/tests/{test}/metaWithId:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches test metadata of testname for a cell id
+      x-openapi-router-controller: app.controllers.test_metadata_controller
+      operationId: get_testmeta_by_cell_id
+      tags:
+        - Test Meta
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: test
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle]
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /upload/cells/initialize:
+    post:
+      security:
+        - BearerAuth: []
+      summary: Initialize upload file request (required to be sent before /upload/cells/{tester} request)
+      description: |
+        Data sent in this request will be used by the succeeding upload file request.
+
+         **For uploading cycle test file following form fields are useed:**
+
+         - Required
+           - cell_id
+           - file_count
+           - test_type
+         - Cell Metadata
+           - anode
+           - cathode
+           - source
+           - ah
+           - form_factor
+         - Test Metadata
+           - temperature
+           - soc_max
+           - soc_min
+           - crate_c
+           - crate_d
+
+         **For uploading abuse test file following form fields are useed:**
+
+         - Required
+           - cell_id
+           - file_count
+           - test_type
+         - Cell Metadata
+           - anode
+           - cathode
+           - source
+           - ah
+           - form_factor
+         - Test Metadata
+           - temperature
+           - thickness
+           - nail_speed
+           - indentor
+           - v_init
+
+         **Note: Must be logged in before sending this request**
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: init_file_upload
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cell_id:
+                  type: string
+                  nullable: false
+                  example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+                file_count:
+                  type: integer
+                  enum: [1]
+                  description: Number of files that will be sent in the upload request
+                test_type:
+                  type: string
+                  enum: [cycle]
+                anode:
+                  type: string
+                  example: Graphite
+                cathode:
+                  type: string
+                  example: NMC
+                source:
+                  type: string
+                  example: Commercial
+                ah:
+                  type: number
+                  example: 3
+                form_factor:
+                  type: string
+                  example: NA
+                temperature:
+                  type: number
+                  example: 25
+                soc_max:
+                  type: number
+                  example: 100
+                soc_min:
+                  type: number
+                  example: 10
+                crate_c:
+                  type: number
+                  example: 0.5
+                crate_d:
+                  type: number
+                  example: 1
+                thickness:
+                  type: number
+                  example: 7
+                v_init:
+                  type: number
+                  example: 4.12
+                indentor:
+                  type: number
+                  example: 6
+                nail_speed:
+                  type: number
+                  example: 0.05
+              required:
+                - cell_id
+                - file_count
+                - test_type
+      tags:
+        - Upload
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /upload/cells/{tester}:
+    post:
+      security:
+        - BearerAuth: []
+      summary: Upload test file
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: upload_file
+      parameters:
+        - name: tester
+          in: path
+          description: |
+            If test_type sent in upload/initialize request is cycle then tester must be generic. For abuse it can be any of ornl/snl
+            else
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: ["generic", "ornl", "snl"]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cell_id:
+                  description: similar to the cell_id sent in upload initialize request.
+                  type: string
+                  example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+                file:
+                  type: string
+              required:
+                - cell_id
+                - file
+      tags:
+        - Upload
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+
+  /upload/cells/status:
+    get:
+      # security:
+      #   - BearerAuth: []
+      summary: Check upload status for the file sent via uplaod request.
+      x-openapi-router-controller: app.controllers.status_check_controller
+      operationId: get_status
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Upload
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /download/cells/cycle_timeseries:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Download Cycle timeseries csv file for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: download_cycle_timeseries
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /download/cells/abuse_timeseries:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Download Abuse timeseries csv file for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: download_abuse_timeseries
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /download/cells/cycle_data:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Download Cycle csv file for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: download_cycle_data
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /echarts/cycleQuantitiesByStep:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches cycle quantities by step query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_cycle_quantities_by_step
+      tags:
+        - Echart - Get json data required for plotting
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: step
+          in: query
+          description: steps
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            example: 500
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/energyAndCapacityDecay:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches energy and capacity decay query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_energy_and_capacity_decay
+      tags:
+        - Echart - Get json data required for plotting
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong"
+  /echarts/efficiency:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches efficiency query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_efficiency
+      tags:
+        - Echart - Get json data required for plotting
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/compareByCycleTime:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches comapre cycle voltage and current query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_compare_by_cycle_time
+      tags:
+        - Echart - Get json data required for plotting
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/forceAndDisplacement:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches force and displacement query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_force_and_displacement
+      tags:
+        - Echart - Get json data required for plotting
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: sample
+          in: query
+          description: sample
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            items:
+              type: integer
+              example: 50
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/testTempratures:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches test tempratures query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_test_tempratures
+      tags:
+        - Echart - Get json data required for plotting
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: sample
+          in: query
+          description: sample
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            items:
+              type: integer
+              example: 50
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/voltage:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches voltage query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_voltage
+      tags:
+        - Echart - Get json data required for plotting
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+        - name: sample
+          in: query
+          description: sample
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: integer
+            items:
+              type: integer
+              example: 50
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /download/cells/cycle_data_json:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Get cycle data in json format for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_cycle_data_json
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /download/cells/cycle_timeseries_json:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Get cycle timeseries data in json format for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_cycle_timeseries_json
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+  /download/cells/abuse_timeseries_json:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Get abuse timeseries data in json format for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_abuse_timeseries_json
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
   /ga/publish/finish/{tracker}:
     post:
       summary: "test api endpoint"
-      x-openapi-router-controller: app.controllers.cell_controller
+      x-openapi-router-controller: app.controllers.ga_controller
       operationId: finish
+      tags:
+        - Galvanalyser-Integration
       parameters:
         - name: tracker
           in: path
@@ -61,10 +823,10 @@ paths:
   /ga/publish/{dataset_id}:
     post:
       summary: Handler for Galvanalyser Publishing
-      x-openapi-router-controller: app.controllers.cell_controller
+      x-openapi-router-controller: app.controllers.ga_controller
       operationId: ga_publish
       tags:
-        - publish
+        - Galvanalyser-Integration
       parameters:
         - name: dataset_id
           in: path
@@ -105,10 +867,10 @@ paths:
   /ga/publish/status/{tracker}:
     get:
       summary: Status Checker for Galvanalyser Publishing
-      x-openapi-router-controller: app.controllers.cell_controller
+      x-openapi-router-controller: app.controllers.ga_controller
       operationId: ga_publish_status
       tags:
-        - general
+        - Galvanalyser-Integration
       parameters:
         - name: tracker
           in: path
@@ -136,456 +898,48 @@ paths:
                     example: "uuid_abc_123"
         default:
           description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /cells:
-    post:
-      summary: Add a new cell
-      x-openapi-router-controller: app.controllers.cell_controller
-      operationId: add_cell
-      requestBody:
-        required: true
-        description: Path to CellList File
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                path:
-                  type: string
-      responses:
-        "200":
-          description: Added new cell
-  /cells/meta:
-    post:
-      summary: Add metadata for a  new cell
-      x-openapi-router-controller: app.controllers.cell_metadata_controller
-      operationId: add_cellmeta
-      tags:
-        - Cell Meta
-      requestBody:
-        description: cell meta object
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "200":
-          description: Successfull
-  /cells/all/meta:
+  /displayname/cycle:
     get:
-      summary: Fetches metadata for all cells
-      x-openapi-router-controller: app.controllers.cell_metadata_controller
-      operationId: get_cells
+      summary: Fetches the name of data schema of cycle.
+      x-openapi-router-controller: app.controllers.display_name_controller
+      operationId: get_display_cycle
       tags:
-        - Cell Meta
+        - Display Name
       responses:
         "200":
           description: Successfull
-  /cells/{cell_id}/meta:
+        "500":
+          description: Something went wrong.
+  /displayname/timeseries:
     get:
-      summary: Fetches cell metadata with cell_id
-      x-openapi-router-controller: app.controllers.cell_metadata_controller
-      operationId: get_cell_by_cell_id
+      summary: Fetches the data of timeseries.
+      x-openapi-router-controller: app.controllers.display_name_controller
+      operationId: get_display_timeseries
       tags:
-        - Cell Meta
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        200:
-          description: Successfull
-    patch:
-      summary: Update metadata for an existing cell
-      x-openapi-router-controller: app.controllers.cell_metadata_controller
-      operationId: update_cellmeta
-      tags:
-        - Cell Meta
-      parameters:
-        - name: cell_id
-          in: path
-          description: cell id
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      requestBody:
-        description: cell meta object
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "200":
-          description: Added new cell
-  /cells/{cell_id}:
-    delete:
-      summary: Delete a cell from archive
-      x-openapi-router-controller: app.controllers.cell_metadata_controller
-      operationId: delete_cellmeta
-      tags:
-        - Cell Meta
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to delete
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
+        - Display Name
       responses:
         "200":
           description: Successfull
-  /cells/{cell_id}/tests/{test_name}/meta:
-    get:
-      summary: Fetches tests metadata of testname for a cell id
-      x-openapi-router-controller: app.controllers.test_metadata_controller
-      operationId: get_testmeta_by_cell_id
-      tags:
-        - Test Meta
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Test Name of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      responses:
-        "200":
-          description: Successfull
-    post:
-      summary: Add metadata for test for a cell
-      x-openapi-router-controller: app.controllers.test_metadata_controller
-      operationId: add_testmeta
-      tags:
-        - Test Meta
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      requestBody:
-        description: Add test meta object
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "200":
-          description: Added test meta
-    patch:
-      summary: Update metadata for test
-      x-openapi-router-controller: app.controllers.test_metadata_controller
-      operationId: update_testmeta
-      tags:
-        - Test Meta
-      parameters:
-        - name: cell_id
-          in: path
-          description: cell id
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      requestBody:
-        description: cell meta object
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "200":
-          description: Added new cell
-    delete:
-      summary: Delete metadata for test
-      x-openapi-router-controller: app.controllers.test_metadata_controller
-      operationId: delete_testmeta
-      tags:
-        - Test Meta
-      parameters:
-        - name: cell_id
-          in: path
-          description: cell id
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      responses:
-        "200":
-          description: Deleted Cell
-  /cells/all/tests/{test_name}/meta:
-    get:
-      summary: Fetches test metadata of testname
-      x-openapi-router-controller: app.controllers.test_metadata_controller
-      operationId: get_testmeta
-      tags:
-        - Test Meta
-      parameters:
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      responses:
-        "200":
-          description: Successfull
-  /cells/all/tests/{test_name}/ts:
-    get:
-      summary: Fetches timeseries data of testname
-      x-openapi-router-controller: app.controllers.timeseries_controller
-      operationId: get_ts
-      tags:
-        - Test Ts
-      parameters:
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      responses:
-        "200":
-          description: Successfull
-  /cells/{cell_id}/tests/{test_name}/ts:
-    get:
-      summary: Fetches timeseries data for given cell id
-      x-openapi-router-controller: app.controllers.timeseries_controller
-      operationId: get_ts_by_cell_id
-      tags:
-        - Test Ts
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Test Name
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      responses:
-        "200":
-          description: Successfull
-    post:
-      summary: Add timeseries data for test
-      x-openapi-router-controller: app.controllers.timeseries_controller
-      operationId: add_ts
-      tags:
-        - Test Ts
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      requestBody:
-        description: Add ts object
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "200":
-          description: Added test meta
-    patch:
-      summary: Updates timeseries data for test
-      x-openapi-router-controller: app.controllers.timeseries_controller
-      operationId: update_ts
-      tags:
-        - Test Ts
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      requestBody:
-        description: Add ts object
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "200":
-          description: Added test meta
-    delete:
-      summary: Delete timeseries data for test
-      x-openapi-router-controller: app.controllers.timeseries_controller
-      operationId: delete_ts
-      tags:
-        - Test Ts
-      parameters:
-        - name: cell_id
-          in: path
-          description: cell id
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: test_name
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle, abuse]
-      responses:
-        "200":
-          description: Deleted Cell
-  /cells/cyclestats:
-    get:
-      summary: Fetches cycle stats
-      x-openapi-router-controller: app.controllers.stats_controller
-      operationId: get_cycle_stats
-      tags:
-        - Stats
-      responses:
-        "200":
-          description: Successfull response
-  /cells/{cell_id}/cyclestats:
-    get:
-      summary: Fetches cycle stats for cell id
-      x-openapi-router-controller: app.controllers.stats_controller
-      operationId: get_cycle_stats_by_cell_id
-      tags:
-        - Stats
-      parameters:
-        - name: cell_id
-          in: path
-          description: Cell ID of the resource to get
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Successfull
+        "500":
+          description: Something went wrong.
+
+tags:
+  - name: Cell Meta
+  - name: Test Meta
+  - name: Upload
+  - name: Download
+  - name: Echart - Get json data required for plotting
+  - name: Galvanalyser-Integration
+  - name: Display Name
+  - name: Healthcheck
+
+servers:
+  - url: https://www.amplabs.ai
+    variables: {}
+
 components:
-  schemas:
-    Path:
-      type: object
-      properties:
-        path:
-          type: string
-    Cell:
-      type: object
-      required:
-        - id
-      properties:
-        id:
-          type: integer
-          format: int64
-        tag:
-          type: string
-    Cells:
-      type: array
-      items:
-        $ref: "#/components/schemas/Cell"
-    Error:
-      type: object
-      required:
-        - code
-        - message
-      properties:
-        code:
-          type: integer
-          format: int32
-        message:
-          type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      x-bearerInfoFunc: app.utilities.with_authentication.skip_default_auth

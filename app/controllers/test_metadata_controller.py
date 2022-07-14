@@ -1,73 +1,34 @@
-from flask import request
-from marshmallow import ValidationError
-from app.model import AbuseMeta, AbuseTimeSeries, CycleMeta, CycleTimeSeries, CycleStats
-from app.archive_constants import TEST_TYPE
 from app.response import Response
-from app.services.test_metadata_service import add_testmeta_service, delete_testmeta_service, get_testmeta_by_cell_id_service, get_testmeta_service, update_testmeta_servcie
-from app.validation_schema.test_metadata_validation import AbuseMetaSchema, CycleMetaSchema
+from app.services.test_metadata_service import *
+from app.utilities.with_authentication import with_authentication
+from flask import request, g
 
 
-def get_testmeta(test_name):
-    if test_name == TEST_TYPE.CYCLE.value:
+@with_authentication(allow_public=True)
+def get_testmeta(test):
+    email = g.user
+    if test == TEST_TYPE.CYCLE.value:
         test_model = CycleMeta
-    if test_name == TEST_TYPE.ABUSE.value:
-        test_model = AbuseMeta      
-    status, detail, *records = get_testmeta_service(test_model)
+    if test == TEST_TYPE.ABUSE.value:
+        test_model = AbuseMeta
+    status, detail, *records = get_testmeta_service(test_model, email)
     return Response(status, detail, records).to_dict(), status
 
-def get_testmeta_by_cell_id(cell_id, test_name):
-    if test_name == TEST_TYPE.CYCLE.value:
+
+@with_authentication()
+def update_test_metadata(test):
+    email = g.user
+    request_data = request.get_json()
+    status, detail, *records = update_test_metadata_service(email, test, request_data)
+    return Response(status, detail, records).to_dict(), status
+
+
+@with_authentication(allow_public=True)
+def get_testmeta_by_cell_id(test, cell_id):
+    email = g.user
+    if test == TEST_TYPE.CYCLE.value:
         table = CycleMeta
-    if test_name == TEST_TYPE.ABUSE.value:
+    if test == TEST_TYPE.ABUSE.value:
         table = AbuseMeta
-    status, detail, *records = get_testmeta_by_cell_id_service(cell_id, table)
+    status, detail, *records = get_testmeta_by_cell_id_service(cell_id, table, email)
     return Response(status, detail, records).to_dict(), status
-
-
-def add_testmeta(cell_id, test_name):
-    request_data = request.json
-    if test_name == TEST_TYPE.CYCLE.value:
-        test_meta = CycleMetaSchema()
-        model = CycleMeta
-    if test_name == TEST_TYPE.ABUSE.value:
-        test_meta = AbuseMetaSchema()
-        model = AbuseMeta
-
-    try:
-        test_meta = test_meta.load(request_data)
-    except ValidationError as err:
-        return Response(400, err.messages).to_dict(), 400
-    status, detail = add_testmeta_service(cell_id, test_meta, model)
-    return Response(status, detail).to_dict(), status
-
-
-def update_testmeta(cell_id, test_name):
-    request_data = request.json
-    if test_name == TEST_TYPE.CYCLE.value:
-        test_meta = CycleMetaSchema()
-        meta_model = CycleMeta
-    if test_name == TEST_TYPE.ABUSE.value:
-        test_meta = AbuseMetaSchema()
-        meta_model = AbuseMeta
-    
-    try:
-        test_meta = test_meta.load(request_data)
-    except ValidationError as err:
-        return Response(400, err.messages).to_dict(), 400
-    status, detail = update_testmeta_servcie(cell_id, test_meta, meta_model)
-    return Response(status, detail).to_dict(), status
-
-
-def delete_testmeta(cell_id, test_name):
-    if test_name == TEST_TYPE.CYCLE.value:
-        meta_model = CycleMeta
-        ts_model = CycleTimeSeries
-        stats_model = CycleStats
-    if test_name == TEST_TYPE.ABUSE.value:
-        meta_model = AbuseMeta
-        ts_model = AbuseTimeSeries
-        stats_model = None
-
-    status, detail = delete_testmeta_service(cell_id, meta_model, ts_model, stats_model)
-    return Response(status, detail).to_dict(), status
-
