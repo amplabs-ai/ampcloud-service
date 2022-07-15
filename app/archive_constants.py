@@ -1,6 +1,4 @@
 from enum import Enum, auto
-import random
-import string 
 ENV = "production"
 SLASH = "/"
 
@@ -15,8 +13,6 @@ GA_API_HOST = ""
 # Stripe
 STRIPE_ENDPOINT_SECRET = 'whsec_NvFfYQYyWentyw5Cts5vSk6Tq410cTP3'
 STRIPE_API_KEY = "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"
-JWT_SECRET_FOR_PLAN_UPDATE = ''.join(random.choices(string.ascii_uppercase +
-                             string.digits, k = 10))
 # Amplabs DB
 AMPLABS_DB_URL = "postgresql://mrs_tutorial:App4ever#@battery-archive-prod.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "production" \
                  else "postgresql://mrs_tutorial_dev:App4ever#@battery-archive-dev-database.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
