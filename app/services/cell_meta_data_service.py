@@ -24,16 +24,19 @@ def get_cellmeta_service(email, test, dashboard_id=None):
                 records = [cell.to_dict() for cell in archive_cells]
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []
-        archive_cells = ao.get_all_cell_meta_for_community()
-        records = [add_type(cell.to_dict(), "type", "public/user")
+        archive_cells = ao.get_all_cell_meta_for_community(email)
+        records = [add_type(cell.to_dict(), "type", "public/other")
                    for cell in archive_cells]
+        archive_cells = ao.get_all_cell_meta_for_community(email, for_current_user=True)
+        records.extend([add_type(cell.to_dict(), "type", "public/user")
+                   for cell in archive_cells])
         archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
         records.extend([add_type(cell.to_dict(), "type",
                        "public/battery-archive") for cell in archive_cells_ba])
         archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
         records.extend([add_type(cell.to_dict(), "type",
                        "public/data.matr.io") for cell in archive_cells_dm])
-        archive_cells = ao.get_all_cell_meta(email, test)
+        archive_cells = ao.get_all_private_cell_meta(email, test)
         records.extend([add_type(cell.to_dict(), "type", "private")
                         for cell in archive_cells])
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
