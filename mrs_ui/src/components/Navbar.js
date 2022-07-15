@@ -24,20 +24,25 @@ const Navbar = () => {
 		}
 	}, [location, user]);
 
-	const copyToClipBoard = async copyMe => {
-		try {
-			await navigator.clipboard.writeText(copyMe);
-			message.success('Token Copied');
-			message.success('Token Copied');
-		}
-		catch (err) {
-			message.success('Token Copy Failed');
-			message.success('Token Copied');
-		}
+	const copyToClipBoard = copyMe => {
+		navigator.clipboard.writeText(copyMe);
+		message.success("Token Copied")
+		message.success("Token Copied")
+
 	};
 	const addToBasket = () => { }
 	const userProfileMenu = (
 		<Menu>
+
+			<Menu.Item key="plan">
+				<Link type="text" className="nav-link" to="/pricing" >Manage Plan</Link>
+			</Menu.Item>
+			<Menu.Item key="gettoken">
+				<Link className="nav-link" to="" onClick={(e) => {
+					e.preventDefault();
+					copyToClipBoard(`${accessToken}`)
+				}}>Get API token <br /><small className="text-secondary " >Token refreshes periodically in <b>30 days</b></small></Link>
+			</Menu.Item>
 			<Menu.Item key="logout">
 				<Link
 					className="nav-link"
@@ -50,12 +55,6 @@ const Navbar = () => {
 				>
 					Sign-out
 				</Link>
-			</Menu.Item>
-			<Menu.Item>
-				<Button type="text" href='/pricing' >Manage Plan</Button>
-			</Menu.Item>
-			<Menu.Item>
-				<Button type="text" onClick={() => { copyToClipBoard(`${accessToken}`); addToBasket() }} >Get API token</Button>
 			</Menu.Item>
 
 		</Menu>
@@ -116,15 +115,15 @@ const Navbar = () => {
 										</Link>
 									</Dropdown> */}
 									<Link className="nav-link" to="/dashboard">
-										Dashboard
+										Data
 									</Link>
 								</li>
 
-								<li className="nav-item" style={{ margin: "-4px", padding: "0px 10px" }}><Avatar src={user.picture ? user.picture : <UserOutlined />} style={{ width: 35, height: 35, marginTop: 10 }}></Avatar></li>
+								<li className="nav-item pe-2 ps-3" ><Avatar src={user.picture ? user.picture : <UserOutlined />} className="mt-2" style={{ width: 35, height: 35 }}></Avatar></li>
 								<li className="nav-item" style={{ margin: "-10px" }}>
 									<Dropdown overlay={userProfileMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
-											<Col><span style={{ fontSize: 16 }}>{user.email}<FaAngleDown /></span></Col><span className="rounded-pill bg-light text-dark" style={{ fontSize: 10, padding: "2px 2.5px" }}>{userplan}</span>
+											<Col><span style={{ fontSize: 16 }}>{user.email}<FaAngleDown /></span></Col><span className="rounded-pill bg-light text-dark p-1" style={{ fontSize: 10 }}>{userplan}</span>
 										</Link>
 									</Dropdown>
 								</li>
@@ -133,20 +132,20 @@ const Navbar = () => {
 					</div>
 				) : !isLoading ? ((
 					<>
-						<div className="collapse navbar-collapse justify-content" id="navbarNav">
+						<div className="collapse navbar-collapse justify-content ms-3" id="navbarNav">
 							<ul className="navbar-nav">
 								<>
-									<li className="nav-item">
+									<li className="nav-item ms-2">
 										<Link className="nav-link" to="/cloud">
 											Cloud
 										</Link>
 									</li>
-									<li className="nav-item">
+									<li className="nav-item ms-2">
 										<Link className="nav-link" to="/community">
 											Community
 										</Link>
 									</li>
-									<li className="nav-item">
+									<li className="nav-item ms-2">
 										<Link className="nav-link" to="/pricing">
 											Pricing
 										</Link>
@@ -157,8 +156,8 @@ const Navbar = () => {
 
 						<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 							<ul className="navbar-nav">
-								<li className="nav-item">
-									<Link className="nav-link" to="/dashboard" style={{ padding: "10px 30px" }}>
+								<li className="nav-item pe-4">
+									<Link className="nav-link" to="/dashboard" >
 										Sign In
 									</Link>
 								</li>

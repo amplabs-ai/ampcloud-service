@@ -45,12 +45,6 @@ const columns = [
 ];
 const data = [];
 data.push({
-    key: "Price",
-    Features: `Price`,
-    Community: `Free`,
-    Pro: `$25/month`,
-    Team: `Contact Us`,
-}, {
     key: "Subscription to AmpLabs Battery Insights Newsletter",
     Features: `Subscription to AmpLabs Battery Insights Newsletter`,
     Community: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,

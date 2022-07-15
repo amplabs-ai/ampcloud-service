@@ -56,6 +56,7 @@ const _generateTreeData = (data, userPlan) => {
 	data.map((cellMeta) => {
 		let cellType = cellMeta.type + "_";
 		let cellId = cellMeta.cell_id;
+		let index = cellMeta.index;
 		switch (cellMeta.type) {
 			case "public/battery-archive":
 				let dirName = cellId.split("_", 1)[0];
@@ -66,7 +67,7 @@ const _generateTreeData = (data, userPlan) => {
 						children: [
 							{
 								title: cellId,
-								key: "cell_" + cellType + cellId,
+								key: "cell_" + index + "_" + cellType + cellId,
 							},
 						],
 					});
@@ -74,7 +75,7 @@ const _generateTreeData = (data, userPlan) => {
 				} else {
 					x[0].children[amplabsDirInfo[dirName]].children.push({
 						title: cellId,
-						key: "cell_" + cellType + cellId,
+						key: "cell_" + index + "_" + cellType + cellId,
 					});
 				}
 				break;
@@ -120,19 +121,25 @@ const _generateTreeData = (data, userPlan) => {
 
 				x[1].children[projectDirIndex].children[batchIndex].children.push({
 					title: cellId,
-					key: "cell_" + cellType + cellId,
+					key: "cell_" + index + "_" + cellType + cellId,
 				});
 				break;
 			case "public/user":
 				x[2].children.push({
 					title: cellId,
-					key: "cell_" + cellType + cellId,
+					key: "cell_" + index + "_" + cellType + cellId,
+				});
+				break;
+			case "public/other":
+				x[2].children.push({
+					title: cellId,
+					key: "cell_" + index + "_" + cellType + cellId,
 				});
 				break;
 			case "private":
 				x[3].children.push({
 					title: cellId,
-					key: "cell_" + cellType + cellId,
+					key: "cell_" + index + "_" + cellType + cellId,
 					disabled: !userPlan?.includes("PRO"),
 				});
 				break;
@@ -161,23 +168,7 @@ const SideBar = (props) => {
 	const userPlan = useUserPlan();
 	const location = useLocation();
 	const userEnteredFileKey = [];
-	useEffect(() => {
-		//   if (location.state !== null) {
-		if (location.state && location.state.from === "upload" && location.state.cellId) {
-			const { cellId } = location.state;
-			setCheckedKeys(["cell_private_" + cellId]);
-			setCheckedCellIds(["private_" + cellId]);
-			//   action.plotCellData(["private_" + cellId]);
-			action.loadCellData(["private_" + cellId]);
 
-			userEnteredFileKey.push("cell_private_" + cellId);
-		}
-		//       //   const defaultSelctecKey = "cell_private_" + cellId;
-		//       //     action.setCheckedCellIds(defaultSelctecKey);
-		//       //     action.loadCellData(defaultSelctecKey);
-		//       //   //   action.plotCellData(defaultSelctecKey);
-		//     }
-	}, [location.state]);
 	useEffect(() => {
 		if (accessToken && userPlan) {
 			setIsCelldataLoaded(false);

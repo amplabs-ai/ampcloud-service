@@ -169,7 +169,7 @@ const ViewMetadata = (props) => {
 	};
 
 	const getData = () => {
-		let cellIdsWithoutId = state.selectedCellIds.map((k) => k.substring(k.indexOf("_") + 1));
+		let cellIdsWithoutId = state.selectedCellIds.map((k) => k.split("_").slice(2).join("_"));
 		getCellMetadata(cellIdsWithoutId);
 		getTestMetadata(cellIdsWithoutId);
 	};

@@ -16,7 +16,7 @@ const Community = () => {
                         </Row>
                         <Row justify="center" className='mt-4'>
                             <Col >
-                                <button style={{ padding: "1rem 2.2rem" }} className="btn btn-dark rounded-0" ><b>Join AmpLabs Community</b> </button>
+                                <button onClick={() => window.open("https://share.hsforms.com/1qUWgn7LmS3elWqQ57i2Prwd6vfd", "_blank")} style={{ padding: "1rem 2.2rem" }} className="btn btn-dark rounded-0" ><b>Join AmpLabs Community</b> </button>
                             </Col>
 
                         </Row>

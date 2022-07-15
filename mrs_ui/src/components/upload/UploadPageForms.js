@@ -1,18 +1,26 @@
-import React, { useState, forwardRef, useImperativeHandle } from "react";
-import { Form, Input, Typography, Button, Collapse } from "antd";
+import React, { useState, forwardRef, useImperativeHandle, useEffect } from "react";
+import { Form, Input, Typography, Radio, Space, Collapse } from "antd";
 
 const { Panel } = Collapse;
 
 const { Title } = Typography;
 
-const UploadPageForms = ({ pageType }, ref) => {
+const UploadPageForms = ({ pageType, userPlan }, ref) => {
 	const [cellMdform] = Form.useForm();
 	const [cycleMdform] = Form.useForm();
 	const [abuseMdform] = Form.useForm();
 
-	const [cellMetadata, setCellMetadata] = useState({});
+	const [cellMetadata, setCellMetadata] = useState({is_public:true});
 	const [cycleTestMetadata, setCycleTestMetadata] = useState({});
 	const [abuseTestMetadata, setAbuseTestMetadata] = useState({});
+	const [value, setValue] = useState(true)
+
+	const onChange = (e) => {
+		setValue(e.target.value)
+		let x = {};
+		x["is_public"] = e.target.value
+		setCellMetadata({ ...cellMetadata, ...x });
+	};
 
 	useImperativeHandle(ref, () => ({
 		getCellMetadata() {
@@ -49,6 +57,7 @@ const UploadPageForms = ({ pageType }, ref) => {
 							onFieldsChange={(e) => {
 								let x = {};
 								x[e[0].name[0]] = e[0].value;
+								x["is_public"] = value
 								setCellMetadata({ ...cellMetadata, ...x });
 							}}
 						>
@@ -115,6 +124,14 @@ const UploadPageForms = ({ pageType }, ref) => {
 									</Form.Item>
 									<Form.Item label="Discharge Rate (C)" name="crate_d">
 										<Input type="number" allowClear />
+									</Form.Item>
+									<Form.Item label="Visibility">
+										<Radio.Group onChange={onChange} label="Upload type" defaultValue={true}>
+											<Space direction="vertical">
+												<Radio value={false} disabled={userPlan === "COMMUNITY"} >Private</Radio>
+												<Radio value={true} >Public</Radio>
+											</Space>
+										</Radio.Group>
 									</Form.Item>
 								</Form>
 							</Panel>
