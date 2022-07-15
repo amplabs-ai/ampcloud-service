@@ -1,5 +1,5 @@
 from app.controllers.stripe_webhook import webhook
-from app.controllers.user_controller import get_update_code, get_user_plan, update_user_plan
+from app.controllers.user_controller import get_user_plan, update_user_plan
 import connexion
 from connexion import ProblemException
 import os
@@ -48,7 +48,6 @@ app.add_url_rule('/download/plot/timeseries','download_timeseries_plot_data', do
 app.add_url_rule('/download/plot/stats','download_stats_plot_data', download_stats_plot_data, methods=['POST'])
 app.add_url_rule('/user/get_user_plan', 'get_user_plan', get_user_plan, methods=['GET'])
 app.add_url_rule('/user/update_user_plan', 'update_user_plan', update_user_plan, methods=['POST'])
-app.add_url_rule('/user/get_update_code', 'get_update_code', get_update_code, methods=['GET'])
 app.add_url_rule('/stripe/webhook', 'webhook', webhook, methods=['POST'])
 
 @app.route("/")
