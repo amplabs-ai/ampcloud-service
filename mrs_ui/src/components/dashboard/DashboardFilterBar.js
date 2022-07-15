@@ -3,12 +3,13 @@ import { audit } from "../../auditAction/audit";
 import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../../chartConfig/cellIdViewCode";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import { SearchOutlined } from "@ant-design/icons";
-import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography } from "antd";
+import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography, Switch } from "antd";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import axios from "axios";
 import Highlighter from "react-highlight-words";
 import ViewCodeModal from "../ViewCodeModal";
 import { useDashboard } from "../../context/DashboardContext";
+import { useUserPlan } from "../../context/UserPlanContext";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth0 } from "@auth0/auth0-react";
@@ -16,6 +17,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 const { Text } = Typography;
 
 const DashboardFilterBar = (props) => {
+	const userPlan = useUserPlan();
 	const [cellIds, setCellIds] = useState([]);
 	const [tableLoading, setTableLoading] = useState(true);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -38,13 +40,13 @@ const DashboardFilterBar = (props) => {
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
 		cellIds.map((k) => {
-			x.push({ cell_id: k.substring(k.indexOf("_") + 1) });
+			x.push({ cell_id: k });
 		});
 		return x;
 	};
 
 	useEffect(() => {
-		if (accessToken && state.selectedCellIds.length) {
+		if (accessToken && state.selectedCellIds.length && userPlan) {
 			let data;
 			data = _cleanCellIds(state.selectedCellIds);
 			let cellIdData = [];
@@ -52,7 +54,8 @@ const DashboardFilterBar = (props) => {
 				data.forEach((cellId, i) => {
 					cellIdData.push({
 						key: i,
-						cell_id: cellId.cell_id,
+						cell_id: cellId.cell_id.split("_").slice(2).join("_"),
+						index: cellId.cell_id.split("_", 3)[0],
 					});
 				});
 				setCellIds([...cellIdData]);
@@ -69,7 +72,29 @@ const DashboardFilterBar = (props) => {
 				setTableLoading(false);
 			}
 		}
-	}, [state.selectedCellIds, accessToken]);
+	}, [state.selectedCellIds, accessToken, userPlan]);
+
+	const onVisibilityToggle = (record, checked) => {
+		console.log(record)
+		// setLoading(true);
+		axios
+			.patch("/cells/cycle/meta", [{"index":parseInt(record.index), "is_public": checked, "cell_id": record.cell_id}], {
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			})
+			.then((response) => {
+				setLoading(false);
+				action.refreshSidebar();
+				message.success("Updated");
+				message.success("Updated");
+			})
+			.catch((err) => {
+				setLoading(false);
+				message.error("Error Updating");
+				message.error("Error Updating");
+			});
+	};
 
 	const handleCellDelete = (record) => {
 		setLoading(true);
@@ -160,14 +185,14 @@ const DashboardFilterBar = (props) => {
 
 	const viewCycleDataCode = (k) => {
 		audit(`cycle_dash_cellId__cycle_viewcode`, user);
-		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
+		setSearchParams(getSearchParams(k.trim(), state.dashboardId));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
 		audit(`cycle_dash_cellId__ts_viewcode`, user);
-		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
+		setSearchParams(getSearchParams(k.trim(), state.dashboardId));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
 	};
@@ -331,13 +356,37 @@ const DashboardFilterBar = (props) => {
 				) : null,
 			width: 100,
 		},
+		{
+			title: "Public",
+			key: "toggle",
+			render: (text, record) =>
+				cellIds.length >= 1 ? (
+					<div className="filter-bar-delete-column">
+					
+						<Switch 
+						defaultChecked={_checkIsPublic(record)} 
+						size="small"
+						loading={props.disableSelection}
+						disabled={userPlan.includes("COMMUNITY") || _checkIsReadOnly(record)}
+						onChange={(checked) => onVisibilityToggle(record, checked)}
+						></Switch>
+					</div>
+				) : null,
+			width: 100,
+		},
 	];
 
 	const _checkIsReadOnly = (record) => {
 		return state.selectedCellIds.find((c) => {
-			return record.cell_id === c.substring(c.indexOf("_") + 1) && c.split("_", 1)[0].includes("public");
+			return record.cell_id === c.split("_").slice(2).join("_") && (!c.split("_", 3)[1].includes("public/user") && !c.split("_", 3)[1].includes("private"));
 		});
 	};
+	const _checkIsPublic = (record) => {
+		return state.selectedCellIds.find((c) => {
+			return record.cell_id === c.split("_").slice(2).join("_") && c.split("_",3)[1].includes("public");
+		});
+	}
+
 
 	const rowSelection = {
 		selectedRowKeys,

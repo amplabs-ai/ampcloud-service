@@ -75,7 +75,7 @@ const Dashboard = (props) => {
 				<div className="p-2">
 					<PageHeader
 						className="site-page-header mb-1 shadow"
-						title="Cycle Test Dashboard"
+						title="Cycle Test Data"
 						// backIcon={<FaArrowLeft title="go to upload" />}
 						// onBack={() => navigate("/upload")}
 						ghost={false}

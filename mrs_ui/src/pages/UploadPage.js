@@ -5,13 +5,14 @@ import axios from "axios";
 import { Radio, Typography, message, Alert } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import pako from "pako";
-import { useTransition, animated } from "react-spring";
+import { useTransition, } from "react-spring";
 import UploadPageForms from "../components/upload/UploadPageForms";
 import ProcessUpload from "../components/upload/ProcessUpload";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useAuth0Token } from "../utility/useAuth0Token";
 import { audit } from "../auditAction/audit";
 import mixpanel from "mixpanel-browser";
+import { useUserPlan } from "../context/UserPlanContext";
 
 const { Title } = Typography;
 
@@ -37,6 +38,7 @@ const UploadPage = () => {
 
 	const { user } = useAuth0();
 	const accessToken = useAuth0Token();
+	const userPlan = useUserPlan();
 
 	const transition = useTransition(showProcessing, {
 		from: { x: -600, opacity: 0 },
@@ -61,7 +63,7 @@ const UploadPage = () => {
 			setFileUploadType("generic");
 		}
 		uploadPageFormsRef.current.resetForm();
-	}, [location.pathname]);
+	}, [location.pathname, , userPlan]);
 
 	const onFileChange = (files) => {
 		setUploadProgress({});
@@ -276,34 +278,35 @@ const UploadPage = () => {
 				<div className="col-md-12 pb-5">
 					<div>
 						<Title level={3} style={{ paddingTop: "1rem" }}>
-							Upload {pageType === "cycle-test" ? "Cycle-Test" : "Abuse Test"}
+							Upload {pageType === "cycle-test" ? "Cycle Test Data" : "Abuse Test Data"}
 						</Title>
 						{transition((style, item) => {
 							return item ? (
-								<animated.div style={style}>
+								<div style={style}>
 									<ProcessUpload
 										processingProgressMsg={processingProgressMsg}
 										processingProgress={processingProgress}
 										styles={styles}
 									/>
-								</animated.div>
+								</div>
 							) : (
-								<animated.div style={style}>
+								<div style={style}>
 									<div className="my-3">
 										<Alert
 											closable
 											description={
 												pageType === "cycle-test" ? (
 													<div>
-														<div className="para">
+														<div className="para lh-sm">
 															We provide support for generic csv files:
 															<br />
 															<p>
 																CSV with columns <b>(cycle, test_time, current, voltage)</b>
 																<br></br>
 																Units for columns ={" "}
-																<b>cycle (#), test_time (seconds), current (Amps), voltage (Volts)</b>
-																<br></br> <span className="text-muted">Note: For current (A) charging is Positive</span>
+																<b>cycle (#), test_time (seconds), current (A), voltage (V)</b>
+																<br></br> <span className="text-muted">For current (A) charging is Positive
+																	If you would like to import data more quickly or from another data source, please reach out to <a href="mailto:ask@amplabs.ai" className="link-dark">ask@amplabs.ai</a></span>
 															</p>
 														</div>
 													</div>
@@ -317,7 +320,7 @@ const UploadPage = () => {
 											showIcon
 										/>
 									</div>
-									<UploadPageForms pageType={pageType} ref={uploadPageFormsRef} />
+									<UploadPageForms pageType={pageType} userPlan={userPlan} ref={uploadPageFormsRef} />
 									{pageType !== "cycle-test" && (
 										<div className="my-2">
 											<Title level={5}>File-Type:</Title>
@@ -349,7 +352,7 @@ const UploadPage = () => {
 											pageType={pageType}
 										/>
 									</div>
-								</animated.div>
+								</div>
 							);
 						})}
 					</div>

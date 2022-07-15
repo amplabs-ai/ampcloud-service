@@ -38,7 +38,7 @@ const PlotterFilterbar = (props) => {
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
 		cellIds.map((k) => {
-			x.push({ cell_id: k.substring(k.indexOf("_") + 1) });
+			x.push({ cell_id: k });
 		});
 		return x;
 	};
@@ -52,7 +52,7 @@ const PlotterFilterbar = (props) => {
 				data.forEach((cellId, i) => {
 					cellIdData.push({
 						key: i,
-						cell_id: cellId.cell_id,
+						cell_id: cellId.cell_id.split("_").slice(2).join("_"),
 					});
 				});
 				setCellIds([...cellIdData]);
