@@ -1,11 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useSpring } from "react-spring";
 import styles from "./LandingPage.module.css";
+import mixpanel, { get_distinct_id } from "mixpanel-browser";
+
+
 
 const Landing = () => {
-    const auth = useAuth0();
     const { loginWithRedirect } = useAuth0();
+
+    const homePageLogin = () => {
+        loginWithRedirect();
+    }
+
+    useEffect(() => {
+		mixpanel.track("user_landing_page");
+	}, []);
+    
     const aboutAnim = useSpring({
         delay: 500,
         from: { x: -900, opacity: 0 },
@@ -30,7 +41,7 @@ const Landing = () => {
                                 AmpLabs builds tools for scientists, researchers, and engineers to modernize our energy systems.
                             </p>
                             <div className="text-center">
-                                <button className="btn btn-dark rounded-0" style={{ padding: "15px 35px" }} onClick={() => loginWithRedirect()}><b>Try AmpLabs Cloud</b> </button>
+                                <button className="btn btn-dark rounded-0" style={{ padding: "15px 35px" }} onClick={() => homePageLogin()}><b>Try AmpLabs Cloud</b> </button>
                             </div>
                         </div>
                     </div>

@@ -8,10 +8,12 @@ import { UserOutlined } from "@ant-design/icons";
 import { useUserPlan } from "../context/UserPlanContext";
 import { useAuth0Token } from "../utility/useAuth0Token";
 import { audit } from "../auditAction/audit";
-import mixpanel from "mixpanel-browser";
+import mixpanel, { get_distinct_id } from "mixpanel-browser";
+
 
 const Navbar = () => {
-	const { logout, isAuthenticated, user, isLoading, loginWithRedirect } = useAuth0();
+	const { logout, isAuthenticated, user, isLoading } = useAuth0();
+	const { loginWithRedirect } = useAuth0();
 	const userplan = useUserPlan();
 
 	const accessToken = useAuth0Token();
@@ -41,14 +43,14 @@ const Navbar = () => {
 				<Link className="nav-link" to="" onClick={(e) => {
 					e.preventDefault();
 					copyToClipBoard(`${accessToken}`)
-				}}>Get API token <br /><small className="text-secondary " >Token refreshes periodically in <b>30 days</b></small></Link>
+				}}>Get API token <br /><small className="text-secondary " style={{ fontSize: 10 }}>Token refreshes periodically in <b>30 days</b></small></Link>
 			</Menu.Item>
 			<Menu.Item key="logout">
 				<Link
 					className="nav-link"
 					onClick={async (e) => {
 						e.preventDefault();
-						audit("logout", user);
+						audit("user_logout", user);
 						logout({ returnTo: window.location.origin });
 					}}
 					to="/"
@@ -87,28 +89,32 @@ const Navbar = () => {
 										View-MetaData
 									</Link>
 								</li> */}
-
-								<li className="nav-item">
-									<Link className="nav-link" to="/data-viewer">
+								<li className="nav-item  ms-2">
+									<Link className="nav-link" to="/" onClick={() => { window.open("https://www.amplabs.ai/api") }}>
+										API
+									</Link>
+								</li>
+								<li className="nav-item ms-1">
+									<Link className="nav-link" to="/" onClick={() => { window.open("http://github.com/amplabs-ai/amplabs") }}>
+										Examples
+									</Link>
+								</li>
+								<li className="nav-item ms-2">
+									<Link className="nav-link" to="/data-viewer" >
 										CSV-Viewer
 									</Link>
 								</li>
-								<li className="nav-item" style={{ display: "none" }}>
+								<li className="nav-item ms-2" style={{ display: "none" }}>
 									<Link className="nav-link" to="/pricing">
 										Pricing
 									</Link>
 								</li>
-								<li className="nav-item">
-									{/* <Dropdown overlay={uploadMenu}>
-										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
-											Upload <FaAngleDown />
-										</Link>
-									</Dropdown> */}
+								<li className="nav-item ms-2">
 									<Link className="nav-link" to="/upload/cycle-test">
 										Upload
 									</Link>
 								</li>
-								<li className="nav-item">
+								<li className="nav-item ms-2">
 									{/* <Dropdown overlay={dashboardMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
 											Dashboard <FaAngleDown />
@@ -135,18 +141,20 @@ const Navbar = () => {
 						<div className="collapse navbar-collapse justify-content ms-3" id="navbarNav">
 							<ul className="navbar-nav">
 								<>
-									<li className="nav-item ms-2">
-										<Link className="nav-link" to="/cloud">
+
+									<li className="nav-item ms-1">
+										<Link className="nav-link" to="/cloud" onClick={() => { mixpanel.track("user_route_cloud"); }}>
+
 											Cloud
 										</Link>
 									</li>
-									<li className="nav-item ms-2">
-										<Link className="nav-link" to="/community">
+									<li className="nav-item ms-1">
+										<Link className="nav-link" to="/community" onClick={() => { mixpanel.track("user_route_community"); }}>
 											Community
 										</Link>
 									</li>
-									<li className="nav-item ms-2">
-										<Link className="nav-link" to="/pricing">
+									<li className="nav-item ms-1">
+										<Link className="nav-link" to="/pricing" onClick={() => { mixpanel.track("user_route_pricing"); }}>
 											Pricing
 										</Link>
 									</li>
