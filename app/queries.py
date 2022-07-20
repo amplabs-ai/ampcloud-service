@@ -46,6 +46,7 @@ select * from
         end series
 FROM cycle_timeseries
 where
+    MOD(index, 5) = 0 and
     cell_id IN {cell_id} and
     (MOD(cycle_index,{step})=0 or cycle_index = 1 or cycle_index = ( SELECT MAX(cycle_index) FROM cycle_stats WHERE cell_id IN {cell_id} and (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or email in (select distinct email from cell_metadata where is_public='true')))) and
     (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or email in (select distinct email from cell_metadata where is_public='true'))
@@ -142,7 +143,7 @@ TIMESERIES_DATA="""
 SELECT {columns}, cell_id
 FROM
     cycle_timeseries
-WHERE cell_id IN ({cell_ids}) and (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or email in (select distinct email from cell_metadata where is_public='true'))
+WHERE cell_id IN ({cell_ids}) and MOD(index, 5)=0 and (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or email in (select distinct email from cell_metadata where is_public='true'))
     {filters} order by cell_id, test_datapoint_ordinal
 """
 STATS_DATA="""

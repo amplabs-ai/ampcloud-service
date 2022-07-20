@@ -33,7 +33,7 @@ paths:
           explode: false
           schema:
             type: string
-            enum: [cycle, abuse]
+            enum: [cycle]
       responses:
         "200":
           description: Successfull
@@ -42,7 +42,7 @@ paths:
     patch:
       security:
         - BearerAuth: []
-      summary: Fetches metadata for all cells for the email logged in.
+      summary: Updates cell metadata.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: update_cell_metadata
       tags:
@@ -57,6 +57,33 @@ paths:
           schema:
             type: string
             enum: [cycle]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  index:
+                    type: integer
+                  cell_id:
+                    type: string
+                  anode:
+                    type: string
+                  cathode:
+                    type: string
+                  source:
+                    type: string
+                  ah:
+                    type: integer
+                  form_factor:
+                    type: string
+                required:
+                  - index
+                  - cell_id
+
       responses:
         "200":
           description: Successfull
@@ -152,7 +179,7 @@ paths:
     patch:
       security:
         - BearerAuth: []
-      summary: Fetches test metadata of test.
+      summary: Updates test metadata of test.
       x-openapi-router-controller: app.controllers.test_metadata_controller
       operationId: update_test_metadata
       tags:
@@ -167,6 +194,35 @@ paths:
           schema:
             type: string
             enum: [cycle]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  index:
+                    type: integer
+                  cell_id:
+                    type: string
+                  crate_c:
+                    type: number
+                  crate_d:
+                    type: number
+                  soc_max:
+                    type: number
+                  soc_min:
+                    type: number
+                  temperature:
+                    type: number
+                  v_max:
+                    type: number
+                  v_min:
+                    type: number
+                required:
+                  - index
       responses:
         "200":
           description: Successfull
@@ -234,25 +290,6 @@ paths:
            - soc_min
            - crate_c
            - crate_d
-
-         **For uploading abuse test file following form fields are useed:**
-
-         - Required
-           - cell_id
-           - file_count
-           - test_type
-         - Cell Metadata
-           - anode
-           - cathode
-           - source
-           - ah
-           - form_factor
-         - Test Metadata
-           - temperature
-           - thickness
-           - nail_speed
-           - indentor
-           - v_init
 
          **Note: Must be logged in before sending this request**
       x-openapi-router-controller: app.controllers.file_transfer_controller
@@ -338,8 +375,7 @@ paths:
         - name: tester
           in: path
           description: |
-            If test_type sent in upload/initialize request is cycle then tester must be generic. For abuse it can be any of ornl/snl
-            else
+            If test_type sent in upload/initialize request is cycle then tester must be generic.
           required: true
           style: simple
           explode: false
@@ -422,33 +458,33 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /download/cells/abuse_timeseries:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Download Abuse timeseries csv file for a cell id.
-      x-openapi-router-controller: app.controllers.file_transfer_controller
-      operationId: download_abuse_timeseries
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID of the resource to get
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-      tags:
-        - Download
-      responses:
-        "200":
-          description: Successfull
-        "500":
-          description: Something went wrong
+  # /download/cells/abuse_timeseries:
+  #   get:
+  #     security:
+  #       - {}
+  #       - BearerAuth: []
+  #     summary: Download Abuse timeseries csv file for a cell id.
+  #     x-openapi-router-controller: app.controllers.file_transfer_controller
+  #     operationId: download_abuse_timeseries
+  #     parameters:
+  #       - name: cell_id
+  #         in: query
+  #         description: Cell ID of the resource to get
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: array
+  #           items:
+  #             type: string
+  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+  #     tags:
+  #       - Download
+  #     responses:
+  #       "200":
+  #         description: Successfull
+  #       "500":
+  #         description: Something went wrong
   /download/cells/cycle_data:
     get:
       security:
@@ -566,147 +602,147 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
-  /echarts/compareByCycleTime:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches comapre cycle voltage and current query results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_compare_by_cycle_time
-      tags:
-        - Echart - Get json data required for plotting
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong
-  /echarts/forceAndDisplacement:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches force and displacement query results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_force_and_displacement
-      tags:
-        - Echart - Get json data required for plotting
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-        - name: sample
-          in: query
-          description: sample
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: integer
-            items:
-              type: integer
-              example: 50
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong
-  /echarts/testTempratures:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches test tempratures query results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_test_tempratures
-      tags:
-        - Echart - Get json data required for plotting
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-        - name: sample
-          in: query
-          description: sample
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: integer
-            items:
-              type: integer
-              example: 50
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong
-  /echarts/voltage:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches voltage query results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_voltage
-      tags:
-        - Echart - Get json data required for plotting
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-        - name: sample
-          in: query
-          description: sample
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: integer
-            items:
-              type: integer
-              example: 50
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong
+  # /echarts/compareByCycleTime:
+  #   get:
+  #     security:
+  #       - {}
+  #       - BearerAuth: []
+  #     summary: Fetches comapre cycle voltage and current query results
+  #     x-openapi-router-controller: app.controllers.echarts_controller
+  #     operationId: get_compare_by_cycle_time
+  #     tags:
+  #       - Echart - Get json data required for plotting
+  #     parameters:
+  #       - name: cell_id
+  #         in: query
+  #         description: Cell ID
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: array
+  #           items:
+  #             type: string
+  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+  #     responses:
+  #       "200":
+  #         description: Successfull response
+  #       "500":
+  #         description: Something went wrong
+  # /echarts/forceAndDisplacement:
+  #   get:
+  #     security:
+  #       - {}
+  #       - BearerAuth: []
+  #     summary: Fetches force and displacement query results
+  #     x-openapi-router-controller: app.controllers.echarts_controller
+  #     operationId: get_force_and_displacement
+  #     tags:
+  #       - Echart - Get json data required for plotting
+  #     parameters:
+  #       - name: cell_id
+  #         in: query
+  #         description: Cell ID
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: array
+  #           items:
+  #             type: string
+  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+  #       - name: sample
+  #         in: query
+  #         description: sample
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: integer
+  #           items:
+  #             type: integer
+  #             example: 50
+  #     responses:
+  #       "200":
+  #         description: Successfull response
+  #       "500":
+  #         description: Something went wrong
+  # /echarts/testTempratures:
+  #   get:
+  #     security:
+  #       - {}
+  #       - BearerAuth: []
+  #     summary: Fetches test tempratures query results
+  #     x-openapi-router-controller: app.controllers.echarts_controller
+  #     operationId: get_test_tempratures
+  #     tags:
+  #       - Echart - Get json data required for plotting
+  #     parameters:
+  #       - name: cell_id
+  #         in: query
+  #         description: Cell ID
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: array
+  #           items:
+  #             type: string
+  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+  #       - name: sample
+  #         in: query
+  #         description: sample
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: integer
+  #           items:
+  #             type: integer
+  #             example: 50
+  #     responses:
+  #       "200":
+  #         description: Successfull response
+  #       "500":
+  #         description: Something went wrong
+  # /echarts/voltage:
+  #   get:
+  #     security:
+  #       - {}
+  #       - BearerAuth: []
+  #     summary: Fetches voltage query results
+  #     x-openapi-router-controller: app.controllers.echarts_controller
+  #     operationId: get_voltage
+  #     tags:
+  #       - Echart - Get json data required for plotting
+  #     parameters:
+  #       - name: cell_id
+  #         in: query
+  #         description: Cell ID
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: array
+  #           items:
+  #             type: string
+  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+  #       - name: sample
+  #         in: query
+  #         description: sample
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: integer
+  #           items:
+  #             type: integer
+  #             example: 50
+  #     responses:
+  #       "200":
+  #         description: Successfull response
+  #       "500":
+  #         description: Something went wrong
   /download/cells/cycle_data_json:
     get:
       security:
@@ -761,143 +797,35 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-  /download/cells/abuse_timeseries_json:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Get abuse timeseries data in json format for a cell id.
-      x-openapi-router-controller: app.controllers.file_transfer_controller
-      operationId: get_abuse_timeseries_json
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID of the resource to get
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-      tags:
-        - Download
-      responses:
-        "200":
-          description: Successfull
-        "500":
-          description: Something went wrong
-  /ga/publish/finish/{tracker}:
-    post:
-      summary: "test api endpoint"
-      x-openapi-router-controller: app.controllers.ga_controller
-      operationId: finish
-      tags:
-        - Galvanalyser-Integration
-      parameters:
-        - name: tracker
-          in: path
-          description: Dataset ID of the resource to get from Galvanalyser
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Finish
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  tracker:
-                    type: string
-                    example: "uuid_abc_123"
-  /ga/publish/{dataset_id}:
-    post:
-      summary: Handler for Galvanalyser Publishing
-      x-openapi-router-controller: app.controllers.ga_controller
-      operationId: ga_publish
-      tags:
-        - Galvanalyser-Integration
-      parameters:
-        - name: dataset_id
-          in: path
-          description: Dataset ID of the resource to get from Galvanalyser
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                token:
-                  type: string
-              required:
-                - token
+  # /download/cells/abuse_timeseries_json:
+  #   get:
+  #     security:
+  #       - {}
+  #       - BearerAuth: []
+  #     summary: Get abuse timeseries data in json format for a cell id.
+  #     x-openapi-router-controller: app.controllers.file_transfer_controller
+  #     operationId: get_abuse_timeseries_json
+  #     parameters:
+  #       - name: cell_id
+  #         in: query
+  #         description: Cell ID of the resource to get
+  #         explode: true
+  #         required: true
+  #         style: form
+  #         schema:
+  #           type: array
+  #           items:
+  #             type: string
+  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+  #     tags:
+  #       - Download
+  #     responses:
+  #       "200":
+  #         description: Successfull
+  #       "500":
+  #         description: Something went wrong
+ 
 
-      responses:
-        "200":
-          description: Publish
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  tracker:
-                    type: string
-                    example: "uuid_abc_123"
-  /ga/publish/status/{tracker}:
-    get:
-      summary: Status Checker for Galvanalyser Publishing
-      x-openapi-router-controller: app.controllers.ga_controller
-      operationId: ga_publish_status
-      tags:
-        - Galvanalyser-Integration
-      parameters:
-        - name: tracker
-          in: path
-          description: status tracker
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: A paged array of cells
-          headers:
-            x-next:
-              description: A link to the next page of responses
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  tracker:
-                    type: string
-                    example: "uuid_abc_123"
-        default:
-          description: unexpected error
   /displayname/cycle:
     get:
       summary: Fetches the name of data schema of cycle.
@@ -929,7 +857,6 @@ tags:
   - name: Upload
   - name: Download
   - name: Echart - Get json data required for plotting
-  - name: Galvanalyser-Integration
   - name: Display Name
   - name: Healthcheck
 

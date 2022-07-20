@@ -21,10 +21,10 @@ const Navbar = () => {
 	let location = useLocation();
 
 	useEffect(() => {
-		if (user?.email) {
-			audit("user_route_navigate", { ...user, pathName: location.pathname });
+		if (user?.email && userplan) {
+			audit("user_route_navigate", { ...user, pathName: location.pathname, userTier: userplan });
 		}
-	}, [location, user]);
+	}, [location, user, userplan]);
 
 	const copyToClipBoard = copyMe => {
 		navigator.clipboard.writeText(copyMe);
@@ -50,7 +50,7 @@ const Navbar = () => {
 					className="nav-link"
 					onClick={async (e) => {
 						e.preventDefault();
-						audit("user_logout", user);
+						audit("user_logout", {...user, userTier: userplan});
 						logout({ returnTo: window.location.origin });
 					}}
 					to="/"

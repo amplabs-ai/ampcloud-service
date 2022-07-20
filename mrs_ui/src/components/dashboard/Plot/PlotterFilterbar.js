@@ -14,6 +14,7 @@ import Highlighter from "react-highlight-words";
 import ViewCodeModal from "../../ViewCodeModal";
 import { useDashboard } from "../../../context/DashboardContext";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useUserPlan } from "../../../context/UserPlanContext";
 
 const { Text } = Typography;
 
@@ -32,6 +33,7 @@ const PlotterFilterbar = (props) => {
 	const [searchedColumn, setSearchedColumn] = useState("");
 	const accessToken = useAuth0Token();
 	const { user } = useAuth0();
+	const userPlan = useUserPlan()
 
 	const { state, action } = useDashboard();
 
@@ -44,7 +46,7 @@ const PlotterFilterbar = (props) => {
 	};
 
 	useEffect(() => {
-		if (accessToken && state.selectedCellIds.length) {
+		if (accessToken && state.selectedCellIds.length && userPlan) {
 			let data;
 			data = _cleanCellIds(state.selectedCellIds);
 			let cellIdData = [];
@@ -69,7 +71,7 @@ const PlotterFilterbar = (props) => {
 				setTableLoading(false);
 			}
 		}
-	}, [state.selectedCellIds, accessToken]);
+	}, [state.selectedCellIds, accessToken, userPlan]);
 
 	const downloadCycleData = (k) => {
 		setLoading(true);
@@ -106,14 +108,14 @@ const PlotterFilterbar = (props) => {
 	};
 
 	const viewCycleDataCode = (k) => {
-		audit(`cycle_dash_cellId__cycle_viewcode`, user);
+		audit(`cycle_dash_cellId__cycle_viewcode`, {...user, userTier: userPlan});
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(cycleDataCodeContent);
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
-		audit(`cycle_dash_cellId__ts_viewcode`, user);
+		audit(`cycle_dash_cellId__ts_viewcode`, {...user, userTier: userPlan});
 		setSearchParams(getSearchParams(encodeURIComponent(k.trim()), state.dashboardId));
 		setCodeContent(timeSeriesDataCodeContent);
 		setModalVisible(true);
@@ -163,7 +165,7 @@ const PlotterFilterbar = (props) => {
 					<Button
 						type="primary"
 						onClick={() => {
-							audit(`cycle_test_dash_cellId_search`, user);
+							audit(`cycle_test_dash_cellId_search`, {...user, userTier: userPlan});
 							handleSearch(selectedKeys, confirm, dataIndex);
 						}}
 						icon={<SearchOutlined />}
