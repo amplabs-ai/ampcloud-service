@@ -13,6 +13,7 @@ import b64toBlob from "../../utility/b64ToBlob";
 import copyToClipboard from "../../utility/copyToClipboard";
 import DashSharePrivate from "./DashSharePrivate";
 import HelmetMetaData from "../../components/HelmetMetaData";
+import { useUserPlan } from "../../context/UserPlanContext";
 
 const Title = Typography;
 const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
@@ -38,9 +39,10 @@ const DashboardShareButton = (props, ref) => {
 
 	const [searchParamsForCode, setSearchParamsForCode] = useSearchParams();
 	const { user } = useAuth0(); // auth context
+	const userPlan = useUserPlan()
 
 	useEffect(() => {
-		if ([...searchParamsForCode].length && accessToken) {
+		if ([...searchParamsForCode].length && accessToken && userPlan) {
 			let code = searchParamsForCode.get("code");
 			let state = searchParamsForCode.get("state");
 			if (code && state.includes("amplabs")) {
@@ -110,10 +112,10 @@ const DashboardShareButton = (props, ref) => {
 					});
 			}
 		}
-	}, [accessToken]);
+	}, [accessToken, userPlan]);
 
 	const doShareDashboard = () => {
-		audit(`${props.dashboard}_dash_share`, user);
+		audit(`${props.dashboard}_dash_share`, {...user, userTier: userPlan});
 		setMetaImageDash(null);
 		localStorage.setItem("dashImage", null);
 		setShallShowShareDashModal(true);

@@ -1,8 +1,18 @@
 import React from 'react'
 import { Col, Row } from 'antd';
+import { useAuth0 } from "@auth0/auth0-react";
+import mixpanel from 'mixpanel-browser';
+
+
 
 const Cloud = () => {
-
+    const { loginWithRedirect } = useAuth0();
+    const CloudBtnsignup = () => {
+        loginWithRedirect({
+            screen_hint: 'signup',
+        })
+        mixpanel.track("user_route_cloud_signup");
+    }
     return (
         <>
             <div style={{ marginTop: "8rem" }}>
@@ -14,7 +24,7 @@ const Cloud = () => {
                     </Row>
                     <Row justify='center'>
                         <Col span={6} offset={3}>
-                            <button style={{ padding: "1rem 2.2rem" }} className="btn btn-dark rounded-0 mt-5" ><b>Try AmpLabs Cloud</b> </button>
+                            <button style={{ padding: "1rem 2.2rem" }} onClick={() => CloudBtnsignup()} className="btn btn-dark rounded-0 mt-5" ><b>Try AmpLabs Cloud</b> </button>
                         </Col>
                     </Row>
                 </div>

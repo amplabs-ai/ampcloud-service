@@ -2,8 +2,20 @@ import React from 'react'
 import { Col, Row, Table, Card, Button, Layout } from 'antd';
 import { CheckCircleTwoTone } from "@ant-design/icons";
 import background from "../assets/images/pricingCardBg.png"
-const { Footer } = Layout;
+import mixpanel from 'mixpanel-browser';
+const { Footer } = Layout
 
+const pricingMail = () => {
+    window.location.href = "mailto:ask@amplabs.ai"
+    mixpanel.track("user_route_pricing_mail");
+}
+
+
+const stripePricing = () => {
+    window.open(process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_STRIPE_URI : process.env.REACT_APP_PROD_STRIPE_URI, "_blank")
+    mixpanel.track("user_route_stripe");
+
+}
 const columns = [
     {
         title: 'Features',
@@ -14,7 +26,7 @@ const columns = [
         title: <Card>
             <h3 >Community</h3>
             <h4><b>Free</b></h4>
-            <Button type="primary" href='/dashboard' ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "#DEE9F3" }}><b>Get Started</b>
+            <Button type="primary" href='/dashboard' onClick={() => { mixpanel.track("user_route_signup"); }} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "#DEE9F3" }}><b>Get Started</b>
             </Button>
         </Card>,
         dataIndex: 'Community',
@@ -25,7 +37,9 @@ const columns = [
         title: <Card style={{ backgroundImage: `url(${background})`, backgroundSize: 'cover', width: 220 }} className="text-white">
             <h3 className="text-white" >Pro</h3>
             <h4 className="text-white"><b>$25/Month</b></h4>
-            <Button type="primary" onClick={() => window.open("https://buy.stripe.com/14keVK8I6aLxgsUcMM", "_blank")} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
+
+            <Button type="primary" onClick={() => stripePricing()} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
+
             </Button>
         </Card>,
         dataIndex: 'Pro',
@@ -36,7 +50,7 @@ const columns = [
         title: <Card >
             <h3 >Team</h3>
             <h4><b>Custom</b></h4>
-            <Button type="primary" onClick={() => window.location.href = "mailto:ask@amplabs.ai"} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "#DEE9F3" }}><b>Contact Us</b>
+            <Button type="primary" onClick={() => pricingMail()} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "#DEE9F3" }}><b>Contact Us</b>
             </Button>
         </Card>,
         dataIndex: 'Team',
@@ -45,12 +59,6 @@ const columns = [
 ];
 const data = [];
 data.push({
-    key: "Price",
-    Features: `Price`,
-    Community: `Free`,
-    Pro: `$25/month`,
-    Team: `Contact Us`,
-}, {
     key: "Subscription to AmpLabs Battery Insights Newsletter",
     Features: `Subscription to AmpLabs Battery Insights Newsletter`,
     Community: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,

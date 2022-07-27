@@ -1,9 +1,15 @@
 import React from 'react'
 import { Col, Row } from 'antd';
 import image from "../assets/images/communityImage.png"
+import mixpanel from 'mixpanel-browser';
+
+
 
 const Community = () => {
-
+    const communityHsForms = () => {
+        window.open("https://share.hsforms.com/1qUWgn7LmS3elWqQ57i2Prwd6vfd", "_blank")
+        mixpanel.track("user_route_hubspot");
+    }
     return (
         <>
             <div className='Container-fluid' style={{ marginTop: "8rem" }}>
@@ -16,7 +22,7 @@ const Community = () => {
                         </Row>
                         <Row justify="center" className='mt-4'>
                             <Col >
-                                <button style={{ padding: "1rem 2.2rem" }} className="btn btn-dark rounded-0" ><b>Join AmpLabs Community</b> </button>
+                                <button onClick={() => communityHsForms()} style={{ padding: "1rem 2.2rem" }} className="btn btn-dark rounded-0" ><b>Join AmpLabs Community</b> </button>
                             </Col>
 
                         </Row>

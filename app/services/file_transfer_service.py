@@ -31,7 +31,8 @@ def init_file_upload_service(email, data):
         "ah": float(data.get('ah') or 0.0),
         "form_factor": data.get('form_factor'),
         "test": data.get('test_type'),
-        "email": email
+        "email": email,
+        "is_public": data.get('is_public')
     }])
     if test_type == archive_constants.TEST_TYPE.CYCLE.value:
         test_metadata = pd.DataFrame([{
