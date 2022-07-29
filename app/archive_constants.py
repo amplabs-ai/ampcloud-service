@@ -11,14 +11,14 @@ DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
 # Stripe
-STRIPE_ENDPOINT_SECRET = 'whsec_NvFfYQYyWentyw5Cts5vSk6Tq410cTP3'
-STRIPE_API_KEY = "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"
+STRIPE_ENDPOINT_SECRET = "<redacted>"
+STRIPE_API_KEY = "<redacted>"
 # Amplabs DB
-AMPLABS_DB_URL = "postgresql://mrs_tutorial:App4ever#@amplabs-db.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial" if ENV == "production" \
-                 else "postgresql://mrs_tutorial_dev:App4ever#@dev-db.cczwnfd9o32m.ap-south-1.rds.amazonaws.com:5432/mrs_tutorial"
+AMPLABS_DB_URL = "<redacted>" if ENV == "production" \
+                 else "<redacted>"
 # linkedin share constants
-LINKEDIN_CLIENT_ID = '78opgrui0xx0ng'
-LINKEDIN_CLIENT_SECRET = 'hGAIpqZh5swxgM6v'
+LINKEDIN_CLIENT_ID = "<redacted>"
+LINKEDIN_CLIENT_SECRET = "<redacted>"
 LINKEDIN_REDIRECT_URI_DASH_CYCLE= 'https://www.amplabs.ai/dashboard' if ENV == 'production' else 'https://localhost:3000/dashboard/cycle-test'
 LINKEDIN_REDIRECT_URI_DASH_ABUSE= 'https://www.amplabs.ai/dashboard/abuse-test' if ENV == 'production' else 'http://localhost:3000/dashboard/abuse-test'
 
