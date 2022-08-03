@@ -1,7 +1,7 @@
 // ====== python code files ======
 import sourceCode from "../chartConfig/chartSourceCode";
 
-const _createChartDataSeries = (
+export const _createChartDataSeries = (
   data,
   xAxis,
   yAxis,
@@ -46,7 +46,7 @@ const _createChartDataSeries = (
   return x;
 };
 
-const _createChartLegend = (data, chartId, yAxis = null) => {
+export const _createChartLegend = (data, chartId, yAxis = null) => {
   let x = [];
   if (chartId === "plotter") {
     data.forEach((d) => {
@@ -120,16 +120,16 @@ export const chartConfig = (chartName, data) => {
       chartId === "plotter"
         ? { scale: true }
         : {
-            type: "value",
-            name: yAxis.title,
-            nameLocation: "middle",
-            nameGap: 25,
-            nameTextStyle: {
-              fontSize: window.screen.width < 600 ? 12 : 16,
-            },
-            scale: true,
-            padding: [0, 5],
+          type: "value",
+          name: yAxis.title,
+          nameLocation: "middle",
+          nameGap: 25,
+          nameTextStyle: {
+            fontSize: window.screen.width < 600 ? 12 : 16,
           },
+          scale: true,
+          padding: [0, 5],
+        },
     legend: _createChartLegend(data, chartId, yAxis),
     color: [
       "#1f77b4", // muted blue
