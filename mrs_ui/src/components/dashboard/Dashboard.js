@@ -1,7 +1,6 @@
 import { Button, Empty, Layout, PageHeader, Result } from "antd";
 import axios from "axios";
-import React, { useEffect } from "react";
-import { FaArrowLeft } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
@@ -15,13 +14,10 @@ import SubsPrompt from "../SubsPrompt";
 const { Content } = Layout;
 
 const Dashboard = (props) => {
-	const location = useLocation();
 
-	const navigate = useNavigate();
 	const { state, action, dashboardRef } = useDashboard();
 	const accessToken = useAuth0Token();
-
-	// if used in shared dashboard
+	// if  used in shared dashboard
 	useEffect(() => {
 		if (props.dashboardId && props.type === "shared") {
 			let config = {
@@ -79,7 +75,7 @@ const Dashboard = (props) => {
 						// backIcon={<FaArrowLeft title="go to upload" />}
 						// onBack={() => navigate("/upload")}
 						ghost={false}
-						extra={
+						extra={[
 							state.dashboardType === "private" ? (
 								<DashboardShareButton
 									ref={dashboardRef}
@@ -89,7 +85,7 @@ const Dashboard = (props) => {
 									dashboard="cycle"
 								/>
 							) : null
-						}
+						]}
 					></PageHeader>
 					<Layout hasSider>
 						{props.type === "shared" ? null : <SideBar page="dashboard" />}

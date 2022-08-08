@@ -8,7 +8,7 @@ import { useAuth0Token } from "../../utility/useAuth0Token";
 import { useDashboard } from "../../context/DashboardContext";
 import { useUserPlan } from "../../context/UserPlanContext";
 import SubsPrompt from "../SubsPrompt";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -167,7 +167,7 @@ const SideBar = (props) => {
 
 	const userPlan = useUserPlan();
 	const location = useLocation();
-	const userEnteredFileKey = [];
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (accessToken && userPlan) {
@@ -186,6 +186,37 @@ const SideBar = (props) => {
 					if (res.status === 200 && res.data) {
 						let treeData = _generateTreeData(res.data.records[0], userPlan);
 						setTreeData(treeData);
+						navigate(location.pathname, { replace: true });
+
+						if (location.state !== null) {
+							let key = ""
+							treeData[2].children.forEach((data) => {
+								if (data.key.includes(location.state?.cellId)) {
+									key = data.key
+									return false
+								}
+
+							})
+							if (key === "") {
+
+								treeData[3].children.forEach((data) => {
+									if (data.key.includes(location.state?.cellId)) {
+										key = data.key
+										return false
+									}
+								})
+							}
+							setCheckedKeys([key]);
+							setCheckedCellIds([key.substring(key.indexOf("_") + 1)]);
+							if (location.state?.from === "upload") {
+								action.loadCellData([key.substring(key.indexOf("_") + 1)]);
+							}
+							else {
+								action.plotCellData([key.substring(key.indexOf("_") + 1)]);
+							}
+
+
+						}
 						setFilteredTreeData(() => {
 							setIsCelldataLoaded(true);
 							return treeData;

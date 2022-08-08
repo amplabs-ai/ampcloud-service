@@ -14,6 +14,7 @@ const RedirectRoute = ({ children }) => {
 		);
 	}
 	if (isAuthenticated) {
+		localStorage.removeItem('pop_status')
 		return (
 			<>
 				<Navigate to="/dashboard" replace />
