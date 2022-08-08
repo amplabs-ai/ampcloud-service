@@ -1,7 +1,6 @@
-import { Button, Empty, Layout, PageHeader, Result } from "antd";
+import { Button, Layout, PageHeader, Result } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import ChartContainer from "./ChartContainer";
@@ -10,6 +9,7 @@ import SideBar from "./Sidebar";
 import ViewMetadata from "./ViewMetadata";
 import Plotter from "./Plot/Plotter";
 import SubsPrompt from "../SubsPrompt";
+import DefaultDashboard from "./DefaultDashboard";
 
 const { Content } = Layout;
 
@@ -98,9 +98,7 @@ const Dashboard = (props) => {
 								) : state.shallShowMeta ? (
 									<Plotter />
 								) : (
-									<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
-										<Empty description={<span>No Data Loaded</span>} />
-									</div>
+									<DefaultDashboard />
 								)}
 							</Content>
 						</Layout>
