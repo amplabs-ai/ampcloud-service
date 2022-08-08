@@ -14,9 +14,7 @@ const TutorialNav = (props) => {
 	return (
 		<div className="d-flex justify-content-between">
 			<div>
-				<Button size="large" onClick={props.previousStep} icon={props.currentStep === 1 ? null : <FaArrowLeft />}>
-
-				</Button>
+				<Button size="large" onClick={props.previousStep} icon={props.currentStep === 1 ? null : <FaArrowLeft />} />
 			</div>
 			<div>
 				<Button type="primary" size="large" onClick={props.onCancelTutorial} danger>
