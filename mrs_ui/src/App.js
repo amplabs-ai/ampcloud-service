@@ -16,10 +16,11 @@ import SharedDashboard from "./components/SharedDashboard";
 import { Auth0Provider, withAuthenticationRequired } from "@auth0/auth0-react";
 import { UserPlanProvider } from "./context/UserPlanContext";
 import mixpanel from "mixpanel-browser";
+import Tutorial from "./components/tutorial/Tutorial";
 
-mixpanel.init(process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_MIXPANEL_DEV_PROJECT_TOKEN: process.env.REACT_APP_MIXPANEL_PROD_PROJECT_TOKEN, { debug: true });
-const domain = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_AUTH0_DOMAIN: process.env.REACT_APP_PROD_AUTH0_DOMAIN;
-const clientId = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_AUTH0_CLIENT_ID: process.env.REACT_APP_PROD_AUTH0_CLIENT_ID;
+mixpanel.init(process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_MIXPANEL_DEV_PROJECT_TOKEN : process.env.REACT_APP_MIXPANEL_PROD_PROJECT_TOKEN, { debug: true });
+const domain = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_AUTH0_DOMAIN : process.env.REACT_APP_PROD_AUTH0_DOMAIN;
+const clientId = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_AUTH0_CLIENT_ID : process.env.REACT_APP_PROD_AUTH0_CLIENT_ID;
 
 const PrivateRoute = ({ component }) => {
 	const Component = withAuthenticationRequired(component, {
@@ -79,6 +80,7 @@ const App = () => {
 							<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
 
 							<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
+							<Route path="/tutorial" element={<PrivateRoute component={Tutorial} />} />
 							<Route path="/cloud/" element={<Cloud />} />
 							<Route path="/community/" element={<Community />} />
 							<Route path="/pricing/" element={<Pricing />} exact />

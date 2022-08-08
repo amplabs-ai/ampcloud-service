@@ -9,6 +9,7 @@ import { useUserPlan } from "../context/UserPlanContext";
 import { useAuth0Token } from "../utility/useAuth0Token";
 import { audit } from "../auditAction/audit";
 import mixpanel, { get_distinct_id } from "mixpanel-browser";
+import Tutorial from "../components/tutorial/Tutorial"
 
 
 const Navbar = () => {
@@ -17,7 +18,6 @@ const Navbar = () => {
 	const userplan = useUserPlan();
 
 	const accessToken = useAuth0Token();
-	const [copySuccess, setCopySuccess] = useState(null);
 	let location = useLocation();
 
 	useEffect(() => {
@@ -32,7 +32,6 @@ const Navbar = () => {
 		message.success("Token Copied")
 
 	};
-	const addToBasket = () => { }
 	const userProfileMenu = (
 		<Menu>
 
@@ -50,7 +49,7 @@ const Navbar = () => {
 					className="nav-link"
 					onClick={async (e) => {
 						e.preventDefault();
-						audit("user_logout", {...user, userTier: userplan});
+						audit("user_logout", { ...user, userTier: userplan });
 						logout({ returnTo: window.location.origin });
 					}}
 					to="/"
@@ -89,6 +88,9 @@ const Navbar = () => {
 										View-MetaData
 									</Link>
 								</li> */}
+								<li className="nav-item  ms-2">
+									<Tutorial />
+								</li>
 								<li className="nav-item  ms-2">
 									<Link className="nav-link" to="/" onClick={() => { window.open("https://www.amplabs.ai/api") }}>
 										API
