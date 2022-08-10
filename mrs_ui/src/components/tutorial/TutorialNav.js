@@ -17,13 +17,12 @@ const TutorialNav = (props) => {
 				<Button size="large" onClick={props.previousStep} icon={props.currentStep === 1 ? null : <FaArrowLeft />} />
 			</div>
 			<div>
-				<Button type="primary" size="large" onClick={props.onCancelTutorial} danger>
+				<Button type="primary" size="large" className={props.currentStep === 1 ? "mt-1 " : "me-3"} onClick={props.onCancelTutorial} danger>
 					Cancel
 				</Button>
 				<Button
 					type="primary"
 					size="large"
-					className="ms-3"
 					disabled={props.loading}
 					onClick={() => {
 						if (props.currentStep === 3) {
