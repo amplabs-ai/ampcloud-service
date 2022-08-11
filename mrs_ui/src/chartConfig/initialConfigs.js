@@ -29,4 +29,9 @@ const initialChartOptions = {
 	dataset: [],
 };
 
-export default initialChartOptions;
+const scatterPlotChartId = [
+	"timeSeries",
+	"plotter",
+]
+
+export { initialChartOptions, scatterPlotChartId };
