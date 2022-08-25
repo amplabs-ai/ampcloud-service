@@ -222,23 +222,44 @@ def get_timeseries_columns_data_service(data, email):
         columns = (',').join(data['columns'])
         cell_ids =", ".join("'{0}'".format(i) for i in data['cell_ids'])
         filters = ""
+        is_diff_capacity_plot = False
         for filter in data['filters']:
+            #if reduction factor is applied 
+            if filter['column'] == "reduction_factor" and (filter["operation"] != "=" or not(all( x in {"voltage", "dq_dv"}for x in data['columns']))):
+                return 400, "Reduction Factor is only applicable while plotting DQ_DV vs Voltage. It only supports = operation."
+            elif filter['column'] == "reduction_factor":
+                reduction_factor = int(filter['filterValue'])
+                is_diff_capacity_plot = True
+                continue
+            #for other plots
             if filter['operation'] == '%':
                 filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
             else:
                 filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
             filters = filters+f"and {filter_str}"
-        archive_cells = ao.get_all_data_from_timeseries_query(columns, cell_ids, email, filters)
+        archive_cells = ao.get_all_data_from_timeseries_query(columns, cell_ids, email, filters, get_df=is_diff_capacity_plot)
         records = []
-        series = {}
-        for row in archive_cells:
-            row = dict(row)
-            if not series.get(row['cell_id']):
-                series[row['cell_id']] = []
-            series[row['cell_id']].append(row)
+        if is_diff_capacity_plot:
+            for cell_id in data["cell_ids"]:
+                df = archive_cells[archive_cells['cell_id'] == cell_id]
+                
+                df = df.groupby(df.index//reduction_factor).mean()
+                if 'dq_dv' not in df:
+                    df['dq_dv'] = None
+                df['cell_id'] = cell_id
+                df = df.sort_values(by = ['voltage'])
+                df = df.replace([np.inf, -np.inf], np.NaN)
+                records.append({"id": cell_id, "cell_id": cell_id, "source": df.to_dict('records')})
+        else:
+            series = {}
+            for row in archive_cells:
+                row = dict(row)
+                if not series.get(row['cell_id']):
+                    series[row['cell_id']] = []
+                series[row['cell_id']].append(row)
 
-        for key, value in series.items():
-            records.append({"id": key, "source": value})
+            for key, value in series.items():
+                records.append({"id": key,"cell_id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except DataError as err:
         return 400, str(err.__dict__['orig']).split('\n')[0]
@@ -273,7 +294,7 @@ def get_stats_columns_data_service(data, email):
             series[row['cell_id']].append(row)
 
         for key, value in series.items():
-            records.append({"id": key, "source": value})
+            records.append({"id": key,"cell_id": key, "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except DataError as err:
         return 400, str(err.__dict__['orig']).split('\n')[0]

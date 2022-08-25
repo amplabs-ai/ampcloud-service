@@ -1,5 +1,19 @@
 // ====== python code files ======
 import sourceCode from "../chartConfig/chartSourceCode";
+import Gradient from "javascript-color-gradient";
+import {scatterPlotChartId} from "./initialConfigs"
+
+const colorTransitions = [
+  ["#1f77b4", "#2193b0", "#6dd5ed"],
+  ["#ff7f0e","#ff9966", "#ff5e62"], 
+  ["#2ca02c", "#56ab2f", "#a8e063"],
+  ["#f953c6", "#b91d73"],
+  ["#f7b733", "#fc4a1a"],
+  ["#d62728", "#1f77b4"],
+  ["#c04848", "#480048"],
+  ["#0111F5", "#6F69E1"],
+  ["#570298", "#AD69E0"],
+]
 
 export const _createChartDataSeries = (
   data,
@@ -29,10 +43,10 @@ export const _createChartDataSeries = (
     data.forEach((d) => {
       x.push({
         type:
-          chartId === "timeSeries" || chartId === "plotter"
+          scatterPlotChartId.indexOf(chartId) !== -1
             ? "scatter"
             : "line",
-        symbolSize: chartId === "timeSeries" || chartId === "plotter" ? 5 : 10,
+        symbolSize: scatterPlotChartId.indexOf(chartId) !== -1 ? 5 : 10,
         name: d.id,
         showSymbol: false,
         datasetId: d.id,
@@ -70,7 +84,7 @@ export const _createChartLegend = (data, chartId, yAxis = null) => {
     // top: window.screen.width < 1200 ? "auto" : "16%",
     // bottom: window.screen.width < 1200 ? "0" : "auto",
     icon:
-      chartId === "timeSeries" || chartId === "plotter"
+    scatterPlotChartId.indexOf(chartId) !== -1
         ? "pin"
         : "path://M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z",
     pageTextStyle: {
@@ -131,20 +145,34 @@ export const chartConfig = (chartName, data) => {
           padding: [0, 5],
         },
     legend: _createChartLegend(data, chartId, yAxis),
-    color: [
-      "#1f77b4", // muted blue
-      "#ff7f0e", // safety orange
-      "#2ca02c", // cooked asparagus green
-      "#d62728", // brick red
-      "#9467bd", // muted purple
-      "#8c564b", // chestnut brown
-      "#e377c2", // raspberry yogurt pink
-      "#7f7f7f", // middle gray
-      "#bcbd22", // curry yellow-green
-      "#17becf", // blue-teal
-    ],
+    color: _createChartColors(data)
   };
 };
+
+export const _createChartColors = (data) => {
+  let cellIdColorMap = {}
+  data.forEach( element => {
+    if(element.cell_id in cellIdColorMap){
+      cellIdColorMap[element.cell_id]++ ;
+    }
+    else{
+      cellIdColorMap[element.cell_id] = 1
+    }
+  });
+  let colorLen = colorTransitions.length;
+  let colorArray = []
+  let i = 0
+  for (const [key, value] of Object.entries(cellIdColorMap)) {
+    let gradient = new Gradient()
+    .setColorGradient(...colorTransitions[(i%colorLen)])
+    .setMidpoint(value)
+    .getColors();
+    i++;
+    colorArray = colorArray.concat(gradient)
+  }
+  return colorArray
+}
+
 
 export const getChartMetadata = (chartName) => {
   let result = {};

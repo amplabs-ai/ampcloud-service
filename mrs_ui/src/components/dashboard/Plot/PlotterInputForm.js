@@ -185,6 +185,9 @@ const PlotterInputForm = (props) => {
                           {c}
                         </Option>
                       ))}
+                      {props.type === "timeseries" && <Option key="test" value="reduction_factor">
+                      Reduction Factor (applicable only for dQ/dV vs Voltage)
+                      </Option>}
                     </Select>
                   </Form.Item>
                   <Form.Item

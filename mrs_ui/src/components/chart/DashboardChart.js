@@ -1,7 +1,7 @@
 import { Alert } from "antd";
 import React, { useCallback, useEffect, useRef } from "react";
 import ReactEcharts from "echarts-for-react";
-import initialChartOptions from "../../chartConfig/initialConfigs";
+import {initialChartOptions} from "../../chartConfig/initialConfigs";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { chartConfig, getChartMetadata } from "../../chartConfig/dashboardChartConfig";
 import { audit } from "../../auditAction/audit";
