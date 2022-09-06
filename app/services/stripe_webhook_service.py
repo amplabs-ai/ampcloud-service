@@ -40,22 +40,15 @@ def handle_customer_subscription_update(update_event_obj):
         customer = stripe.Customer.retrieve(customer_id, api_key=STRIPE_API_KEY)
         customer_email = customer['email']
         subscription_id = update_event_obj['id']
-        status = update_event_obj['status']
-        if status in {"active", "trialing"}:
-            data = {
-                "email": customer_email,
-                "stripe_customer_id": customer_id,
-                "stripe_subscription_id": subscription_id,
-                "plan_type": "PRO"
-            }
-        else:
+        status = update_event_obj['data']['object']['status']
+        if status != "active":
             data = {
                 "email": customer_email,
                 "stripe_customer_id": customer_id,
                 "stripe_subscription_id": subscription_id,
                 "plan_type": "COMMUNITY"
             }
-        ao.update_user_plan(data)
+            ao.update_user_plan(data)
         return 200, RESPONSE_MESSAGE['PROCESS_COMPLETE']
     except Exception as err:
         logging.error(err)

@@ -1,4 +1,5 @@
 from decimal import Decimal
+import logging
 import time
 import numpy as np
 import pandas as pd
@@ -107,6 +108,11 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
     :param df_t: cycle timeseries data frame.
     :return: tuple of dataframes of calculated stats and timeseries data
     """
+
+    cycle_index_was_present = True
+    if LABEL.CYCLE_INDEX.value not in df_t.columns:
+        cycle_index_was_present = False
+        df_t[LABEL.CYCLE_INDEX.value] = 1
     df_t = df_t.sort_values(by=[LABEL.CYCLE_INDEX.value, LABEL.TEST_TIME.value]).reset_index(drop=True)
     df_t[LABEL.CYCLE_TIME.value] = 0
 
@@ -267,8 +273,8 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
                                                                                           c_ind, df_c.columns.get_loc(
                                                                                               LABEL.CYCLE_E_C.value)]
 
-            except Exception as e:
-                pass
+            except Exception as err:
+                logging.error(err)
 
     # set test specific values
     df_cc = df_c[df_c[LABEL.CYCLE_INDEX.value] > 0]
@@ -319,6 +325,8 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
         df_cc[LABEL.CYCLE_R_START_D.value] = df_tt_d[LABEL.I.value].iloc[0] * df_tt_d[LABEL.V.value].iloc[0]
         df_cc[LABEL.CYCLE_R_END_D.value] = df_tt_d[LABEL.I.value].iloc[-1] * df_tt_d[LABEL.V.value].iloc[-1]
 
+    if not cycle_index_was_present:
+        return None, df_tt
     return df_cc, df_tt
 
 

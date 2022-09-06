@@ -85,12 +85,13 @@ const ChartContainer = () => {
 		return cancelReqToken;
 	};
 
-	const getSearchParams = (cellIds, step) => {
+	const getSearchParams = (cellIds, step, modStep) => {
 		let params = new URLSearchParams();
 		cellIds.forEach((cellId) => {
 			params.append("cell_id", cellId.cell_id);
 		});
 		params.append("step", step);
+		params.append("mod_step", modStep);
 		if (state.dashboardId) {
 			params.append("dashboard_id", state.dashboardId);
 		}
@@ -101,12 +102,12 @@ const ChartContainer = () => {
 	};
 
 	// runs when api call is needed / gets cellIds from filter bar
-	const handleFilterChange = (cellIds, step, accessToken) => {
+	const handleFilterChange = (cellIds, step, modStep, accessToken) => {
 		if (!cellIds.length) {
 			return;
 		}
 		let request = {
-			params: getSearchParams(cellIds, step),
+			params: getSearchParams(cellIds, step, modStep),
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 			},

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Button, Input, Tree, Layout, Spin, Result } from "antd";
-import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import axios from "axios";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import { useDashboard } from "../../context/DashboardContext";
 import { useUserPlan } from "../../context/UserPlanContext";
-import SubsPrompt from "../SubsPrompt";
 import { useLocation, useNavigate } from "react-router-dom";
+import InfoBatteryArchiveModal from "./InfoBatteryArchiveModal";
 
 const { Search } = Input;
 const { Sider } = Layout;
@@ -16,7 +15,18 @@ const { Sider } = Layout;
 const _generateTreeData = (data, userPlan) => {
 	let x = [
 		{
-			title: "Battery Archive",
+			title: "Private",
+			key: "private",
+			children: [],
+			disabled: !userPlan?.includes("PRO"),
+		},
+		{
+			title: "Public",
+			key: "public",
+			children: [],
+		},
+		{
+			title: <InfoBatteryArchiveModal />,
 			key: "amplabs",
 			children: [],
 		},
@@ -36,17 +46,8 @@ const _generateTreeData = (data, userPlan) => {
 				},
 			],
 		},
-		{
-			title: "Public",
-			key: "public",
-			children: [],
-		},
-		{
-			title: "Private",
-			key: "private",
-			children: [],
-			disabled: !userPlan?.includes("PRO"),
-		},
+
+
 	];
 	let amplabsDirInfo = {};
 	let dataMatrIoDirInfo = {
@@ -61,7 +62,7 @@ const _generateTreeData = (data, userPlan) => {
 			case "public/battery-archive":
 				let dirName = cellId.split("_", 1)[0];
 				if (amplabsDirInfo[dirName] === undefined) {
-					x[0].children.push({
+					x[2].children.push({
 						title: dirName,
 						key: dirName,
 						children: [
@@ -71,9 +72,9 @@ const _generateTreeData = (data, userPlan) => {
 							},
 						],
 					});
-					amplabsDirInfo[dirName] = x[0].children.length - 1;
+					amplabsDirInfo[dirName] = x[2].children.length - 1;
 				} else {
-					x[0].children[amplabsDirInfo[dirName]].children.push({
+					x[2].children[amplabsDirInfo[dirName]].children.push({
 						title: cellId,
 						key: "cell_" + index + "_" + cellType + cellId,
 					});
@@ -92,12 +93,12 @@ const _generateTreeData = (data, userPlan) => {
 						batchNameCloseloop = "Batch9 (validation batch)";
 					}
 					if (dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] === undefined) {
-						x[1].children[projectDirIndex].children.push({
+						x[3].children[projectDirIndex].children.push({
 							title: batchNameCloseloop,
 							key: batchNameCloseloop,
 							children: [],
 						});
-						dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] = x[1].children[projectDirIndex].children.length - 1;
+						dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] = x[3].children[projectDirIndex].children.length - 1;
 						// batchIndex = 0;
 					} else {
 					}
@@ -107,37 +108,37 @@ const _generateTreeData = (data, userPlan) => {
 					projectDirIndex = 0;
 					let batchNameCapDeg = cellId.split("_", 1)[0];
 					if (dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] === undefined) {
-						x[1].children[projectDirIndex].children.push({
+						x[3].children[projectDirIndex].children.push({
 							title: batchNameCapDeg,
 							key: batchNameCapDeg,
 							children: [],
 						});
-						dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] = x[1].children[projectDirIndex].children.length - 1;
+						dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] = x[3].children[projectDirIndex].children.length - 1;
 						// batchIndex = 0;
 					} else {
 					}
 					batchIndex = dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg];
 				}
 
-				x[1].children[projectDirIndex].children[batchIndex].children.push({
+				x[3].children[projectDirIndex].children[batchIndex].children.push({
 					title: cellId,
 					key: "cell_" + index + "_" + cellType + cellId,
 				});
 				break;
 			case "public/user":
-				x[2].children.push({
+				x[1].children.push({
 					title: cellId,
 					key: "cell_" + index + "_" + cellType + cellId,
 				});
 				break;
 			case "public/other":
-				x[2].children.push({
+				x[1].children.push({
 					title: cellId,
 					key: "cell_" + index + "_" + cellType + cellId,
 				});
 				break;
 			case "private":
-				x[3].children.push({
+				x[0].children.push({
 					title: cellId,
 					key: "cell_" + index + "_" + cellType + cellId,
 					disabled: !userPlan?.includes("PRO"),
@@ -147,15 +148,15 @@ const _generateTreeData = (data, userPlan) => {
 				break;
 		}
 	});
-	if (!x[2].children.length) {
-		x.splice(2, 1);
+	if (!x[1].children.length) {
+		x.splice(1, 3);
 	}
 	return x;
 };
 
 const SideBar = (props) => {
 	const [checkedKeys, setCheckedKeys] = useState([]);
-	const [sideBarCollapse, setSideBarCollapse] = useState(false);
+	// const [sideBarCollapse, setSideBarCollapse] = useState(false);
 	const [filteredTreeData, setFilteredTreeData] = useState([]);
 	const [treeData, setTreeData] = useState([]);
 	const [checkedCellIds, setCheckedCellIds] = useState([]);
@@ -190,7 +191,7 @@ const SideBar = (props) => {
 
 						if (location.state !== null) {
 							let key = ""
-							treeData[2].children.forEach((data) => {
+							treeData[0].children.forEach((data) => {
 								if (data.key.includes(location.state?.cellId)) {
 									key = data.key
 									return false
@@ -199,7 +200,7 @@ const SideBar = (props) => {
 							})
 							if (key === "") {
 
-								treeData[3].children.forEach((data) => {
+								treeData[1].children.forEach((data) => {
 									if (data.key.includes(location.state?.cellId)) {
 										key = data.key
 										return false
@@ -216,6 +217,10 @@ const SideBar = (props) => {
 							}
 
 
+						}
+						else{
+							setCheckedKeys(state.selectedCellIds.map(element => `cell_${element}`))
+							setCheckedCellIds(state.selectedCellIds)
 						}
 						setFilteredTreeData(() => {
 							setIsCelldataLoaded(true);
@@ -262,9 +267,8 @@ const SideBar = (props) => {
 		setFilteredTreeData(filtered);
 	};
 
-	const onLoad = () => {
-		action.loadCellData(checkedCellIds);
-		// props.onLoadCellIds(checkedCellIds);
+	const onLoad = (dashboardType) => {
+		action.loadCellData(checkedCellIds, dashboardType);
 	};
 
 	const onPlot = () => {
@@ -288,7 +292,7 @@ const SideBar = (props) => {
 	return (
 		<>
 			<Sider
-				collapsed={sideBarCollapse}
+				// collapsed={sideBarCollapse}
 				trigger={null}
 				collapsible
 				style={{
@@ -309,68 +313,55 @@ const SideBar = (props) => {
 				className="shadow"
 			>
 				<SimpleBarReact style={{ maxHeight: "90vh" }}>
-					<Button
+					{/* <Button
 						style={{ float: "right" }}
 						onClick={() => {
 							setSideBarCollapse(!sideBarCollapse);
 						}}
 						icon={sideBarCollapse ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
 						className="trigger"
-					/>
-					{sideBarCollapse ? (
+					/> */}
+					{/* {sideBarCollapse ? (
 						<></>
-					) : (
-						<>
-							<Search className="py-2" placeholder="Search" onChange={(e) => onChange(e)} />
-							<div className="row justify-content-around pb-2">
-								<div className="col-md-6">
-									<Button type="primary" block onClick={() => onClear()} disabled={!checkedKeys.length}>
-										Clear
-									</Button>
-								</div>
-								<div className="col-md-6">
-									<Button type="primary" block onClick={() => onPlot()} disabled={!checkedKeys.length}>
-										Plot
-									</Button>
-								</div>
+					) : ( */}
+					<>
+						<Search className="py-2" placeholder="Search" onChange={(e) => onChange(e)} />
+						<div className="row justify-content-around pb-2">
+							<div className="col-md-6">
+								<Button type="primary" block onClick={() => onClear()} disabled={!checkedKeys.length} danger>
+									Clear
+								</Button>
 							</div>
-							<div className="row pb-2">
-								<div className="col-md-12">
-									<Button type="primary" block onClick={() => onLoad()} disabled={!checkedKeys.length}>
-										Load Dashboard
-									</Button>
-								</div>
+							<div className="col-md-6">
+								<Button type="primary" block onClick={() => onLoad("type-2")} disabled={!checkedKeys.length}>
+									Plot
+								</Button>
 							</div>
-							<div className="row pb-3">
-								<div className="col-md-12">
-									<Button type="primary" block onClick={() => onMeta()} disabled={!checkedKeys.length}>
-										View Metadata
-									</Button>
-								</div>
-							</div>
-							{error ? <Result status="warning" extra={<p>Error loading data!</p>} /> : null}
-							<div style={{ minHeight: "100%" }}>
-								{isCelldataLoaded ? (
-									<>
-										<div className="text-muted" style={{ float: "right", fontSize: "0.8rem" }}>
-											Selected: {checkedCellIds.length}
-										</div>
-										<Tree
-											checkable
-											showLine
-											onCheck={onCheck}
-											checkedKeys={checkedKeys}
-											treeData={filteredTreeData}
-											autoExpandParent={true}
-											defaultExpandedKeys={["amplabs", "datamatrio", "private", "public"]}
-										/>
-									</>
-								) : (
-									<Spin />
-								)}
-							</div>
-						</>
-					)}
+						</div>
+						{error ? <Result status="warning" extra={<p>Error loading data!</p>} /> : null}
+						<div style={{ minHeight: "100%" }}>
+							{isCelldataLoaded ? (
+								<>
+									<div className="text-muted" style={{ float: "right", fontSize: "0.8rem" }}>
+										Selected: {checkedCellIds.length}
+									</div>
+									<Tree
+										checkable
+										showLine
+										onCheck={onCheck}
+										checkedKeys={checkedKeys}
+										treeData={filteredTreeData}
+										autoExpandParent={true}
+										defaultExpandedKeys={["amplabs", "datamatrio", "private","public"]}
+
+									/>
+								</>
+							) : (
+								<Spin />
+							)}
+						</div>
+					</>
+					{/* )} */}
 				</SimpleBarReact>
 			</Sider>
 			{/* <Divider type="vertical" className="handle" /> */}

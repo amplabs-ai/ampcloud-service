@@ -8,13 +8,25 @@ export const DashboardProvider = ({ children }) => {
 	const [state, dispatch] = useReducer(dashboardReducer, initialState);
 	const userPlan = useUserPlan();
 
-	const loadCellData = (selectedCellIds) => {
-		dispatch({
-			type: "LOAD_CELL_IDS",
-			payload: {
-				selectedCellIds,
-			},
-		});
+	const loadCellData = (selectedCellIds, dashboardType) => {
+		if(dashboardType === "type-2"){
+			let cellIdsChanged = !(state.selectedCellIds.every(v => selectedCellIds.includes(v)) && state.selectedCellIds.length === selectedCellIds.length)
+			if(cellIdsChanged || !state.shallShowSecondChart)
+			{dispatch({
+				type: "LOAD_CELL_IDS_SECOND_DASHBOARD",
+				payload: {
+					selectedCellIds
+				},
+			});}
+		}
+		else {
+			dispatch({
+				type: "LOAD_CELL_IDS",
+				payload: {
+					selectedCellIds,
+				},
+			});
+		}
 	};
 
 	const checkUserPlanOnPlot = (selectedCellIds) => {
@@ -77,14 +89,26 @@ export const DashboardProvider = ({ children }) => {
 		});
 	};
 
-	const refreshSidebar = (cellIdDeleted) => {
+	const refreshSidebar = (cellIdDeleted, cellIdUpdated, cellIdVisibilityUpdated, dashboardType) => {
 		let selectedCellIdsAfterRefresh = state.selectedCellIds;
 		if (cellIdDeleted) {
 			selectedCellIdsAfterRefresh = selectedCellIdsAfterRefresh.filter((cell) => !cell.includes(cellIdDeleted));
 		}
+
+		if(cellIdVisibilityUpdated){
+			selectedCellIdsAfterRefresh = selectedCellIdsAfterRefresh.map(element => 
+				element.split("_")[0] === cellIdVisibilityUpdated.index ? `${cellIdVisibilityUpdated.index}_${cellIdVisibilityUpdated.visibility}_${cellIdVisibilityUpdated.cell_id}` : element	
+			);
+		}
+		if(cellIdUpdated){
+			selectedCellIdsAfterRefresh = cellIdUpdated.map(element => {
+				let cell = selectedCellIdsAfterRefresh.find(item => {return item.split("_")[0] == element.index})
+				return `${element.index}_${cell.split("_")[1]}_${element.cell_id}`	
+		});
+		}
 		dispatch({
 			type: "REFRESH_SIDEBAR",
-			payload: { selectedCellIdsAfterRefresh },
+			payload: { selectedCellIdsAfterRefresh, dashboardType},
 		});
 	};
 
@@ -117,6 +141,15 @@ export const DashboardProvider = ({ children }) => {
 		});
 	};
 
+	const setDisableSelection = (value) => {
+		dispatch({
+			type: "SET_DISABLE_SELECTION",
+			payload: {
+				disableSelection: value
+			}
+		})
+	}
+
 	const value = {
 		state: state,
 		action: {
@@ -132,6 +165,7 @@ export const DashboardProvider = ({ children }) => {
 			setAppliedStep,
 			setCheckedCellIds,
 			setSubsPromptModalVisible,
+			setDisableSelection,
 		},
 		dashboardRef: useRef(null),
 	};

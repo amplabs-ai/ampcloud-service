@@ -88,6 +88,9 @@ const UploadPageForms = ({ pageType, userPlan }, ref) => {
 							<Form.Item label="Form Factor" name="form_factor">
 								<Input allowClear />
 							</Form.Item>
+							<Form.Item label="Active Mass (mg)" name="active_mass">
+								<Input type="number" allowClear />
+							</Form.Item>
 						</Form>
 					</Panel>
 				</Collapse>

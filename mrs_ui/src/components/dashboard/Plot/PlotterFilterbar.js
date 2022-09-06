@@ -220,16 +220,6 @@ const PlotterFilterbar = (props) => {
 			...getColumnSearchProps("cell_id"),
 		},
 		{
-			title: "Experiment",
-			dataIndex: "experiment",
-			width: 100,
-		},
-		{
-			title: "Label",
-			dataIndex: "label",
-			width: 100,
-		},
-		{
 			title: "Cycle Data",
 			key: "cycleDataDownload",
 			render: (text, record) => (

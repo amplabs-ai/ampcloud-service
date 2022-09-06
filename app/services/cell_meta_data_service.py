@@ -24,7 +24,11 @@ def get_cellmeta_service(email, test, dashboard_id=None):
                 records = [cell.to_dict() for cell in archive_cells]
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []
-        archive_cells = ao.get_all_cell_meta_for_community(email)
+        archive_cells = ao.get_all_shared_cell_meta_with_id(
+            ["Amplabs Sample"], email, test)
+        for cell in archive_cells:
+            print(cell.to_dict())
+        # archive_cells = ao.get_all_cell_meta_for_community(email)
         records = [add_type(cell.to_dict(), "type", "public/other")
                    for cell in archive_cells]
         archive_cells = ao.get_all_cell_meta_for_community(email, for_current_user=True)

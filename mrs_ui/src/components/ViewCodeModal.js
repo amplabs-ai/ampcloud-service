@@ -8,18 +8,12 @@ import { useAuth0Token } from "../utility/useAuth0Token";
 
 const { Text } = Typography;
 
-const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) => {
+const ViewCodeModal = ({ code, modalVisible, setModalVisible }) => {
 	const codeString = code;
 	const { user } = useAuth0();
 
 	const accessToken = useAuth0Token();
 
-	const formatCode = (code, ...args) => {
-		for (let k in args) {
-			code = code.replace("{" + k + "}", args[k]);
-		}
-		return code;
-	};
 
 	return (
 		<>
@@ -38,9 +32,7 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 					onClick={() => {
 						message.success("Copied to clipboard!");
 						message.success("Copied to clipboard!");
-						copyToClipboard(
-							formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${accessToken}")`)
-						);
+						copyToClipboard(codeString);
 					}}
 					showLineNumbers={true}
 					wrapLines={true}
@@ -48,15 +40,13 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible, searchParams }) =>
 					style={a11yLight}
 				>
 					{/* {codeString.replace("{queryParams}", searchParams)} */}
-					{formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${accessToken}")`)}
+					{codeString}
 				</SyntaxHighlighter>
 				<div className="d-flex flex-row-reverse mb-2">
 					<Text
 						type="secondary"
 						onClick={() => {
-							copyToClipboard(
-								formatCode(codeString, searchParams, `httprequest.add_header("Authorization", "Bearer ${accessToken})"`)
-							);
+							copyToClipboard(codeString);
 							// navigator.clipboard.writeText(
 							//   formatCode(codeString, searchParams, Cookies.get("userId"))
 							// );

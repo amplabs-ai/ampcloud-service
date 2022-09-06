@@ -137,6 +137,7 @@ class CellMeta(Model):
     tester = Column(TEXT, nullable=True)
     email = Column(TEXT, nullable=False)
     is_public = Column(BOOLEAN, nullable=False)
+    active_mass = Column(Float, nullable=True)
 
     def to_dict(self):
         return {
@@ -148,7 +149,8 @@ class CellMeta(Model):
             "ah": self.ah,
             "form_factor": self.form_factor,
             "test": self.test,
-            "tester": self.tester
+            "tester": self.tester,
+            "active_mass": self.active_mass
         }
 
     @staticmethod
@@ -382,7 +384,7 @@ class ArchiveOperator:
     def get_df_cycle_data_with_cell_id(self, cell_id, email):
         sql = self.session.query(CycleStats).filter(
             CycleStats.cell_id == cell_id,
-            or_(CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CycleTimeSeries.email.in_(self.session.query(UserPlan.email).subquery()))).order_by('cycle_index').statement
+            or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CycleStats.email.in_(self.session.query(UserPlan.email).subquery()))).order_by('cycle_index').statement
         return pd.read_sql(sql, self.session.bind)
 
     def get_df_abuse_ts_with_cell_id(self, cell_id, email):
@@ -397,6 +399,9 @@ class ArchiveOperator:
 
     # CELL
 
+    def get_public_cell_meta(self, cell_ids):
+        return self.session.query(CellMeta.cell_id).filter(CellMeta.cell_id.in_(cell_ids), CellMeta.email.in_([BATTERY_ARCHIVE, DATA_MATR_IO])).first()
+    
     def get_all_cell_meta(self, email, test):
         return self.select_table(CellMeta, email, test)
 
@@ -437,33 +442,45 @@ class ArchiveOperator:
 
     # ECHARTS
 
-    def get_all_data_from_CQBS_query(self, cell_id, step, email):
+    def get_all_data_from_CQBS_query(self, cell_id, step, email, mod_step):
         if len(cell_id) > 1:
             return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=tuple(cell_id), step=step, email=email))
+                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=tuple(cell_id), step=step, email=email, mod_step=mod_step))
         else:
             return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=("('" + cell_id[0] + "')"), step=step, email=email))
+                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=("('" + cell_id[0] + "')"), step=step, email=email, mod_step=mod_step))
 
-    def get_all_data_from_ECAD_query(self, cell_id, email):
+    def get_all_data_from_GalvanoPlot_query(self, cell_id, email, filter_string):
         if len(cell_id) > 1:
-            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(
-                cell_id=tuple(cell_id), email=email))
             return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email))
+                GALVANOSTATIC_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string))
         else:
-            print(ENERGY_AND_CAPACITY_DECAY_QUERY.format(
-                cell_id=("('" + cell_id[0] + "')"), email=email))
             return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
+                GALVANOSTATIC_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
 
-    def get_all_data_from_Eff_query(self, cell_id, email):
+    def get_all_data_from_ECAD_query(self, cell_id, email, mod_step):
         if len(cell_id) > 1:
             return self.session.execute(
-                EFFICIENCY_QUERY.format(cell_id=tuple(cell_id), email=email))
+                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email, mod_step=mod_step))
         else:
             return self.session.execute(
-                EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
+                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, mod_step=mod_step))
+
+    def get_all_data_from_Eff_query(self, cell_id, email, mod_step):
+        if len(cell_id) > 1:
+            return self.session.execute(
+                EFFICIENCY_QUERY.format(cell_id=tuple(cell_id), email=email, mod_step=mod_step))
+        else:
+            return self.session.execute(
+                EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, mod_step=mod_step))
+
+    def get_all_data_from_AhEff_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            return self.session.execute(
+                COULOMBIC_EFFICIENCY_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string))
+        else:
+            return self.session.execute(
+                COULOMBIC_EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email,  filters=filter_string))
 
     def get_all_data_from_CCVC_query(self, cell_id, email):
         if len(cell_id) > 1:
@@ -472,6 +489,30 @@ class ArchiveOperator:
         else:
             return self.session.execute(
                 COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
+    
+    def get_all_data_from_DiffCapacity_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            sql_stmt = DIFFERENTIAL_CAPACITY_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string)
+        else:
+            sql_stmt = DIFFERENTIAL_CAPACITY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string)
+        return pd.read_sql(sql_stmt, self.session.bind)
+
+    
+    def get_all_data_from_VoltageTime_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            sql_stmt = VOLTAGE_TIME_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string)
+        else:
+            sql_stmt = VOLTAGE_TIME_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string)
+        return self.session.execute(sql_stmt)
+
+
+    def get_all_data_from_CurrentTime_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            sql_stmt = CURRENT_TIME_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string)
+        else:
+            sql_stmt = CURRENT_TIME_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string)
+        return self.session.execute(sql_stmt)
+
 
     def get_all_data_from_AFD_query(self, cell_id, email, sample):
         if len(cell_id) > 1:
@@ -496,6 +537,23 @@ class ArchiveOperator:
         else:
             return self.session.execute(
                 ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
+    
+    def get_all_data_from_CR_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            return self.session.execute(
+                CAPACITY_RETENTION.format(cell_id=tuple(cell_id), email=email, filters=filter_string))
+        else:
+            return self.session.execute(
+                CAPACITY_RETENTION.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
+
+    def get_all_data_from_EnergyDensity_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            return pd.read_sql(
+                ENERGY_DENSITY_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string), self.session.bind)
+        else:
+            return pd.read_sql(
+                ENERGY_DENSITY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string), self.session.bind)
+
 
     def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters, get_df=False):
         if get_df:

@@ -26,6 +26,7 @@ const TutorialStep4 = (props) => {
 	const getSampleChartData = () => {
 
 		chartRef.current.getEchartsInstance().setOption({
+			animation: false,
 			dataset: response.records[0],
 			series: _createChartDataSeries(response.records[0], 'voltage', ['cycle_discharge_capacity'], { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" }, 'plotter'),
 			xAxis: {

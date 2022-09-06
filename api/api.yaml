@@ -72,14 +72,22 @@ paths:
                     type: string
                   anode:
                     type: string
+                    nullable: true
                   cathode:
                     type: string
+                    nullable: true
                   source:
                     type: string
+                    nullable: true
                   ah:
                     type: integer
+                    nullable: true
                   form_factor:
                     type: string
+                    nullable: true
+                  ative_mass:
+                    type: integer
+                    nullable: true
                 required:
                   - index
                   - cell_id
@@ -208,19 +216,26 @@ paths:
                   cell_id:
                     type: string
                   crate_c:
-                    type: number
+                    type: integer
+                    nullable: true
                   crate_d:
-                    type: number
+                    type: integer
+                    nullable: true
                   soc_max:
-                    type: number
+                    type: integer
+                    nullable: true
                   soc_min:
-                    type: number
+                    type: integer
+                    nullable: true
                   temperature:
-                    type: number
+                    type: integer
+                    nullable: true
                   v_max:
-                    type: number
+                    type: integer
+                    nullable: true
                   v_min:
-                    type: number
+                    type: integer
+                    nullable: true
                 required:
                   - index
       responses:
@@ -295,68 +310,67 @@ paths:
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: init_file_upload
       requestBody:
+        required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              type: object
-              properties:
-                cell_id:
-                  type: string
-                  nullable: false
-                  example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-                file_count:
-                  type: integer
-                  enum: [1]
-                  description: Number of files that will be sent in the upload request
-                test_type:
-                  type: string
-                  enum: [cycle]
-                anode:
-                  type: string
-                  example: Graphite
-                cathode:
-                  type: string
-                  example: NMC
-                source:
-                  type: string
-                  example: Commercial
-                ah:
-                  type: number
-                  example: 3
-                form_factor:
-                  type: string
-                  example: NA
-                temperature:
-                  type: number
-                  example: 25
-                soc_max:
-                  type: number
-                  example: 100
-                soc_min:
-                  type: number
-                  example: 10
-                crate_c:
-                  type: number
-                  example: 0.5
-                crate_d:
-                  type: number
-                  example: 1
-                thickness:
-                  type: number
-                  example: 7
-                v_init:
-                  type: number
-                  example: 4.12
-                indentor:
-                  type: number
-                  example: 6
-                nail_speed:
-                  type: number
-                  example: 0.05
-              required:
-                - cell_id
-                - file_count
-                - test_type
+              type: array
+              items:
+                type: object
+                properties:
+                  cell_id:
+                    type: string
+                    nullable: false
+                    example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+                  test_type:
+                    type: string
+                    enum: [cycle]
+                  anode:
+                    type: string
+                    nullable: true
+                    example: Graphite
+                  cathode:
+                    type: string
+                    nullable: true
+                    example: NMC
+                  source:
+                    type: string
+                    nullable: true
+                    example: Commercial
+                  ah:
+                    type: number
+                    nullable: true
+                    example: 3
+                  form_factor:
+                    type: string
+                    nullable: true
+                    example: NA
+                  temperature:
+                    type: number
+                    nullable: true
+                    example: 25
+                  soc_max:
+                    type: number
+                    nullable: true
+                    example: 100
+                  soc_min:
+                    type: number
+                    nullable: true
+                    example: 10
+                  crate_c:
+                    type: number
+                    nullable: true
+                    example: 0.5
+                  crate_d:
+                    type: number
+                    nullable: true
+                    example: 1
+                  is_public:
+                    type: boolean
+                    example: true
+                required:
+                  - cell_id
+                  - test_type
       tags:
         - Upload
       responses:
@@ -512,6 +526,21 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+  /echarts/galvanostaticPlot:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches Galvanostatic Plot query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_galvanostatic_plot
+      tags:
+        - Echart - Get json data required for plotting
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
   /echarts/cycleQuantitiesByStep:
     get:
       security:
@@ -597,6 +626,108 @@ paths:
             items:
               type: string
               example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/capacityRetention:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches capacity rentention vs cycle number results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_capacity_retention
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/coulombicEfficiency:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches Coulombic Efficiency vs cycle number results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_coulombic_efficiency
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/voltageTime:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches Voltage vs Time results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_voltage_time
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/currentTime:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches Current vs Time results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_current_time
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/differentialCapacity:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches Coulombic Efficiency vs cycle number results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_differential_capacity
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  /echarts/energyDensity:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches Energy Desnrity vs cycle number results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_energy_desnity
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
       responses:
         "200":
           description: Successfull response
@@ -824,8 +955,6 @@ paths:
   #         description: Successfull
   #       "500":
   #         description: Something went wrong
- 
-
   /displayname/cycle:
     get:
       summary: Fetches the name of data schema of cycle.
@@ -865,6 +994,39 @@ servers:
     variables: {}
 
 components:
+  requestBodies:  
+    Echart:
+      description: Column filters
+      content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cell_ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["str1", "str2", "str3"]
+                filters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      column:
+                        type: string
+                      operation:
+                        type: string
+                        enum: ["=", ">", "<", ">=", "<=", "!=", "%"]
+                      filterValue:
+                        type: string
+                        example: 1
+                    required:
+                      - column
+                      - operation
+                      - filterValue
+              required:
+                - cell_ids
+
   securitySchemes:
     BearerAuth:
       type: http

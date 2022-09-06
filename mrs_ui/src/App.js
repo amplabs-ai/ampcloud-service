@@ -1,26 +1,42 @@
-import React, { useEffect } from "react";
+import React from "react";
 import "./App.css";
+import { Auth0Provider, withAuthenticationRequired } from "@auth0/auth0-react";
 import { BackTop, Spin } from "antd";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
-import DashboardPage from "./pages/DashboardPage";
-import Landing from "./pages/Landing";
-import Navbar from "./components/Navbar";
+import { UserPlanProvider } from "./context/UserPlanContext";
+import BulkUploadPage from "./pages/BulkUploadPage";
 import Cloud from "./components/Cloud";
-import Pricing from "./components/Pricing";
 import Community from "./components/Community";
-import UploadPage from "./pages/UploadPage";
-import PageNotFound from "./pages/PageNotFound";
+import DashboardPage from "./pages/DashboardPage";
 import DataViewerPage from "./pages/DataViewerPage";
+import Landing from "./pages/Landing";
+import mixpanel from "mixpanel-browser";
+import Navbar from "./components/Navbar";
+import PageNotFound from "./pages/PageNotFound";
+import Pricing from "./components/Pricing";
 import RedirectRoute from "./routes/RedirectRoute";
 import SharedDashboard from "./components/SharedDashboard";
-import { Auth0Provider, withAuthenticationRequired } from "@auth0/auth0-react";
-import { UserPlanProvider } from "./context/UserPlanContext";
-import mixpanel from "mixpanel-browser";
-import Tutorial from "./components/tutorial/Tutorial";
+import UploadPage from "./pages/UploadPage";
 
-mixpanel.init(process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_MIXPANEL_DEV_PROJECT_TOKEN : process.env.REACT_APP_MIXPANEL_PROD_PROJECT_TOKEN, { debug: true });
-const domain = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_AUTH0_DOMAIN : process.env.REACT_APP_PROD_AUTH0_DOMAIN;
-const clientId = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_AUTH0_CLIENT_ID : process.env.REACT_APP_PROD_AUTH0_CLIENT_ID;
+mixpanel.init(
+	process.env.REACT_APP_ENV === "development"
+		? process.env.REACT_APP_MIXPANEL_DEV_PROJECT_TOKEN
+		: process.env.REACT_APP_MIXPANEL_PROD_PROJECT_TOKEN,
+	{ debug: true }
+);
+const AUTH0_DOMAIN =
+	process.env.REACT_APP_ENV === "development"
+		? process.env.REACT_APP_DEV_AUTH0_DOMAIN
+		: process.env.REACT_APP_PROD_AUTH0_DOMAIN;
+const AUTH0_CLIENT_ID =
+	process.env.REACT_APP_ENV === "development"
+		? process.env.REACT_APP_DEV_AUTH0_CLIENT_ID
+		: process.env.REACT_APP_PROD_AUTH0_CLIENT_ID;
+const AUTH0_REDIRECT_URI =
+	process.env.REACT_APP_ENV === "development"
+		? process.env.REACT_APP_AUTH0_REDIRECT_URI_DEV
+		: process.env.REACT_APP_AUTH0_REDIRECT_URI_PROD;
+const AUTH0_AUDIENCE = "https://amplabs.server";
 
 const PrivateRoute = ({ component }) => {
 	const Component = withAuthenticationRequired(component, {
@@ -51,10 +67,10 @@ const App = () => {
 		<>
 			<Router>
 				<Auth0ProviderWithRedirectCallback
-					domain={domain}
-					clientId={clientId}
-					redirectUri="https://www.amplabs.ai"
-					audience="https://amplabs.server"
+					domain={AUTH0_DOMAIN}
+					clientId={AUTH0_CLIENT_ID}
+					redirectUri={AUTH0_REDIRECT_URI}
+					audience={AUTH0_AUDIENCE}
 					useRefreshTokens={true}
 				>
 					<UserPlanProvider>
@@ -71,16 +87,13 @@ const App = () => {
 								}
 								exact
 							/>
-
-							<Route path="/upload" element={<PrivateRoute component={UploadPage} />}>
+							<Route path="/upload" element={<PrivateRoute component={BulkUploadPage} />}>
 								<Route path="cycle-test" element={<UploadPage />} />
 								<Route path="abuse-test" element={<UploadPage />} />
 							</Route>
 							<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
 							<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
-
 							<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
-							<Route path="/tutorial" element={<PrivateRoute component={Tutorial} />} />
 							<Route path="/cloud/" element={<Cloud />} />
 							<Route path="/community/" element={<Community />} />
 							<Route path="/pricing/" element={<Pricing />} exact />

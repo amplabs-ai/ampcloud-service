@@ -137,7 +137,7 @@ export const chartConfig = (chartName, data) => {
           type: "value",
           name: yAxis.title,
           nameLocation: "middle",
-          nameGap: 25,
+          nameGap: 35,
           nameTextStyle: {
             fontSize: window.screen.width < 600 ? 12 : 16,
           },
@@ -255,6 +255,118 @@ export const getChartMetadata = (chartName) => {
         chartTitle: "Cycle Quantities by Step - Capacity",
         chartId: "cycleQtyByStepWithCapacity",
         code: sourceCode.cycleQtyByStepWithCapacityChart,
+      };
+      break;
+    case "capacityRetention":
+      result = {
+        endpoint: `/echarts/capacityRetention`,
+        xAxis: {
+          mapToId: "cycle_index",
+          title: "Cycle Index",
+        },
+        yAxis: {
+          mapToId: "capacity_retention",
+          title: "Disharge Capacity Retention / %",
+        },
+        chartTitle: "Capacity Retention vs. Cycle Index",
+        chartId: "capacityRetention",
+        code: sourceCode.capacityRetention,
+      };
+      break;
+    case "coulombicEfficiency":
+      result = {
+        endpoint: `/echarts/coulombicEfficiency`,
+        xAxis: {
+          mapToId: "cycle_index",
+          title: "Cycle Index",
+        },
+        yAxis: {
+          mapToId: "value",
+          title: "Coulombic Efficiency",
+        },
+        chartTitle: "Coulombic Efficiency vs Cyle Index",
+        chartId: "coulombicEfficiency",
+        code: sourceCode.coulombicEfficiency,
+      };
+      break;
+    case "galvanostaticPlot":
+      result = {
+        endpoint: `/echarts/galvanostaticPlot`,
+        xAxis: {
+          mapToId: "specific_capacity",
+          title: "Specific Capacity",
+        },
+        yAxis: {
+          mapToId: "v",
+          title: "Voltage",
+        },
+        chartTitle: "Specific Capacity vs Voltage",
+        chartId: "galvanostaticPlot",
+        code: sourceCode.galvanostaticPlot,
+      };
+      break;
+    case "voltageTime":
+      result = {
+        endpoint: `/echarts/voltageTime`,
+        xAxis: {
+          mapToId: "test_time",
+          title: "Test Time",
+        },
+        yAxis: {
+          mapToId: "voltage",
+          title: "Voltage",
+        },
+        chartTitle: "Voltage vs Test Time",
+        chartId: "voltageTime",
+        code: sourceCode.voltageTime,
+      };
+      break;
+    case "currentTime":
+      result = {
+        endpoint: `/echarts/currentTime`,
+        xAxis: {
+          mapToId: "test_time",
+          title: "Test Time",
+        },
+        yAxis: {
+          mapToId: "current",
+          title: "Current",
+        },
+        chartTitle: "Current vs Test Time",
+        chartId: "currentTime",
+        code: sourceCode.currentTime,
+      };
+      break;
+    case "energyDensity":
+      result = {
+        endpoint: `/echarts/energyDensity`,
+        xAxis: {
+          mapToId: "cycle_index",
+          title: "Cycle Index",
+        },
+        yAxis: {
+          mapToId: "energy_density",
+          title: "Energy Density",
+        },
+        chartTitle: "Energy Density vs Cyle Index",
+        chartId: "energyDensity",
+        code: sourceCode.energyDensity,
+      };
+      break;
+    case "differentialCapacity":
+      result = {
+        endpoint: `/echarts/differentialCapacity`,
+        xAxis: {
+          mapToId: "voltage",
+          title: "Voltage",
+        },
+        yAxis: {
+          mapToId: "dq_dv",
+          title: "dQ/dV",
+        },
+        chartTitle: "dQ/dV vs Voltage",
+        chartId: "differentialCapacity",
+        code: sourceCode.differentialCapacity,
       };
       break;
     default:

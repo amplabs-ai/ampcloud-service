@@ -33,7 +33,7 @@ const SeriesPlot = (props) => {
 			displayColMapping: {},
 		},
 		chartTitle:
-			props.type === "timeseries" ? "TimeSeries plot" : "CycleSeries plot",
+			props.type === "timeseries" ? "Complete Cycle" : "Cycle Summary",
 		chartId: "plotter",
 		code:
 			props.type === "timeseries"

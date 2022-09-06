@@ -4,12 +4,14 @@ import React, { useEffect, useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import ChartContainer from "./ChartContainer";
+import ChartContainerType2 from "./ChartContainerType2";
 import DashboardShareButton from "./DashboardShareButton";
 import SideBar from "./Sidebar";
 import ViewMetadata from "./ViewMetadata";
 import Plotter from "./Plot/Plotter";
 import SubsPrompt from "../SubsPrompt";
 import DefaultDashboard from "./DefaultDashboard";
+import DashboardFilterBar from "./DashboardFilterBar";
 
 const { Content } = Layout;
 
@@ -17,7 +19,7 @@ const Dashboard = (props) => {
 
 	const { state, action, dashboardRef } = useDashboard();
 	const accessToken = useAuth0Token();
-	// if  used in shared dashboard
+	// if used in shared dashboard
 	useEffect(() => {
 		if (props.dashboardId && props.type === "shared") {
 			let config = {
@@ -69,13 +71,15 @@ const Dashboard = (props) => {
 				/>
 			) : (
 				<div className="p-2">
-					<PageHeader
+					{/* <PageHeader
 						className="site-page-header mb-1 shadow"
 						title="Cycle Test Data"
 						// backIcon={<FaArrowLeft title="go to upload" />}
 						// onBack={() => navigate("/upload")}
 						ghost={false}
 						extra={[
+
+
 							state.dashboardType === "private" ? (
 								<DashboardShareButton
 									ref={dashboardRef}
@@ -86,19 +90,21 @@ const Dashboard = (props) => {
 								/>
 							) : null
 						]}
-					></PageHeader>
+					></PageHeader> */}
 					<Layout hasSider>
 						{props.type === "shared" ? null : <SideBar page="dashboard" />}
 						<Layout className="site-layout" style={{ marginLeft: "auto" }}>
 							<Content>
-								{state.shallShowChart ? (
-									<ChartContainer />
-								) : state.shallShowEdit ? (
+								{state.shallShowFilterBar ?
+								(<DashboardFilterBar/>) : null}
+								{state.shallShowEdit ? (
 									<ViewMetadata />
 								) : state.shallShowMeta ? (
 									<Plotter />
+								) : state.shallShowSecondChart ? (
+									<ChartContainerType2 />
 								) : (
-									<DefaultDashboard />
+									<DefaultDashboard/>
 								)}
 							</Content>
 						</Layout>

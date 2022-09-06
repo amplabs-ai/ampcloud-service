@@ -631,6 +631,395 @@ if response['records'][0]:
 
 
     `,
+capacityRetention: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+from ast import operator
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/capacityRetention"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df, x="cycle_index", y="capacity_retention", color="cell_id", labels={"cycle_index":"Cycle Index", "capacity_retention":"Discharge Capacity Retention"}, title = "Capacity Retention vs Cycle Index")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./capacityRetention.png', format="png", scale=1, width=1200, height=800)
+
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+if response:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    if not df.empty:
+        plot_chart(df)
+`,
+coulombicEfficiency: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/coulombicEfficiency"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df, x="cycle_index", y="value",color="cell_id", labels={"cycle_index":"Cycle Index", "value":"Coulombic Efficiency"}, title = "Coulombic Efficiency VS Cycle Index")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./coulombicEfficiency.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+if response['records'][0]:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+
+    #Plot the chart
+    if not df.empty:
+        plot_chart(df)
+`,
+galvanostaticPlot: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/galvanostaticPlot"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df,x="specific_capacity" ,y="v",color="series",labels={"specific_capacity":"Specific Capacity", "v":"Voltage"}, title = "Specific Capacity VS Voltage")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./galvanostaticPlot.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+
+if response:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    if not df.empty:
+        plot_chart(df)
+`,
+voltageTime: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/voltageTime"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df, x="test_time", y="voltage",color="cell_id", labels={"test_time":"Test Time", "voltage":"Voltage"}, title = "Voltage VS Test Time")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./voltageVStestTime.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+
+if response['records'][0]:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    if not df.empty:
+        plot_chart(df)
+    
+`,
+currentTime: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/currentTime"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df, x="test_time", y="current",color="cell_id", labels={"test_time":"Test Time", "current":"Current"}, title = "Current VS Test Time")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./currentVStestTime.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+
+if response['records'][0]:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    if not df.empty:
+        plot_chart(df)
+`,
+energyDensity: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/energyDensity"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df, x="cycle_index", y="energy_density",color="series", labels={"cycle_index":"Cycle Index", "energy_density":"Enery Density"}, title = "Energy Density VS Cycle Index")
+    fig.update_traces(mode="lines", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./energyDensity.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+
+if response['records'][0]:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+    df['energy_density'] = pd.to_numeric(df['energy_density'], errors='coerce')
+
+    #Plot the chart
+    if not df.empty:
+        plot_chart(df)
+`,
+differentialCapacity: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/differentialCapacity"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df, x="voltage", y="dq_dv",color="series", labels={"voltage":"Voltage", "dq_dv":"dQ/dV"}, title = "dQ/dV VS Voltage")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./differentialCapacity.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+
+if response:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+    df['dq_dv'] = pd.to_numeric(df['dq_dv'], errors='coerce')
+
+    #Plot the chart
+    if not df.empty:   
+        plot_chart(df)
+`
 };
 
 export default sourceCode;

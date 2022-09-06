@@ -11,7 +11,7 @@ import ViewCodeModal from "../ViewCodeModal";
 import { useDashboard } from "../../context/DashboardContext";
 import { useUserPlan } from "../../context/UserPlanContext";
 import { useNavigate } from "react-router-dom";
-
+import DashboardShareButton from "./DashboardShareButton";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const { Text } = Typography;
@@ -22,18 +22,13 @@ const DashboardFilterBar = (props) => {
 	const [tableLoading, setTableLoading] = useState(true);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 	const [selectedRows, setSelectedRows] = useState([]);
-	const [step, setStep] = useState(localStorage.getItem("step") ? localStorage.getItem("step") : 500);
-	const [stepInputPlaceholder, setStepInputPlaceholder] = useState("Step");
-	const [stepInputStatus, setStepInputStatus] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);
-	const [searchParams, setSearchParams] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
 	const [searchText, setSearchText] = useState("");
 	const [searchedColumn, setSearchedColumn] = useState("");
 	const accessToken = useAuth0Token();
-	const { state, action } = useDashboard();
-	const navigate = useNavigate();
+	const { state, action, dashboardRef } = useDashboard();
 
 	const { user } = useAuth0();
 
@@ -62,20 +57,19 @@ const DashboardFilterBar = (props) => {
 				setSelectedRowKeys(cellIdData.map((c) => c.key));
 				setSelectedRows([...cellIdData]);
 				setTableLoading(false);
-				props.onFilterChange([...cellIdData], step, accessToken);
+				
 			} else {
 				// error
 				setCellIds([]);
 				setSelectedRowKeys([]);
 				setSelectedRows([]);
-				props.onFilterChange([], step, accessToken);
+				action.setCheckedCellIds([])	
 				setTableLoading(false);
 			}
 		}
 	}, [state.selectedCellIds, accessToken, userPlan]);
 
 	const onVisibilityToggle = (record, checked) => {
-		console.log(record)
 		// setLoading(true);
 		axios
 			.patch("/cells/cycle/meta", [{"index":parseInt(record.index), "is_public": checked, "cell_id": record.cell_id}], {
@@ -85,7 +79,7 @@ const DashboardFilterBar = (props) => {
 			})
 			.then((response) => {
 				setLoading(false);
-				action.refreshSidebar();
+				action.refreshSidebar(null, null, {...record, visibility: checked ? "public/user":"private" } ,"dashboardType2");
 				message.success("Updated");
 				message.success("Updated");
 			})
@@ -113,8 +107,8 @@ const DashboardFilterBar = (props) => {
 				let records = selectedRows.filter((item) => item.key !== record.key);
 				setSelectedRows(records);
 				setSelectedRowKeys(selectedRowKeys.filter((item) => item !== record.key));
-				props.onCellIdChange(records);
-				action.refreshSidebar(record.cell_id);
+				// props.onCellIdChange(records);
+				action.refreshSidebar(record.cell_id, null, null, "dashboardType2");
 				message.success("Cell Id Deleted!");
 				message.success("Cell Id Deleted!");
 			})
@@ -123,29 +117,6 @@ const DashboardFilterBar = (props) => {
 				message.error("Error deleting Cell Id");
 				message.error("Error deleting Cell Id");
 			});
-	};
-
-	const handleApplyFilter = () => {
-		if (!step) {
-			setStepInputStatus("error");
-			setStepInputPlaceholder("This field is required!");
-			message.error("Step field is required!");
-			message.error("Step field is required!");
-			return;
-		} else if (!selectedRows.length) {
-			message.error("Please Select atleast one cell Id!");
-			message.error("Please Select atleast one cell Id!");
-			return;
-		}
-		localStorage.setItem("step", step);
-		let result = props.onFilterChange(selectedRows, step, accessToken);
-		if (result) {
-			message.success("Filter Applied!"); // potential bug in antd need to call msg twice
-			message.success("Filter Applied!");
-		} else {
-			message.error("Error Applying filters!");
-			message.error("Error Applying filters!");
-		}
 	};
 
 	const downloadCycleData = (k) => {
@@ -183,17 +154,22 @@ const DashboardFilterBar = (props) => {
 		return params.toString();
 	};
 
+	const formatCode = (code, ...args) => {
+		for (let k in args) {
+			code = code.replace("{" + k + "}", args[k]);
+		}
+		return code;
+	};
+
 	const viewCycleDataCode = (k) => {
 		audit(`cycle_dash_cellId__cycle_viewcode`, {...user, userTier: userPlan});
-		setSearchParams(getSearchParams(k.trim(), state.dashboardId));
-		setCodeContent(cycleDataCodeContent);
+		setCodeContent(formatCode(cycleDataCodeContent, getSearchParams(k.trim(), state.dashboardId)));
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
 		audit(`cycle_dash_cellId__ts_viewcode`, {...user, userTier: userPlan});
-		setSearchParams(getSearchParams(k.trim(), state.dashboardId));
-		setCodeContent(timeSeriesDataCodeContent);
+		setCodeContent(formatCode(timeSeriesDataCodeContent, getSearchParams(k.trim(), state.dashboardId)));
 		setModalVisible(true);
 	};
 
@@ -254,17 +230,6 @@ const DashboardFilterBar = (props) => {
 					<Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
 						Reset
 					</Button>
-					{/* <Button
-						type="link"
-						size="small"
-						onClick={() => {
-							confirm({ closeDropdown: false });
-							setSearchText(selectedKeys[0]);
-							setSearchedColumn(dataIndex);
-						}}
-					>
-						Filter
-					</Button> */}
 				</Space>
 			</div>
 		),
@@ -348,7 +313,7 @@ const DashboardFilterBar = (props) => {
 								<Button
 									icon={<FaRegTrashAlt />}
 									type="text"
-									disabled={props.disableSelection || _checkIsReadOnly(record)}
+									disabled={state.disableSelection || _checkIsReadOnly(record)}
 								></Button>
 							</Space>
 						</Popconfirm>
@@ -366,7 +331,7 @@ const DashboardFilterBar = (props) => {
 						<Switch 
 						defaultChecked={_checkIsPublic(record)} 
 						size="small"
-						loading={props.disableSelection}
+						loading={state.disableSelection}
 						disabled={userPlan.includes("COMMUNITY") || _checkIsReadOnly(record)}
 						onChange={(checked) => onVisibilityToggle(record, checked)}
 						></Switch>
@@ -393,10 +358,10 @@ const DashboardFilterBar = (props) => {
 		onChange: (selectedRowKeys, selectedRows) => {
 			setSelectedRowKeys(selectedRowKeys);
 			setSelectedRows(selectedRows);
-			props.onCellIdChange(selectedRows);
+			action.setCheckedCellIds(selectedRows)
 		},
 		getCheckboxProps: (record) => ({
-			disabled: props.disableSelection,
+			disabled: state.disableSelection,
 			// Column configuration not to be checked
 		}),
 	};
@@ -417,34 +382,44 @@ const DashboardFilterBar = (props) => {
 			</Modal>
 			<div className="card shadow">
 				<div className="card-body filterBar">
-					<div style={{ display: "inline-block" }} className="pe-2">
-						<Input
-							type="number"
-							addonBefore="Cycle Step"
-							status={stepInputStatus}
-							onChange={(e) => {
-								setStepInputStatus("");
-								setStepInputPlaceholder("Step");
-								setStep(e.target.value);
-							}}
-							value={step}
-							placeholder={stepInputPlaceholder}
-							allowClear
-						/>
-					</div>
-					<Button disabled={!cellIds.length || props.disableSelection} onClick={() => handleApplyFilter()}>
-						Apply Filter
-					</Button>
+					
 					{/* view code modal */}
 					<ViewCodeModal
 						code={codeContent}
 						modalVisible={modalVisible}
 						setModalVisible={setModalVisible}
-						searchParams={searchParams}
 					/>
 
 					<span style={{ float: "right", fontSize: "0.9rem" }}>
-						<Text type="secondary">Total: {cellIds.length}</Text>
+					<Button
+						disabled={state.disableSelection}
+						key="1"
+						size="medium"
+						type="primary"
+						className="me-2"
+						onClick={() => {action.plotCellData(state.selectedCellIds);}}
+					>
+						Custom Plot
+					</Button>
+					<Button
+						disabled={state.disableSelection}
+						key="1"
+						size="medium"
+						type="primary"
+						className="me-2"
+						onClick={() => {action.editCellData(state.selectedCellIds)}}
+					>
+						Metadata
+					</Button>
+					<Text type="secondary">{state.dashboardType === "private" ? (
+							<DashboardShareButton
+								ref={dashboardRef}
+								cellIds={state.selectedCellIds}
+								shareDisabled={true}
+								step={state.appliedStep}
+								dashboard="cycle"
+							/>
+						) : null}  Total: {cellIds.length}</Text>
 					</span>
 					<br />
 					<Table

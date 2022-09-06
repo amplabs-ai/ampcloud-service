@@ -4,7 +4,7 @@ import pandas as pd
 from app.archive_constants import ARCHIVE_COLS, FORMAT, INP_LABELS, LABEL
 
 
-def read_generic(file, mapping='test_time,cycle,current,voltage'):
+def read_generic(file, mapping='test_time,current,voltage'):
     df_tmerge = pd.DataFrame()
     with gzip.open(file, 'rb') as decompressed_file:
         df_time_series_file = pd.read_csv(decompressed_file, sep=',')
@@ -40,13 +40,17 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
         if col == 'date_time':
             df_ts['date_time'] = pd.to_datetime(
                 df_time_series_file[col], format='%Y-%m-%d %H:%M:%S.%f')
+        elif col == 'test_time' and df_time_series_file.dtypes[col] == 'object':
+            df_ts['test_time'] = pd.to_datetime(
+                df_time_series_file[col])
+            df_ts['test_time'] = (df_ts['test_time'] - df_ts['test_time'][0]).dt.total_seconds()
         elif col != "skip":
             df_ts[col] = df_time_series_file[col].apply(
                 pd.to_numeric)
 
     # need at the least one of date_time or test_time
     # TODO: how do we fail the import?
-
+    
     if "date_time" not in df_ts.columns and "test_time" in df_ts.columns:
         df_ts['date_time'] = pd.Timestamp(
             datetime.datetime.now()) + pd.to_timedelta(df_ts['test_time'], unit='s')
@@ -68,7 +72,7 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
     # df_ts['cycle_index_file'] = df_ts[
     #     'cycle'].apply(pd.to_numeric)
     df_ts[LABEL.CYCLE_TIME.value] = 0
-    df_ts[LABEL.CYCLE_INDEX.value] = df_ts['cycle'].apply(pd.to_numeric)
+
     # df_ts['filename'] = file.filename
 
     if LABEL.CELL_TEMP.value in df_time_series_file:
@@ -80,6 +84,9 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
 
     if LABEL.STEP_INDEX.value in df_time_series_file:
         df_ts[LABEL.STEP_INDEX.value] = df_time_series_file[LABEL.STEP_INDEX.value]
+    
+    if "cycle_index" in df_time_series_file.columns:
+        df_ts[LABEL.CYCLE_INDEX.value] = df_time_series_file['cycle_index'].apply(pd.to_numeric)
 
     if df_tmerge.empty:
         df_tmerge = df_ts[df_ts[LABEL.TEST_TIME.value] > 0]
@@ -88,7 +95,6 @@ def read_generic(file, mapping='test_time,cycle,current,voltage'):
             df_ts[df_ts[LABEL.TEST_TIME.value] > 0], ignore_index=True)
 
     # df_tmerge.rename(columns={'current': 'i', 'voltage': 'v'}, inplace=True)
-    df_tmerge.drop(['cycle'], axis=1, inplace=True)
     return df_tmerge
 
 

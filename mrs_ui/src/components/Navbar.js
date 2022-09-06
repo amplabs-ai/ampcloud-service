@@ -8,9 +8,7 @@ import { UserOutlined } from "@ant-design/icons";
 import { useUserPlan } from "../context/UserPlanContext";
 import { useAuth0Token } from "../utility/useAuth0Token";
 import { audit } from "../auditAction/audit";
-import mixpanel, { get_distinct_id } from "mixpanel-browser";
-import Tutorial from "../components/tutorial/Tutorial"
-
+import mixpanel from "mixpanel-browser";
 
 const Navbar = () => {
 	const { logout, isAuthenticated, user, isLoading } = useAuth0();
@@ -26,23 +24,59 @@ const Navbar = () => {
 		}
 	}, [location, user, userplan]);
 
-	const copyToClipBoard = copyMe => {
+	const copyToClipBoard = (copyMe) => {
 		navigator.clipboard.writeText(copyMe);
-		message.success("Token Copied")
-		message.success("Token Copied")
-
+		message.success("Token Copied");
+		message.success("Token Copied");
 	};
 	const userProfileMenu = (
 		<Menu>
-
 			<Menu.Item key="plan">
-				<Link type="text" className="nav-link" to="/pricing" >Manage Plan</Link>
+				<Link type="text" className="nav-link" to="/pricing">
+					Manage Plan
+				</Link>
+			</Menu.Item>
+			<Menu.Item key="csvtool">
+				<Link className="nav-link" to="/data-viewer">
+					CSV Tool
+				</Link>
+			</Menu.Item>
+			<Menu.Item key="api">
+				<Link
+					className="nav-link"
+					to="/"
+					onClick={() => {
+						window.open("https://www.amplabs.ai/api");
+					}}
+				>
+					API
+				</Link>
 			</Menu.Item>
 			<Menu.Item key="gettoken">
-				<Link className="nav-link" to="" onClick={(e) => {
-					e.preventDefault();
-					copyToClipBoard(`${accessToken}`)
-				}}>Get API token <br /><small className="text-secondary " style={{ fontSize: 10 }}>Token refreshes periodically in <b>30 days</b></small></Link>
+				<Link
+					className="nav-link"
+					to=""
+					onClick={(e) => {
+						e.preventDefault();
+						copyToClipBoard(`${accessToken}`);
+					}}
+				>
+					Get API token <br />
+					<small className="text-secondary " style={{ fontSize: 10 }}>
+						Token refreshes periodically in <b>30 days</b>
+					</small>
+				</Link>
+			</Menu.Item>
+			<Menu.Item key="example">
+				<Link
+					className="nav-link"
+					to="/"
+					onClick={() => {
+						window.open("http://github.com/amplabs-ai/amplabs");
+					}}
+				>
+					Examples
+				</Link>
 			</Menu.Item>
 			<Menu.Item key="logout">
 				<Link
@@ -57,16 +91,15 @@ const Navbar = () => {
 					Sign-out
 				</Link>
 			</Menu.Item>
-
 		</Menu>
 	);
 
 	return (
 		<nav className="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
 			<div className="container-fluid">
-				<a className="navbar-brand" style={{ position: 'relative' }} href="/">
+				<a className="navbar-brand" style={{ position: "relative" }} href="/">
 					<img style={{ maxWidth: "125px", display: "block" }} src={logo} alt="AMPLABS" />
-					<span className="rounded-pill bg-danger text-white " style={{ fontSize: 9, padding: "1.6px 3px", border: "2px solid #dcdddd", position: " absolute", bottom: 23, left: 112 }}><b>BETA</b></span>
+					{/* <span className="rounded-pill bg-danger text-white " style={{ fontSize: 9, padding: "1.6px 3px", border: "2px solid #dcdddd", position: " absolute", bottom: 23, left: 112 }}><b>BETA</b></span> */}
 				</a>
 				<button
 					className="navbar-toggler"
@@ -88,24 +121,11 @@ const Navbar = () => {
 										View-MetaData
 									</Link>
 								</li> */}
-								<li className="nav-item  ms-2">
-									<Tutorial />
-								</li>
-								<li className="nav-item  ms-2">
-									<Link className="nav-link" to="/" onClick={() => { window.open("https://www.amplabs.ai/api") }}>
-										API
-									</Link>
-								</li>
-								<li className="nav-item ms-1">
-									<Link className="nav-link" to="/" onClick={() => { window.open("http://github.com/amplabs-ai/amplabs") }}>
-										Examples
-									</Link>
-								</li>
-								<li className="nav-item ms-2">
+								{/* <li className="nav-item ms-2">
 									<Link className="nav-link" to="/data-viewer" >
-										CSV-Viewer
+										Load CSV
 									</Link>
-								</li>
+								</li> */}
 								<li className="nav-item ms-2" style={{ display: "none" }}>
 									<Link className="nav-link" to="/pricing">
 										Pricing
@@ -113,7 +133,7 @@ const Navbar = () => {
 								</li>
 								<li className="nav-item ms-2">
 									<Link className="nav-link" to="/upload/cycle-test">
-										Upload
+										Add Data
 									</Link>
 								</li>
 								<li className="nav-item ms-2">
@@ -127,36 +147,68 @@ const Navbar = () => {
 									</Link>
 								</li>
 
-								<li className="nav-item pe-2 ps-3" ><Avatar src={user.picture ? user.picture : <UserOutlined />} className="mt-2" style={{ width: 35, height: 35 }}></Avatar></li>
+								<li className="nav-item pe-2 ps-3">
+									<Avatar
+										src={user.picture ? user.picture : <UserOutlined />}
+										className="mt-2"
+										style={{ width: 35, height: 35 }}
+									></Avatar>
+								</li>
 								<li className="nav-item" style={{ margin: "-10px" }}>
 									<Dropdown overlay={userProfileMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
-											<Col><span style={{ fontSize: 16 }}>{user.email}<FaAngleDown /></span></Col><span className="rounded-pill bg-light text-dark p-1" style={{ fontSize: 10 }}>{userplan}</span>
+											<Col>
+												<span style={{ fontSize: 16 }}>
+													{user.email}
+													<FaAngleDown />
+												</span>
+											</Col>
+											{userplan && (
+												<span className="rounded-pill bg-light text-dark p-1" style={{ fontSize: 10 }}>
+													{userplan}
+												</span>
+											)}
 										</Link>
 									</Dropdown>
 								</li>
 							</>
 						</ul>
 					</div>
-				) : !isLoading ? ((
+				) : !isLoading ? (
 					<>
 						<div className="collapse navbar-collapse justify-content ms-3" id="navbarNav">
 							<ul className="navbar-nav">
 								<>
-
 									<li className="nav-item ms-1">
-										<Link className="nav-link" to="/cloud" onClick={() => { mixpanel.track("user_route_cloud"); }}>
-
+										<Link
+											className="nav-link"
+											to="/cloud"
+											onClick={() => {
+												mixpanel.track("user_route_cloud");
+											}}
+										>
 											Cloud
 										</Link>
 									</li>
 									<li className="nav-item ms-1">
-										<Link className="nav-link" to="/community" onClick={() => { mixpanel.track("user_route_community"); }}>
+										<Link
+											className="nav-link"
+											to="/community"
+											onClick={() => {
+												mixpanel.track("user_route_community");
+											}}
+										>
 											Community
 										</Link>
 									</li>
 									<li className="nav-item ms-1">
-										<Link className="nav-link" to="/pricing" onClick={() => { mixpanel.track("user_route_pricing"); }}>
+										<Link
+											className="nav-link"
+											to="/pricing"
+											onClick={() => {
+												mixpanel.track("user_route_pricing");
+											}}
+										>
 											Pricing
 										</Link>
 									</li>
@@ -167,22 +219,29 @@ const Navbar = () => {
 						<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 							<ul className="navbar-nav">
 								<li className="nav-item pe-4">
-									<Link className="nav-link" to="/dashboard" >
+									<Link className="nav-link" to="/dashboard">
 										Sign In
 									</Link>
 								</li>
 							</ul>
 							<ul className="navbar-nav">
 								<li className="nav-item">
-									<Button size={"large"} ghost onClick={() =>
-										loginWithRedirect({
-											screen_hint: 'signup',
-										})
-									}>Sign Up</Button>
+									<Button
+										size={"large"}
+										ghost
+										onClick={() =>
+											loginWithRedirect({
+												screen_hint: "signup",
+											})
+										}
+									>
+										Sign Up
+									</Button>
 								</li>
 							</ul>
-						</div></>
-				)) : null}
+						</div>
+					</>
+				) : null}
 			</div>
 		</nav>
 	);

@@ -297,8 +297,9 @@ const DashboardShareButton = (props, ref) => {
 			<Button
 				disabled={props.shareDisabled}
 				key="1"
-				size="large"
+				size="medium"
 				type="primary"
+				className="me-2"
 				onClick={doShareDashboard}
 				icon={<ShareAltOutlined />}
 			>

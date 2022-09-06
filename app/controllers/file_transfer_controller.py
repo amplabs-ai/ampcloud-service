@@ -19,10 +19,8 @@ lock = threading.Lock()
 @set_user_plan()
 def init_file_upload():
     try:
-        if g.user_plan == 'BETA':
-            return Response(405, "Not Allowed").to_dict(), 405
         email = g.user
-        data = request.form.to_dict()
+        data = request.get_json()
         status, detail = init_file_upload_service(email, data)
         return Response(status, detail).to_dict(), status
     except Exception as err:

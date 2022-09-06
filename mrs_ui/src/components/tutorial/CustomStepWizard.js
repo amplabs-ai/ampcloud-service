@@ -54,11 +54,11 @@ const CustomStepWizard = (props) => {
 				})
 				.then((res) => {
 					if (res.data.records) {
-						if (parseInt(res.data.records.percentage) === 100) {
+						if (parseInt(res.data.records[file.name].percentage) === 100) {
 							setLoading(false);
 							settriggerNextStep(true);
 							clearInterval(intervalId);
-						} else if (parseInt(res.data.records.percentage) === -1) {
+						} else if (parseInt(res.data.records[file.name].percentage) === -1) {
 							setLoading(false);
 							message.error("something went wrong!");
 							message.error("something went wrong!");
@@ -87,18 +87,21 @@ const CustomStepWizard = (props) => {
 		}
 		setLoading(true);
 		// init upload request
-		let uploadInitReqData = new FormData();
-		uploadInitReqData.append("file_count", 1);
-		uploadInitReqData.append("cell_id", file.name);
-		uploadInitReqData.append("is_public", true);
-		uploadInitReqData.append("test_type", "cycle");
-		axios
-			.post("/upload/cells/initialize", uploadInitReqData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-					Authorization: `Bearer ${accessToken}`,
-				},
-			})
+		let uploadInitReqData = [
+			{
+			cell_id: file.name,
+			is_public: true,
+			test_type: "cycle"}
+		]
+		axios({
+			method: "post",
+			url: "/upload/cells/initialize",
+			headers: {
+			  Authorization: `Bearer ${accessToken}`,
+			  "Content-Type": "application/json",
+			},
+			data: JSON.stringify(uploadInitReqData),
+		})
 			.then((response) => {
 				if (response.status === 200) {
 					const formData = new FormData();

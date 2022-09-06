@@ -23,7 +23,6 @@ const Plotter = () => {
 	};
 	const handleRemoveTimeSeries = index => {
 		const values = [...timeSeriesPlot];
-		console.log(index)
 		values.splice(index, 1);
 		setTimeSeriesPlot(values);
 	};
@@ -35,7 +34,6 @@ const Plotter = () => {
 	const handleRemoveCycleSeries = index => {
 		const values = [...cycleSeriesPlot];
 		values.splice(index, 1);
-		console.log(index)
 		setCycleSeriesPlot(values);
 	};
 	return (
@@ -46,7 +44,7 @@ const Plotter = () => {
 					{state.selectedCellIds.length ? (
 						<>
 
-							<PlotterFilterbar onCellIdChange={handleCellIdChange} />
+							{/* <PlotterFilterbar onCellIdChange={handleCellIdChange} /> */}
 							<div className="card shadow p-3 col-md-12">
 
 								<div className="col-12 ">

@@ -1,3 +1,4 @@
+from app.archive_constants import AMPLABS_DB_URL
 from app.controllers.stripe_webhook import webhook
 from app.controllers.user_controller import get_user_plan, update_user_plan
 import connexion
@@ -5,7 +6,6 @@ from connexion import ProblemException
 import os
 from flask import jsonify, render_template
 from sqlalchemy import create_engine
-from app.archive_constants import AMPLABS_DB_URL
 from app.exception_handler import *
 from app.model import Model
 from flask_cors import CORS

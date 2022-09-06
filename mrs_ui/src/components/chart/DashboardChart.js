@@ -1,7 +1,7 @@
 import { Alert } from "antd";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactEcharts from "echarts-for-react";
-import {initialChartOptions} from "../../chartConfig/initialConfigs";
+import { scatterPlotChartId, initialChartOptions } from "../../chartConfig/initialConfigs";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { chartConfig, getChartMetadata } from "../../chartConfig/dashboardChartConfig";
 import { audit } from "../../auditAction/audit";
@@ -11,11 +11,15 @@ import axios from "axios";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useUserPlan } from "../../context/UserPlanContext";
+import Papa from "papaparse";
+import ChartFilter from "../dashboard/ChartFilter";
 
 const DashboardChart = (props) => {
 	const screen = useFullScreenHandle();
+	const chartFilterRef = useRef();
 	const chartRef = useRef();
 	const accessToken = useAuth0Token(); // auth context
+	const [isModalVisible, setIsModalVisible] = useState(false);
 	const { state } = useDashboard();
 	const { user } = useAuth0();
 	const userPlan = useUserPlan();
@@ -32,6 +36,19 @@ const DashboardChart = (props) => {
 		}
 	}, []);
 
+	const FilterModal = () => {
+		setIsModalVisible(true);
+	  };
+
+	  const formatText = (str, mapObj) => {
+		if (str && mapObj) {
+			var re = new RegExp(Object.keys(mapObj).join("|"), "gi");
+	
+			return str.replace(re, function (matched) {
+				return mapObj[matched.toLowerCase()];
+			});
+		}
+	};
 	useEffect(() => {
 		chartRef.current.getEchartsInstance().dispatchAction({
 			type: "restore",
@@ -62,8 +79,17 @@ const DashboardChart = (props) => {
 							let { code } = getChartMetadata(props.chartName);
 							props.formatCode(code);
 						}:function () {
+							let req_body = {
+								cell_ids: state.checkedCellIds.map((c) => c.cell_id),
+								filters: chartFilterRef.current.getFilterValues().filter((obj) => obj.column !== null)
+							}
+							let replaceInCode = {
+								__accesstoken__: accessToken,
+								__req_data__: JSON.stringify(req_body),
+							};
 							audit(`cycle_dash_chart_${props.chartName}_viewode`, {...user, userTier: userPlan});
-							screen.enter();
+							let { code } = getChartMetadata(props.chartName);
+							props.formatCode(formatText(code, replaceInCode));
 						},
 					},
 					myTool2: {
@@ -91,35 +117,65 @@ const DashboardChart = (props) => {
 						},
 					},
 					myTool4: {
-						show: props.usage === "plotter" && props.data?.length ? true : false,
+						show: props.data?.length ? true : false,
 						title: "Download Data",
 						icon: `path://M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z`,
 						onclick: function () {
-							props.reqData.cell_ids = state.checkedCellIds.map((c) => c.cell_id);
-							let endpoint =
-								JSON.parse(props.chartName).chartTitle === "TimeSeries plot"
-									? "/download/plot/timeseries"
-									: "/download/plot/stats";
-							axios({
-								method: "post",
-								url: endpoint,
-								headers: {
-									Authorization: "Bearer " + accessToken,
-									"Content-Type": "application/json",
-								},
-								responseType: "arraybuffer",
-								data: JSON.stringify(props.reqData),
-							})
-								.then(({ data }) => {
-									var a = document.createElement("a");
-									var blob = new Blob([data], { type: "application/zip" });
-									a.href = window.URL.createObjectURL(blob);
-									a.download = "Plot" + ".zip";
-									a.click();
-								})
-								.catch((err) => {});
+							function convertToCSV(arr) {
+									const array = [Object.keys(arr[0])].concat(arr)
+								  
+									return array.map(it => {
+									  return Object.values(it).toString()
+									}).join('\n')
+								  }
+
+								const chartData = props.data.map(eachItem=>[...eachItem.source]).flat(1);
+								const csvChartData= convertToCSV(chartData)						
+								var fileDownload = document.createElement("a");
+								var blob = new Blob([csvChartData], { type: "application/csv" });
+								fileDownload.href = window.URL.createObjectURL(blob);
+								fileDownload.download = props.usage === "dashboardType2" ? props.chartName + ".csv": 'plot' + ".csv";
+								fileDownload.click(); 
 						},
 					},
+
+					myTool5: {
+						show: props.data?.length,
+						title: scatterPlotChartId.indexOf(props.chartName) === -1 ? "Scatter Plot" : "Line Chart",
+						icon: scatterPlotChartId.indexOf(props.chartName) === -1 ? "path://M2 2h2v18h18v2H2V2m7 8a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m4-8a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m5 10a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3Z" : "path://m4.67 28l6.39-12l7.3 6.49a2 2 0 0 0 1.7.47a2 2 0 0 0 1.42-1.07L27 10.9l-1.82-.9l-5.49 11l-7.3-6.49a2 2 0 0 0-1.68-.51a2 2 0 0 0-1.42 1L4 25V2H2v26a2 2 0 0 0 2 2h26v-2Z",
+						onclick: function () {
+							let chartOptions = chartRef.current.getEchartsInstance().getOption()
+							if(chartOptions.toolbox[0].feature.myTool5.title === "Line Chart"){
+								chartOptions.series.forEach((element) => {
+									element.type = "line"
+									element.symbolSize = 5
+								});
+								chartOptions.legend[0].icon = "path://M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"
+								chartOptions.toolbox[0].feature.myTool5.title = "Scatter"
+								chartOptions.toolbox[0].feature.myTool5.icon = "path://M2 2h2v18h18v2H2V2m7 8a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m4-8a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m5 10a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3Z"	
+							}
+							else{
+								
+								chartOptions.series.forEach((element) => {
+									element.type = "scatter"
+									element.symbolSize = 5
+									element.symbol = "circle"
+								});
+								chartOptions.legend[0].icon = "pin"
+								chartOptions.toolbox[0].feature.myTool5.title = "Line Chart"
+								chartOptions.toolbox[0].feature.myTool5.icon = "path://m4.67 28l6.39-12l7.3 6.49a2 2 0 0 0 1.7.47a2 2 0 0 0 1.42-1.07L27 10.9l-1.82-.9l-5.49 11l-7.3-6.49a2 2 0 0 0-1.68-.51a2 2 0 0 0-1.42 1L4 25V2H2v26a2 2 0 0 0 2 2h26v-2Z"		
+							}
+							chartRef.current.getEchartsInstance().setOption(chartOptions)
+						},
+					},
+					myTool6: {
+						show: props.usage === "plotter" ? false : true,
+						title: "Add Filters",
+						icon: `path://M19.71,8l-4.77,4.77a1.5,1.5,0,0,0-.44,1.06V18a.479.479,0,0,1-.2.4l-4,3a.472.472,0,0,1-.3.1.545.545,0,0,1-.22-.05A.512.512,0,0,1,9.5,21V13.83a1.5,1.5,0,0,0-.44-1.06L4.29,8ZM18.5,2.5H5.5a2.006,2.006,0,0,0-2,2V6h17V4.5A2.006,2.006,0,0,0,18.5,2.5Z`,
+						onclick: function () {
+						  FilterModal();
+						},
+					  },
 
 					saveAsImage: {
 						show: "true",
@@ -153,6 +209,15 @@ const DashboardChart = (props) => {
 	}, []);
 
 	return (
+		<>
+	 <ChartFilter
+	 	ref={chartFilterRef}
+        isModalVisible={isModalVisible}
+        setIsModalVisible={setIsModalVisible}
+        chartName={props.chartName}
+        fetchData={props.fetchData}
+		accessToken={accessToken}
+      />
 		<FullScreen handle={screen} onChange={reportChange}>
 			<div className="card shadow" style={{ height: "100%", width: "100%" }}>
 				<div className="card-body">
@@ -169,6 +234,7 @@ const DashboardChart = (props) => {
 				</div>
 			</div>
 		</FullScreen>
+		</>
 	);
 };
 

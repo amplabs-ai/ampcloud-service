@@ -4,6 +4,7 @@ export const inputType = {
 	cathode: "text",
 	cell_id: "text",
 	form_factor: "text",
+	active_mass: "number",
 	index: "text",
 	key: "text",
 	source: "text",

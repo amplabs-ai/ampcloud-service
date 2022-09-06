@@ -9,63 +9,65 @@ from collections import OrderedDict
 from sqlalchemy.exc import DataError
 
 
-def init_file_upload_service(email, data):
-    cell_id = data.get('cell_id')
+def init_file_upload_service(email, request):
+    cell_ids = [cell['cell_id'] for cell in request]
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if email not in {BATTERY_ARCHIVE, DATA_MATR_IO} and (ao.get_all_cell_meta_with_id(cell_id, BATTERY_ARCHIVE)
-                                                             or ao.get_all_cell_meta_with_id(cell_id, DATA_MATR_IO)):
-            return 400, RESPONSE_MESSAGE['RESERVED_PUBLIC_CELL_ID'].format(cell_id)
+        existing_public_cell_id = ao.get_public_cell_meta(cell_ids)
+        if existing_public_cell_id:
+            return 400, RESPONSE_MESSAGE['RESERVED_PUBLIC_CELL_ID'].format(existing_public_cell_id.cell_id)
     except Exception as err:
         print(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
-    test_type = data.get('test_type')
-    cell_metadata = pd.DataFrame([{
-        "cell_id": data.get('cell_id'),
-        "anode": data.get('anode'),
-        "cathode": data.get('cathode'),
-        "source": data.get('source'),
-        "ah": float(data.get('ah') or 0.0),
-        "form_factor": data.get('form_factor'),
-        "test": data.get('test_type'),
-        "email": email,
-        "is_public": data.get('is_public')
-    }])
-    if test_type == archive_constants.TEST_TYPE.CYCLE.value:
-        test_metadata = pd.DataFrame([{
+    for data in request:
+        test_type = data.get('test_type')
+        cell_metadata = pd.DataFrame([{
             "cell_id": data.get('cell_id'),
-            "temperature": float(data.get('temperature') or 0.0),
-            "soc_max": float(data.get('soc_max') or 0.0),
-            "soc_min": float(data.get('soc_min') or 0.0),
-            "crate_c": float(data.get('crate_c') or 0.0),
-            "crate_d": float(data.get('crate_d') or 0.0),
-            "email": email
+            "anode": data.get('anode'),
+            "cathode": data.get('cathode'),
+            "source": data.get('source'),
+            "ah": float(data.get('ah') or 0.0),
+            "form_factor": data.get('form_factor'),
+            "test": data.get('test_type'),
+            "email": email,
+            "is_public": data.get('is_public'),
+            "active_mass":  float(data['active_mass']) if data.get('active_mass') else None
         }])
-    else:
-        test_metadata = pd.DataFrame([{
-            "cell_id": data.get('cell_id'),
-            "thickness": float(data.get('thickness') or 0.0),
-            "temperature": float(data.get('temperature') or 0.0),
-            "v_init": float(data.get('v_init') or 0.0),
-            "nail_speed": float(data.get('nail_speed') or 0.0),
-            "indentor": float(data.get('indentor') or 0.0),
-            "email": email
-        }])
+        if test_type == archive_constants.TEST_TYPE.CYCLE.value:
+            test_metadata = pd.DataFrame([{
+                "cell_id": data.get('cell_id'),
+                "temperature": float(data.get('temperature') or 0.0),
+                "soc_max": float(data.get('soc_max') or 0.0),
+                "soc_min": float(data.get('soc_min') or 0.0),
+                "crate_c": float(data.get('crate_c') or 0.0),
+                "crate_d": float(data.get('crate_d') or 0.0),       
+                "email": email
+            }])
+        else:
+            test_metadata = pd.DataFrame([{
+                "cell_id": data.get('cell_id'),
+                "thickness": float(data.get('thickness') or 0.0),
+                "temperature": float(data.get('temperature') or 0.0),
+                "v_init": float(data.get('v_init') or 0.0),
+                "nail_speed": float(data.get('nail_speed') or 0.0),
+                "indentor": float(data.get('indentor') or 0.0),
+                "email": email
+            }])
 
-    status[f"{email}|{data.get('cell_id')}"] = {
-        "dataframes": [],
-        "progress": {'percentage': 0, 'message': "IN PROGRESS", "steps": OrderedDict([
-            ("READ FILE", False),
-            ("STATS CALCULATION", False),
-            ("WRITING TO DATABASE", False)
-        ])},
-        "file_count": int(data.get('file_count')),
-        "test_type": data.get('test_type'),
-        "cell_metadata": cell_metadata,
-        "test_metadata": test_metadata}
+        status[f"{email}|{data.get('cell_id')}"] = {
+            "dataframes": [],
+            "progress": {'percentage': 1, 'message': "IN PROGRESS", "steps": OrderedDict([
+                ("READ FILE", False),
+                ("STATS CALCULATION", False),
+                ("WRITING TO DATABASE", False)
+            ])},
+            "file_count": 1,
+            "test_type": data.get('test_type'),
+            "cell_metadata": cell_metadata,
+            "test_metadata": test_metadata}
     return 200, "Success"
 
 
@@ -102,15 +104,19 @@ def file_data_process_service(cell_id, email):
             # status[f"{email}|{cell_id}"]['progress']['percentage'] = 25
             stat_df, final_df = calc_cycle_stats(df_tmerge, cell_id, email)
             status[f"{email}|{cell_id}"]['progress']['steps']["STATS CALCULATION"] = True
-            stat_df['cell_id'] = cell_id
-            stat_df['email'] = email
+
             final_df['cell_id'] = cell_id
             final_df['email'] = email
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 70
 
             ao.add_all(test_metadata, 'cycle_metadata')
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 75
-            ao.add_all(stat_df, 'cycle_stats')
+            if stat_df is not None:
+                stat_df['cell_id'] = cell_id
+                stat_df['email'] = email
+                ao.add_all(stat_df, 'cycle_stats')
+            else:
+                final_df.drop(['cycle_index'], axis=1, inplace=True)
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 80
             ao.add_all(final_df, 'cycle_timeseries')
         else:

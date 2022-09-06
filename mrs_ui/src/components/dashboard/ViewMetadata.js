@@ -42,6 +42,12 @@ const cellMetadataCol = [
 		key: "form_factor",
 		editable: true,
 	},
+	{
+		title: "Active Mass (mg)",
+		dataIndex: "active_mass",
+		key: "active_mass",
+		editable: true,
+	},
 ];
 
 const testMetadataCol = [
@@ -111,11 +117,24 @@ const testMetadataCol = [
 const ViewMetadata = (props) => {
 	const [cellMetadata, setCellMetadata] = useState([]);
 	const [testMetadata, setTestMetadata] = useState([]);
+	const [filteredCellMetadata, setFilteredCellMetadata] = useState([]);
+	const [filteredTestMetadata, setFilteredTestMetadata] = useState([]);
 	const [shallShowLoad, setShallShowLoad] = useState(false);
 
 	const accessToken = useAuth0Token();
 	const { state, action } = useDashboard();
 
+	useEffect(() => {
+		let checkedCellIds = state.checkedCellIds.map((c) => c.cell_id);
+		if (cellMetadata.length) {
+			setFilteredCellMetadata(cellMetadata.filter((obj) => checkedCellIds.includes(obj.cell_id)));
+		}
+		if (testMetadata.length) {
+			setFilteredTestMetadata(testMetadata.filter((obj) => checkedCellIds.includes(obj.cell_id)));
+		}
+	  
+	}, [state.checkedCellIds])
+	
 	const getSearchParams = (cellIds) => {
 		let params = new URLSearchParams();
 		cellIds.map((k) => {
@@ -140,6 +159,7 @@ const ViewMetadata = (props) => {
 					return { ...d, key: k };
 				});
 				setTestMetadata(data);
+				setFilteredTestMetadata(data);
 			})
 			.catch((err) => {
 				console.error("EditCell err", err);
@@ -162,6 +182,7 @@ const ViewMetadata = (props) => {
 					return { ...d, key: k };
 				});
 				setCellMetadata(data);
+				setFilteredCellMetadata(data);
 			})
 			.catch((err) => {
 				console.error("EditCell err", err);
@@ -182,8 +203,13 @@ const ViewMetadata = (props) => {
 		setShallShowLoad(true);
 		let endpoint = type === "test" ? "/cells/tests/cycle/meta" : "/cells/cycle/meta";
 		let newData = [];
+		let cellIdUpdated = [];
 		for (let i = 0; i < data.length; i++) {
 			const item = data[i];
+			cellIdUpdated.push({
+				cell_id: item.cell_id,
+				index: item.index,
+				type: item.type })
 			delete item.key;
 			if (item.type === "private") {
 				delete item.type;
@@ -197,8 +223,9 @@ const ViewMetadata = (props) => {
 				},
 			})
 			.then((response) => {
-				action.refreshSidebar();
+				action.refreshSidebar(null, cellIdUpdated, null, "dashboardType2");
 				getTestMetadata(newData.map((d) => d.cell_id));
+				getCellMetadata(newData.map((d) => d.cell_id));
 				setShallShowLoad(false);
 				message.success("Updated Successfully!");
 				message.success("Updated Successfully!");
@@ -217,14 +244,14 @@ const ViewMetadata = (props) => {
 			<EditableTable
 				onSave={(data) => handleSaveChanges(data, "cell")}
 				columns={cellMetadataCol}
-				dataSource={cellMetadata}
+				dataSource={filteredCellMetadata}
 				title="Cell Metadata"
 				shallShowSaveBtn={!["public", "shared"].includes(props.type)}
 			/>
 			<EditableTable
 				onSave={(data) => handleSaveChanges(data, "test")}
 				columns={testMetadataCol}
-				dataSource={testMetadata}
+				dataSource={filteredTestMetadata}
 				title="Test Metadata"
 				shallShowSaveBtn={!["public", "shared"].includes(props.type)}
 			/>

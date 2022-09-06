@@ -32,7 +32,7 @@ const TutorialNav = (props) => {
 						else if (props.currentStep === 4) {
 							window.location.reload(
 								navigate('/dashboard', {
-									state: { cellId: props.cellId ? props.cellId : "Amplabs_Sample" },
+									state: { cellId: props.cellId ? props.cellId : "Amplabs Sample" },
 
 								}));
 						}
