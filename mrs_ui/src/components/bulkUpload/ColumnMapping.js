@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Alert, Button, Modal, Select, Spin, Tabs } from "antd";
 import ColumnMapForm from "./ColumnMapForm";
 import { useFileUpload } from "../../context/FileUploadContext";
-import axios from "axios";
-import Papa from "papaparse";
+import { v4 as uuidv4 } from "uuid";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -13,14 +12,11 @@ const ColumnMapping = ({ closeModal }) => {
 	const [activeKey, setActiveKey] = useState("0");
 	const [cellSelectOptions, setCellSelectOptions] = useState(null);
 	const [cellsSelected, setCellsSelected] = useState(1);
-	const [colMapData, setColMapData] = useState({});
-	const [colMapError, setColMapError] = useState(null);
-	const [shallShowForm, setShallShowForm] = useState(false);
-	const [supportedColumns, setSupportedColumns] = useState({});
+	const [colMapError, setColMapError] = useState([]);
 
 	const {
-		state: { filesToMapHeader, fileType, tableData, showParsingSpinner },
-		action,
+		state: { filesToMapHeader, tableData, showParsingSpinner, supportedColumns, showPackDataCellInput },
+		action: { setFilesToMapHeader, setTableData, setShowPackDataCellInput },
 	} = useFileUpload();
 
 	useEffect(() => {
@@ -35,27 +31,6 @@ const ColumnMapping = ({ closeModal }) => {
 		setCellSelectOptions(options);
 	}, [tableData]);
 
-	useEffect(() => {
-		let endpoint = "/displayname/timeseries";
-		const controller = new AbortController();
-		axios
-			.get(endpoint, {
-				signal: controller.signal,
-			})
-			.then((res) => {
-				let data = res.data?.records;
-				data["--Ignore--"] = "";
-				setSupportedColumns(res.data?.records || {});
-			})
-			.catch((err) => {
-				console.error(err);
-			});
-
-		return () => {
-			controller.abort();
-		};
-	}, []);
-
 	const onEdit = (targetKey, userAction) => {
 		if (userAction === "remove") {
 			remove(targetKey);
@@ -66,7 +41,7 @@ const ColumnMapping = ({ closeModal }) => {
 		let newActiveKey = activeKey;
 		let lastIndex = parseInt(targetKey) - 1;
 		let newData = filesToMapHeader.filter((_, i) => i !== parseInt(targetKey));
-		action.setFilesToMapHeader(newData);
+		setFilesToMapHeader(newData);
 		if (!newData.length) {
 			closeModal();
 			return;
@@ -85,106 +60,104 @@ const ColumnMapping = ({ closeModal }) => {
 		let data = [];
 		let obj = filesToMapHeader[0];
 		for (let i = 0; i < cellsSelected; i++) {
-			data.push({ ...obj, fileName: `${obj.fileName}_${i + 1}` });
+			let clone = structuredClone(obj);
+			clone.fileName = `${obj.fileName}_${i + 1}`;
+			clone.id = uuidv4();
+			clone.key = uuidv4();
+			data.push(clone);
 		}
-		action.setFilesToMapHeader(data);
-		setShallShowForm(true);
+		setFilesToMapHeader(data);
+		setShowPackDataCellInput(false);
 	};
 
-	const validateUserMappings = () => {
-		let errorMap = {};
-		Object.keys(colMapData).map((f) => {
-			let missingHeader = [];
-			for (let i = 0; i < REQUIRED_HEADERS.length; i++) {
-				const h = REQUIRED_HEADERS[i];
-				if (h === "cycle_index" && fileType !== "normalTest") {
-					continue;
+	const validateFileMappingsAndInfo = () => {
+		let errors = [];
+		let data = filesToMapHeader;
+		data.forEach((file) => {
+			let err = `${file.fileName}: `;
+			let missingHeaders = [];
+			REQUIRED_HEADERS.forEach((h) => {
+				if (!Object.values(file.mappings).includes(h)) {
+					missingHeaders.push(h);
 				}
-				if (!Object.values(colMapData[f]).includes(h)) {
-					missingHeader.push(h);
-				}
-			}
-			if (missingHeader.length) {
-				errorMap[f] = missingHeader;
-			}
-		});
-		let errorCount = Object.keys(errorMap).length;
-		if (errorCount) {
-			setColMapError(errorMap);
-		}
-		return errorCount;
-	};
-
-	const parseAndMapCols = async (file, fileName) => {
-		let dataColMapping = colMapData[fileName];
-		let missingHeaderCount = 0;
-		return new Promise((resolve, reject) => {
-			Papa.parse(file, {
-				header: true,
-				skipEmptyLines: true,
-				dynamicTyping: true,
-				transformHeader: function (h, i) {
-					let index = h;
-					if (!index) {
-						missingHeaderCount++;
-						index = `--missing header(${missingHeaderCount})--`;
-					}
-					return dataColMapping[index] || null;
-				},
-				complete: function (results) {
-					if (results.errors && results.errors.length) {
-						reject({
-							file: file.name,
-							errors: results.errors,
-						});
-						return;
-					}
-					resolve(results.data);
-				},
 			});
+
+			let duplicateMappings = getDuplicateMappings(file.mappings);
+			let isDuplicateCellId = checkDuplicateCellId(file.cellId, file.id);
+
+			if (!file.cellId || missingHeaders.length || duplicateMappings.length || isDuplicateCellId) {
+				if (!file.cellId) {
+					err += "missing cell id, ";
+				} else if (isDuplicateCellId) {
+					err += "duplicate cell id, ";
+				}
+				if (missingHeaders.length) {
+					err += `missing headers(${missingHeaders.join(", ")}), `;
+				}
+				if (duplicateMappings.length) {
+					err += `found duplicates(${duplicateMappings.join(", ")})`;
+				}
+				errors.push(err);
+			}
 		});
+		setColMapError(errors);
+		return errors.length;
 	};
 
-	const ignoreCols = (parsedDataHeaders) => {
-		return parsedDataHeaders.filter((h) => h !== "null");
+	const checkDuplicateCellId = (cellId, id) => {
+		const test = (d) => {
+			if (d.id !== id) {
+				return d.cellId !== cellId;
+			}
+			return true;
+		};
+		return !filesToMapHeader.every(test) || !tableData.every(test);
+	};
+
+	const getDuplicateMappings = (mappings) => {
+		const toFindDuplicates = (arr) =>
+			arr.filter((item, index) => {
+				if (item) {
+					return arr.indexOf(item) !== index;
+				}
+				return false;
+			});
+		const duplicateElements = toFindDuplicates(Object.values(mappings));
+		return duplicateElements;
 	};
 
 	const doSaveColMappings = async () => {
-		if (validateUserMappings()) return;
-		action.setShowParsingSpinner(true);
-		let files = [];
-		for (let i = 0; i < filesToMapHeader.length; i++) {
-			let { file, fileName } = filesToMapHeader[i];
-			let parsedData = await parseAndMapCols(file, fileName);
-			let unparsed = Papa.unparse(parsedData, {
-				columns: ignoreCols(Object.keys(parsedData[0])),
-			});
-			let parts = [new Blob([unparsed], { type: "text/plain" })];
-			let newFile = new File(parts, fileName, {
-				lastModified: new Date(0),
-				type: "text/csv",
-			});
+		if (validateFileMappingsAndInfo()) return;
 
-			var a = document.createElement("a");
-			var blob = new Blob([unparsed], { type: "text/csv" });
-			a.href = window.URL.createObjectURL(blob);
-			a.download = "mydata.csv";
-			a.click();
+		let newTableData = [...tableData];
+		filesToMapHeader.forEach((data) => {
+			let existingRecIndex = newTableData.findIndex((t) => t.id === data.id);
+			if (existingRecIndex !== -1) {
+				newTableData[existingRecIndex] = data;
+			} else {
+				newTableData.push(data);
+			}
+		});
 
-			files.push(newFile);
-		}
-		action.setFilesFromDropFileInput(files);
-		action.setShowParsingSpinner(false);
+		setTableData(newTableData);
 		closeModal();
 	};
 
-	const onFormChangeHandler = (item, value, fileName) => {
-		setColMapData((prev) => {
-			let colMapdata = { ...prev };
-			if (!colMapdata[fileName]) colMapdata[fileName] = {};
-			colMapdata[fileName][item] = value;
-			return colMapdata;
-		});
+	const onFileInfoInputChange = (item, value, fileName) => {
+		let newFilesToMapHeader = [...filesToMapHeader];
+		let index = newFilesToMapHeader.findIndex((file) => file.fileName === fileName);
+		let obj = newFilesToMapHeader[index];
+		obj[item] = value;
+		setFilesToMapHeader(newFilesToMapHeader);
+	};
+
+	const onColMapChange = (item, value, fileName) => {
+		// save data in filesToMapHeader
+		let newFilesToMapHeader = [...filesToMapHeader];
+		let index = newFilesToMapHeader.findIndex((file) => file.fileName === fileName);
+		let obj = newFilesToMapHeader[index];
+		obj.mappings[item] = value;
+		setFilesToMapHeader(newFilesToMapHeader);
 	};
 
 	return (
@@ -200,7 +173,7 @@ const ColumnMapping = ({ closeModal }) => {
 				<h6>Parsing File(s)...</h6>
 				<Spin size="large" tip="Loading..." />
 			</Modal>
-			{fileType === "normalTest" || shallShowForm ? (
+			{!showPackDataCellInput ? (
 				<>
 					<Tabs
 						hideAdd
@@ -213,30 +186,30 @@ const ColumnMapping = ({ closeModal }) => {
 							return (
 								<TabPane tab={fileObj.fileName} key={i} forceRender>
 									<ColumnMapForm
-										onValChange={onFormChangeHandler}
-										headers={fileObj.headers}
+										onColMapChange={onColMapChange}
+										onFileInfoInputChange={onFileInfoInputChange}
 										options={supportedColumns}
-										fileName={fileObj.fileName}
+										formInfo={fileObj}
 									/>
 								</TabPane>
 							);
 						})}
 					</Tabs>
-					{colMapError && (
+					{colMapError.length ? (
 						<Alert
 							className="my-2"
 							message={
-								<ul className="text-danger" style={{ maxHeight: "5rem", overflowY: "scroll" }}>
-									{Object.keys(colMapError).map((f) => (
-										<li>{`Error in ${f}: Missing headers (${colMapError[f].join(", ")})`}</li>
+								<ul className="text-danger" style={{ maxHeight: "5rem", overflowY: "auto" }}>
+									{colMapError.map((error, i) => (
+										<li key={i}>{error}</li>
 									))}
 								</ul>
 							}
 							type="error"
 							closable
-							onClose={() => setColMapError(null)}
+							onClose={() => setColMapError([])}
 						/>
-					)}
+					) : null}
 					<div className="mt-2 d-flex justify-content-end">
 						<Button type="danger" size="large" onClick={closeModal}>
 							Cancel

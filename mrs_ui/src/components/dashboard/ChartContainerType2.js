@@ -1,13 +1,11 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
-import DashboardFilterBar2 from "./DashboardFilterBar";
 import WorkerBuilder from "../../worker/woker-builder";
 import Worker from "../../worker/worker";
 import ViewCodeModal from "../ViewCodeModal";
 import DashboardChart from "../chart/DashboardChart";
 import { message, Spin } from "antd";
-import DashboardFilterBar from "./DashboardFilterBar";
 import { initialChartFilters } from "../../chartConfig/initialConfigs";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import { useUserPlan } from "../../context/UserPlanContext";
@@ -26,9 +24,6 @@ const instance = new WorkerBuilder(Worker);
 
 const ChartContainerType2 = () => {
 	const { state, action, dashboardRef } = useDashboard();
-	// const [disableSelection, setDisableSelection] = useState(true);
-	// const [reductionFactorFilter, setReductionFactorFilter] = useState("");
-	// const [searchParams, setSearchParams] = useState("");
 	const [chartLoadSpiner, setChartLoadSpiner] = useState({
 		capacityRetention: false,
 		coulombicEfficiency: false,
@@ -48,7 +43,15 @@ const ChartContainerType2 = () => {
 		energyDensity: false,
 	});
 	const [chartData, setChartData] = useState({});
-	const [cancelReqToken, setCancelReqToken] = useState({});
+	const [cancelReqToken, setCancelReqToken] = useState({
+		capacityRetention: axios.CancelToken.source(),
+		coulombicEfficiency: axios.CancelToken.source(),
+		differentialCapacity: axios.CancelToken.source(),
+		galvanostaticPlot: axios.CancelToken.source(),
+		voltageTime: axios.CancelToken.source(),
+		currentTime: axios.CancelToken.source(),
+		energyDensity: axios.CancelToken.source(),
+	});
 	const [filteredData, setFilteredData] = useState({});
 	const [chartsLoaded, setChartsLoaded] = useState({
 		capacityRetention: false,
@@ -57,6 +60,7 @@ const ChartContainerType2 = () => {
 		galvanostaticPlot: false,
 		voltageTime: false,
 		currentTime: false,
+		energyDensity: false,
 	});
 	const [loading, setLoading] = useState(false);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -106,22 +110,6 @@ const ChartContainerType2 = () => {
 	const getCancelReqToken = () => {
 		return cancelReqToken;
 	};
-
-	// const getSearchParams = (cellIds, step, modStep, reductionFactor) => {
-	// 	let params = new URLSearchParams();
-	// 	cellIds.forEach((cellId) => {
-	// 		params.append("cell_id", cellId.cell_id);
-	// 	});
-	// 	params.append("reduction_factor", reductionFactor);
-	// 	params.append("step", step);
-	// 	params.append("mod_step", modStep)
-	// 	// if (state.dashboardId) {
-	// 	// 	params.append("dashboard_id", state.dashboardId);
-	// 	// }
-	// 	setReductionFactorFilter(reductionFactor)
-	// 	// action.setAppliedStep(step);
-	// 	return params;
-	// };
 
 	// runs when api call is needed / gets cellIds from filter bar
 	const handleFilterChange = (cellIds, accessToken) => {
@@ -222,6 +210,7 @@ const ChartContainerType2 = () => {
 				break;
 			case "voltageTime":
 				setChartLoadSpiner((prev) => {
+					console.log("inside loaing spinner")
 					return { ...prev, voltageTime: show };
 				});
 				break;
@@ -245,18 +234,13 @@ const ChartContainerType2 = () => {
 		handleChartLoadSpinner(apiType, true);
 		action.setDisableSelection(true);
 		action.setShareDisabled(true);
-		const tokenSource = axios.CancelToken.source();
-		setCancelReqToken((prev) => {
-			return { ...prev, [apiType]: tokenSource };
-		});
-
 		axios({
 			...request,
 			url: CHART_API_ENDPOINTS[apiType],
-			cancelToken: tokenSource.token,
+			cancelToken: cancelReqToken[apiType].token,
 		  })
 			.then((result) => {
-				handleChartLoadSpinner(apiType, false);
+				
 				result = typeof result.data == "string" ? JSON.parse(result.data.replace(/\bNaN\b/g, "null")) : result.data;
 				switch (apiType) {
 					case "capacityRetention":
@@ -305,6 +289,7 @@ const ChartContainerType2 = () => {
 						break;
 					case "voltageTime":
 						setChartData((prev) => {
+							console.log("setting data")
 							return { ...prev, voltageTime: result.records[0] };
 						});
 						setFilteredData((prev) => {
@@ -339,8 +324,10 @@ const ChartContainerType2 = () => {
 					default:
 						break;
 				}
+				handleChartLoadSpinner(apiType, false);
 			})
 			.catch((err) => {
+				console.log(err)
 				if (err.response.data.status === 400) {
 					message.error(err.response.data.detail);
 					message.error(err.response.data.detail);
@@ -374,9 +361,7 @@ const ChartContainerType2 = () => {
 	}, [chartsLoaded]);
 
 	useEffect(() => {
-		// action.setCheckedCellIds(state.checkedCellIds)
 		setLoading(true);
-		// getSearchParams(state.checkedCellIds, reductionFactorFilter);
 		action.setDisableSelection(true);
 		instance.postMessage({ chartData, selectedCellIds: state.checkedCellIds });
 		instance.onmessage = (message) => {
@@ -388,6 +373,7 @@ const ChartContainerType2 = () => {
 			}
 		};
 	}, [state.checkedCellIds]);
+
 	const formatCode = (code) => {
 		setCodeContent(code);
 		setModalVisible(true);

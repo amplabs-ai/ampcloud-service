@@ -4,36 +4,53 @@ import pandas as pd
 from app.archive_constants import ARCHIVE_COLS, FORMAT, INP_LABELS, LABEL
 
 
-def read_generic(file, mapping='test_time,current,voltage'):
+def read_generic(file, mapping='test_time,current,voltage', column_mapping=None):
     df_tmerge = pd.DataFrame()
     with gzip.open(file, 'rb') as decompressed_file:
         df_time_series_file = pd.read_csv(decompressed_file, sep=',')
+    # validating renaming optional columns:
+    columns_to_rename = {}
+    if not column_mapping:
+         for col in df_time_series_file.columns:
+            column = col.lower().strip()
+            if 'discharge' in column and 'capacity' in column:
+                columns_to_rename[col] = LABEL.AH_D.value
+            elif 'charge' in column and 'capacity' in column:
+                columns_to_rename[col] = LABEL.AH_C.value
+            elif 'discharge' in column and 'energy' in column:
+                columns_to_rename[col] = LABEL.E_D.value
+            elif 'charge' in column and 'energy' in column:
+                columns_to_rename[col] = LABEL.E_C.value
+            elif 'date' in column and 'time' in column:
+                columns_to_rename[col] = LABEL.DATE_TIME.value
+            elif 'cell' in column and 'temperature' in column:
+                columns_to_rename[col] = LABEL.CELL_TEMP.value
+            elif 'environment' in column and 'temperature' in column:
+                columns_to_rename[col] = LABEL.ENV_TEMP.value
+            elif 'step' in column and 'index' in column:
+                columns_to_rename[col] = LABEL.STEP_INDEX.value
+    else:
+        updated_columns = []
+        missing_col_count = 1
+        for a in df_time_series_file.columns:
+            if "Unnamed" in a:
+                updated_columns.append(f"--missing header({missing_col_count})--")
+                missing_col_count+=1
+            else:
+                updated_columns.append(a)
+
+        df_time_series_file.columns = updated_columns
+        for key, value in column_mapping.items():
+            if value == "" or value == None:
+                df_time_series_file.drop(key, axis=1, inplace=True)
+            else:
+                columns_to_rename[key] = value
+
+    df_time_series_file.rename(columns=columns_to_rename, inplace=True)
     column_list = mapping.split(",")
     missing_columns = set(column_list).difference(set(df_time_series_file.columns))
     if missing_columns:
         raise KeyError(f"{missing_columns} columns are not present")
-    # validating renaming optional columns:
-    columns_to_rename = {}
-    for col in df_time_series_file.columns:
-        column = col.lower().strip()
-        if 'discharge' in column and 'capacity' in column:
-            columns_to_rename[col] = LABEL.AH_D.value
-        elif 'charge' in column and 'capacity' in column:
-            columns_to_rename[col] = LABEL.AH_C.value
-        elif 'discharge' in column and 'energy' in column:
-            columns_to_rename[col] = LABEL.E_D.value
-        elif 'charge' in column and 'energy' in column:
-            columns_to_rename[col] = LABEL.E_C.value
-        elif 'date' in column and 'time' in column:
-            columns_to_rename[col] = LABEL.DATE_TIME.value
-        elif 'cell' in column and 'temperature' in column:
-            columns_to_rename[col] = LABEL.CELL_TEMP.value
-        elif 'environment' in column and 'temperature' in column:
-            columns_to_rename[col] = LABEL.ENV_TEMP.value
-        elif 'step' in column and 'index' in column:
-            columns_to_rename[col] = LABEL.STEP_INDEX.value
-
-    df_time_series_file.rename(columns=columns_to_rename, inplace=True)
 
     df_ts = pd.DataFrame()
     for col in column_list:

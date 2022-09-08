@@ -6,7 +6,7 @@ const fileUploadReducer = (state, action) => {
 				...state,
 				fileType: payload.fileType,
 			};
-		case "SET_VALID_FILES_PARSED_DATA":
+		case "SET_FILES_TO_MAP_HEADER":
 			return {
 				...state,
 				filesToMapHeader: payload.filesToMapHeader,
@@ -16,15 +16,32 @@ const fileUploadReducer = (state, action) => {
 				...state,
 				tableData: payload.tableData,
 			};
-		case "SET_FILES_FROM_DROP_FILE_INPUT":
-			return {
-				...state,
-				filesFromDropFileInput: payload.files,
-			};
 		case "SET_SHOW_PARSING_SPINNER":
 			return {
 				...state,
 				showParsingSpinner: payload.showParsingSpinner,
+			};
+		case "SET_SHOW_COL_MAP_MODAL":
+			return {
+				...state,
+				showColMapModal: payload.showColMapModal,
+				filesToMapHeader: !payload.showColMapModal ? [] : state.filesToMapHeader,
+				showPackDataCellInput: !payload.showColMapModal ? false : state.showPackDataCellInput,
+			};
+		case "SET_COL_MAP_DATA":
+			return {
+				...state,
+				colMapData: payload.colMapData,
+			};
+		case "SET_SUPPORTED_COLUMNS":
+			return {
+				...state,
+				supportedColumns: payload.supportedColumns,
+			};
+		case "SET_SHOW_PACK_DATA_INPUT":
+			return {
+				...state,
+				showPackDataCellInput: payload.showPackDataCellInput,
 			};
 		default:
 			throw new Error(`No case for type ${type} found in fileUploadReducer.`);
@@ -32,11 +49,14 @@ const fileUploadReducer = (state, action) => {
 };
 
 export const initialState = {
+	colMapData: {},
 	fileType: "normalTest",
 	filesToMapHeader: [],
-	tableData: [],
-	filesFromDropFileInput: [],
 	showParsingSpinner: false,
+	showColMapModal: false,
+	tableData: [],
+	supportedColumns: {},
+	showPackDataCellInput: false,
 };
 
 export default fileUploadReducer;

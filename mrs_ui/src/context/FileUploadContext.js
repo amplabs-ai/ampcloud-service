@@ -17,7 +17,7 @@ export const FileUploadProvider = ({ children }) => {
 
 	const setFilesToMapHeader = (filesToMapHeader) => {
 		dispatch({
-			type: "SET_VALID_FILES_PARSED_DATA",
+			type: "SET_FILES_TO_MAP_HEADER",
 			payload: {
 				filesToMapHeader,
 			},
@@ -33,24 +33,6 @@ export const FileUploadProvider = ({ children }) => {
 		});
 	};
 
-	const setColMapData = (colMapData) => {
-		dispatch({
-			type: "SET_COL_MAP_DATA",
-			payload: {
-				colMapData,
-			},
-		});
-	};
-
-	const setFilesFromDropFileInput = (files) => {
-		dispatch({
-			type: "SET_FILES_FROM_DROP_FILE_INPUT",
-			payload: {
-				files,
-			},
-		});
-	};
-
 	const setShowParsingSpinner = (val) => {
 		dispatch({
 			type: "SET_SHOW_PARSING_SPINNER",
@@ -60,15 +42,51 @@ export const FileUploadProvider = ({ children }) => {
 		});
 	};
 
+	const setSupportedColumns = (supportedColumns) => {
+		dispatch({
+			type: "SET_SUPPORTED_COLUMNS",
+			payload: {
+				supportedColumns,
+			},
+		});
+	};
+
+	const setShowColMapModal = (val) => {
+		dispatch({
+			type: "SET_SHOW_COL_MAP_MODAL",
+			payload: {
+				showColMapModal: val,
+			},
+		});
+	};
+
+	const setShowPackDataCellInput = (val) => {
+		dispatch({
+			type: "SET_SHOW_PACK_DATA_INPUT",
+			payload: {
+				showPackDataCellInput: val,
+			},
+		});
+	};
+
+	const editFile = (key) => {
+		let index = state.tableData.findIndex((data) => data.key === key);
+		let filesToMapHeader = [structuredClone(state.tableData[index])];
+		setFilesToMapHeader(filesToMapHeader);
+		setShowColMapModal(true);
+	};
+
 	const value = {
 		state: state,
 		action: {
 			setFileType,
 			setFilesToMapHeader,
 			setTableData,
-			setColMapData,
-			setFilesFromDropFileInput,
 			setShowParsingSpinner,
+			setShowColMapModal,
+			setSupportedColumns,
+			editFile,
+			setShowPackDataCellInput,
 		},
 	};
 	return <FileUploadContext.Provider value={value}>{children}</FileUploadContext.Provider>;

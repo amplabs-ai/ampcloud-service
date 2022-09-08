@@ -29,7 +29,7 @@ def init_file_upload_service(email, request):
             "anode": data.get('anode'),
             "cathode": data.get('cathode'),
             "source": data.get('source'),
-            "ah": float(data.get('ah') or 0.0),
+            "ah": float(data.get('ah'))if data.get('active_mass') else None,
             "form_factor": data.get('form_factor'),
             "test": data.get('test_type'),
             "email": email,
@@ -39,26 +39,27 @@ def init_file_upload_service(email, request):
         if test_type == archive_constants.TEST_TYPE.CYCLE.value:
             test_metadata = pd.DataFrame([{
                 "cell_id": data.get('cell_id'),
-                "temperature": float(data.get('temperature') or 0.0),
-                "soc_max": float(data.get('soc_max') or 0.0),
-                "soc_min": float(data.get('soc_min') or 0.0),
-                "crate_c": float(data.get('crate_c') or 0.0),
-                "crate_d": float(data.get('crate_d') or 0.0),       
+                "temperature": float(data.get('temperature'))if data.get('temperature') else None,
+                "soc_max": float(data.get('soc_max'))if data.get('soc_max') else None,
+                "soc_min": float(data.get('soc_min'))if data.get('soc_min') else None,
+                "crate_c": float(data.get('crate_c'))if data.get('crate_c') else None,
+                "crate_d": float(data.get('crate_d'))if data.get('crate_d') else None,       
                 "email": email
             }])
         else:
             test_metadata = pd.DataFrame([{
                 "cell_id": data.get('cell_id'),
-                "thickness": float(data.get('thickness') or 0.0),
-                "temperature": float(data.get('temperature') or 0.0),
-                "v_init": float(data.get('v_init') or 0.0),
-                "nail_speed": float(data.get('nail_speed') or 0.0),
-                "indentor": float(data.get('indentor') or 0.0),
+                "thickness": float(data.get('thickness'))if data.get('active_mass') else None,
+                "temperature": float(data.get('temperature'))if data.get('active_mass') else None,
+                "v_init": float(data.get('v_init'))if data.get('active_mass') else None,
+                "nail_speed": float(data.get('nail_speed'))if data.get('active_mass') else None,
+                "indentor": float(data.get('indentor'))if data.get('active_mass') else None,
                 "email": email
             }])
 
         status[f"{email}|{data.get('cell_id')}"] = {
             "dataframes": [],
+            "column_mappings": data.get('column_mappings'),
             "progress": {'percentage': 1, 'message': "IN PROGRESS", "steps": OrderedDict([
                 ("READ FILE", False),
                 ("STATS CALCULATION", False),
@@ -71,13 +72,13 @@ def init_file_upload_service(email, request):
     return 200, "Success"
 
 
-def file_data_read_service(tester, file):
+def file_data_read_service(tester, file,column_mapping):
     if tester == TESTER.ARBIN.value:
         data = read_arbin(file)
     if tester == TESTER.MACCOR.value:
         data = read_maccor(file)
     if tester == TESTER.GENERIC.value:
-        data = read_generic(file)
+        data = read_generic(file,column_mapping= column_mapping)
     if tester == TESTER.ORNL.value:
         data = read_ornlabuse(file)
     if tester == TESTER.SNL.value:

@@ -80,7 +80,7 @@ paths:
                     type: string
                     nullable: true
                   ah:
-                    type: integer
+                    type: string
                     nullable: true
                   form_factor:
                     type: string
@@ -216,25 +216,25 @@ paths:
                   cell_id:
                     type: string
                   crate_c:
-                    type: integer
+                    type: string
                     nullable: true
                   crate_d:
-                    type: integer
+                    type: string
                     nullable: true
                   soc_max:
-                    type: integer
+                    type: string
                     nullable: true
                   soc_min:
-                    type: integer
+                    type: string
                     nullable: true
                   temperature:
-                    type: integer
+                    type: string
                     nullable: true
                   v_max:
-                    type: integer
+                    type: string
                     nullable: true
                   v_min:
-                    type: integer
+                    type: string
                     nullable: true
                 required:
                   - index
@@ -368,6 +368,8 @@ paths:
                   is_public:
                     type: boolean
                     example: true
+                  column_mappings:
+                    type: object
                 required:
                   - cell_id
                   - test_type
@@ -541,96 +543,6 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
-  /echarts/cycleQuantitiesByStep:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches cycle quantities by step query results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_cycle_quantities_by_step
-      tags:
-        - Echart - Get json data required for plotting
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-        - name: step
-          in: query
-          description: steps
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: integer
-            example: 500
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong
-  /echarts/energyAndCapacityDecay:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches energy and capacity decay query results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_energy_and_capacity_decay
-      tags:
-        - Echart - Get json data required for plotting
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong"
-  /echarts/efficiency:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches efficiency query results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_efficiency
-      tags:
-        - Echart - Get json data required for plotting
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong
   /echarts/capacityRetention:
     post:
       security:
@@ -733,147 +645,6 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
-  # /echarts/compareByCycleTime:
-  #   get:
-  #     security:
-  #       - {}
-  #       - BearerAuth: []
-  #     summary: Fetches comapre cycle voltage and current query results
-  #     x-openapi-router-controller: app.controllers.echarts_controller
-  #     operationId: get_compare_by_cycle_time
-  #     tags:
-  #       - Echart - Get json data required for plotting
-  #     parameters:
-  #       - name: cell_id
-  #         in: query
-  #         description: Cell ID
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: array
-  #           items:
-  #             type: string
-  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-  #     responses:
-  #       "200":
-  #         description: Successfull response
-  #       "500":
-  #         description: Something went wrong
-  # /echarts/forceAndDisplacement:
-  #   get:
-  #     security:
-  #       - {}
-  #       - BearerAuth: []
-  #     summary: Fetches force and displacement query results
-  #     x-openapi-router-controller: app.controllers.echarts_controller
-  #     operationId: get_force_and_displacement
-  #     tags:
-  #       - Echart - Get json data required for plotting
-  #     parameters:
-  #       - name: cell_id
-  #         in: query
-  #         description: Cell ID
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: array
-  #           items:
-  #             type: string
-  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-  #       - name: sample
-  #         in: query
-  #         description: sample
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: integer
-  #           items:
-  #             type: integer
-  #             example: 50
-  #     responses:
-  #       "200":
-  #         description: Successfull response
-  #       "500":
-  #         description: Something went wrong
-  # /echarts/testTempratures:
-  #   get:
-  #     security:
-  #       - {}
-  #       - BearerAuth: []
-  #     summary: Fetches test tempratures query results
-  #     x-openapi-router-controller: app.controllers.echarts_controller
-  #     operationId: get_test_tempratures
-  #     tags:
-  #       - Echart - Get json data required for plotting
-  #     parameters:
-  #       - name: cell_id
-  #         in: query
-  #         description: Cell ID
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: array
-  #           items:
-  #             type: string
-  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-  #       - name: sample
-  #         in: query
-  #         description: sample
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: integer
-  #           items:
-  #             type: integer
-  #             example: 50
-  #     responses:
-  #       "200":
-  #         description: Successfull response
-  #       "500":
-  #         description: Something went wrong
-  # /echarts/voltage:
-  #   get:
-  #     security:
-  #       - {}
-  #       - BearerAuth: []
-  #     summary: Fetches voltage query results
-  #     x-openapi-router-controller: app.controllers.echarts_controller
-  #     operationId: get_voltage
-  #     tags:
-  #       - Echart - Get json data required for plotting
-  #     parameters:
-  #       - name: cell_id
-  #         in: query
-  #         description: Cell ID
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: array
-  #           items:
-  #             type: string
-  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-  #       - name: sample
-  #         in: query
-  #         description: sample
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: integer
-  #           items:
-  #             type: integer
-  #             example: 50
-  #     responses:
-  #       "200":
-  #         description: Successfull response
-  #       "500":
-  #         description: Something went wrong
   /download/cells/cycle_data_json:
     get:
       security:

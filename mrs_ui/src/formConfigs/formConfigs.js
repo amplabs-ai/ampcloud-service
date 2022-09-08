@@ -15,4 +15,6 @@ export const inputType = {
 	soc_min: "number",
 	crate_c: "number",
 	crate_d: "number",
+	v_max: "number",
+	v_min: "number"
 };

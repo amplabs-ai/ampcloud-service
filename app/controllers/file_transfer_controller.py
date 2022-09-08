@@ -38,7 +38,8 @@ def upload_file(tester):
     try:
         start_time = datetime.datetime.now()
         file = request.files['file']
-        df = file_data_read_service(tester, file)
+        column_mapping = status[f"{email}|{data['cell_id']}"]['column_mappings']
+        df = file_data_read_service(tester, file, column_mapping)
         end_time = datetime.datetime.now()
         read_time = (end_time - start_time).total_seconds()*1000
 

@@ -1,66 +1,58 @@
-import React, { useEffect, useState } from "react";
-import { Form, Input, List, Select } from "antd";
-import stringSimilarity from "string-similarity";
+import React from "react";
+import { Checkbox, Divider, Form, Input, Select } from "antd";
+import { useUserPlan } from "../../context/UserPlanContext";
 
 const { Option } = Select;
 
-const ColumnMapForm = ({ headers, options, fileName, onValChange }) => {
-	const [dataSource, setDataSource] = useState([]);
+const ColumnMapForm = ({ formInfo, options, onColMapChange, onFileInfoInputChange }) => {
+	const userPlan = useUserPlan();
 
-	const onChange = (value, item) => {
-		onValChange(item, value, fileName);
+	const onHeaderMapChange = (item, value) => {
+		console.log("onHeaderMapChange", value, item);
+		onColMapChange(item, value, formInfo.fileName);
 	};
 
-	useEffect(() => {
-		let ops = Object.keys(options);
-		if (!(headers && headers.length && ops.length)) {
-			return;
-		}
-		const getDefaultValue = (item) => {
-			let matches = stringSimilarity.findBestMatch(item, ops);
-			let res = matches.bestMatch.rating >= 0.2 ? matches.bestMatch.target : "";
-			return options[res] || "";
-		};
-		let countMissingHeader = 0;
-		let data = headers.map((h) => {
-			let header = {};
-			if (!h) {
-				countMissingHeader++;
-				h = `--missing header(${countMissingHeader})--`;
-				header.defaultValue = "";
-			} else {
-				header.defaultValue = getDefaultValue(h);
-			}
-			onValChange(h, header.defaultValue, fileName);
-			header.name = h;
-			return header;
-		});
-		setDataSource(data);
-	}, [headers, options]);
+	const fileInputChange = (item, value) => {
+		onFileInfoInputChange(item, value, formInfo.fileName);
+	};
 
 	return (
 		<div style={{ maxHeight: "50vh", overflowY: "scroll", paddingRight: "10px" }}>
 			<Form
-				// initialValues={initialValues}
 				labelCol={{
 					span: 10,
 				}}
 				wrapperCol={{
 					span: 14,
 				}}
-				// form={formInstance}
 			>
-				{dataSource.map((item) => (
-					<Form.Item name={item.name} label={item.name} key={item.name}>
+				<div className="row">
+					<div className="col-md-6">
+						<Form.Item name="cell_id" label="Cell Id">
+							<Input defaultValue={formInfo.cellId} onChange={(e) => fileInputChange("cellId", e.target.value)} />
+						</Form.Item>
+					</div>
+					<div className="col-md-6">
+						<Form.Item name="isPublic" label="isPublic?">
+							<Checkbox
+								checked={formInfo.isPublic}
+								disabled={userPlan.includes("COMMUNITY")}
+								onChange={(e) => fileInputChange("isPublic", e.target.checked)}
+							></Checkbox>
+						</Form.Item>
+					</div>
+				</div>
+				<Divider className="m-0 p-1" />
+				{Object.keys(formInfo.mappings).map((item) => (
+					<Form.Item name={item} label={item} key={item}>
 						<Select
 							style={{
 								minWidth: 120,
 							}}
-							onChange={(val) => onChange(val, item.name)}
+							onChange={(val) => onHeaderMapChange(item, val)}
 							dropdownMatchSelectWidth={false}
 							placement="bottomRight"
-							defaultValue={item.defaultValue}
-							// value={item.value}
+							defaultValue={formInfo.mappings[item]}
 							showSearch
 						>
 							{Object.keys(options).map((o) => (
