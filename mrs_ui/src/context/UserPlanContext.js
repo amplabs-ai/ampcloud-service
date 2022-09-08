@@ -13,31 +13,21 @@ export const UserPlanProvider = ({ children }) => {
 	const auth0 = useAuth0();
 
 	useEffect(() => {
-		if (accessToken) {
-			axios
-				.get("/user/get_user_plan", {
-					headers: {
-						Authorization: `Bearer ${accessToken}`,
-					},
-				})
-				.then(function (response) {
-					let res = response?.data?.records[0][0];
-					if (res) {
-						setUserPlan(res.plan_type);
-					}
-				})
-				.catch((err) => {
-				});
-		}
+		if (!accessToken) return;
+		axios
+			.get("/user/get_user_plan", {
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
+			})
+			.then(function (response) {
+				let res = response?.data?.records[0][0];
+				if (res) {
+					setUserPlan(res.plan_type);
+				}
+			})
+			.catch((err) => {});
 	}, [accessToken]);
-
-	// if (!userPlan) {
-	// 	return (
-	// 		<div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
-	// 			<Spin size="large" />
-	// 		</div>
-	// 	);
-	// }
 
 	return <UserPlanContext.Provider value={userPlan}>{children}</UserPlanContext.Provider>;
 };

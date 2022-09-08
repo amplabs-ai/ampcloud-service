@@ -11,8 +11,6 @@ import BulkUploadProgress from "./BulkUploadProgress";
 import pako from "pako";
 
 const BulkUpload = () => {
-	const [newFiles, setNewFiles] = useState([]);
-	const [tableData, setTableData] = useState([]);
 	const [showProgress, setShowProgress] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState({});
 	const [getStatusIntervalId, setGetStatusIntervalId] = useState(null);
@@ -22,38 +20,28 @@ const BulkUpload = () => {
 	const { user } = useAuth0();
 	const accessToken = useAuth0Token();
 
-	// const handleFileChange = (files) => {
-	// 	setUploadProgress({});
-	// 	setNewFiles(files);
-	// };
-
 	const {
-		state: { filesFromDropFileInput },
+		state: { tableData },
 		action,
 	} = useFileUpload();
-
-	useEffect(() => {
-		setUploadProgress({});
-		setNewFiles(filesFromDropFileInput);
-	}, [filesFromDropFileInput]);
 
 	const doFileUpload = () => {
 		for (const eachFile of tableData) {
 			let prog = {
 				detail: "",
 				percentage: 1,
-				cellId: eachFile.cell_id,
+				cellId: eachFile.cellId,
 				size: eachFile.file.size,
 			};
 			setUploadProgress((prev) => {
 				return {
 					...prev,
-					[eachFile.cell_id]: prog,
+					[eachFile.cellId]: prog,
 				};
 			});
-
 			const formData = new FormData();
 			const reader = new FileReader();
+			/* eslint-disable */
 			reader.onload = (e) => {
 				const fileAsArray = new Uint8Array(e.target.result);
 				const compressedFileArray = pako.gzip(fileAsArray);
@@ -63,7 +51,7 @@ const BulkUpload = () => {
 				});
 				const fileToUpload = new Blob([dataToUpload], { type: eachFile.type });
 				formData.append("file", fileToUpload, eachFile.name);
-				formData.append("cell_id", eachFile.cell_id);
+				formData.append("cell_id", eachFile.cellId);
 				axios
 					.post("/upload/cells/generic", formData, {
 						signal: controller.current.signal,
@@ -76,18 +64,18 @@ const BulkUpload = () => {
 							prog = {
 								detail: percentage === 100 ? "completed" : "in progress",
 								percentage: percentage,
-								cellId: eachFile.cell_id,
+								cellId: eachFile.cellId,
 								step: "Uploading",
 								size: eachFile.file.size,
 							};
 							setUploadProgress((prev) => {
 								return {
 									...prev,
-									[eachFile.cell_id]: prog,
+									[eachFile.cellId]: prog,
 								};
 							});
 							if (percentage === 100) {
-								getStatus(eachFile.cell_id);
+								getStatus(eachFile.cellId);
 							}
 						},
 					})
@@ -102,7 +90,6 @@ const BulkUpload = () => {
 						console.error("file upload err", error);
 					});
 			};
-
 			reader.readAsArrayBuffer(eachFile.file);
 		}
 	};
@@ -159,35 +146,13 @@ const BulkUpload = () => {
 		setGetStatusIntervalId(idInterval);
 	};
 
-	const confirmUniqueCellIds = () => {
-		const cellIdsArray = tableData.map((eachFile) => {
-			const { cell_id } = eachFile;
-			return { cellId: cell_id.trim() };
-		});
-		const valueArr = cellIdsArray.map((item) => item.cellId);
-		const isDuplicate = valueArr.some((item, idx) => valueArr.indexOf(item) !== idx);
-		return isDuplicate;
-	};
-
 	const handleUpload = () => {
-		if (!tableData.length) {
-			message.warning("There are no files to Upload");
-			message.warning("There are no files to Upload");
-			return;
-		}
-		if (confirmUniqueCellIds()) {
-			message.warning("Please Provide Unique Values of Cell Ids(dupilication is NOT allowed)");
-			message.warning("Please Provide Unique Values of Cell Ids(dupilication is NOT allowed)");
-			return;
-		}
 		setShowProgress(true);
-		const intialRequestedBody = tableData.map((eachFile) => {
-			let tempObject = { ...eachFile };
-			delete tempObject.file;
-			return tempObject;
+		const initialRequestBody = tableData.forEach((file) => {
+			delete file.file;
 		});
 		axios
-			.post("/upload/cells/initialize", JSON.stringify(intialRequestedBody), {
+			.post("/upload/cells/initialize", JSON.stringify(initialRequestBody), {
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${accessToken}`,
@@ -230,8 +195,8 @@ const BulkUpload = () => {
 	}, []);
 
 	return (
-		<>
-			<PageHeader className="site-page-header mb-1 shadow " title="Upload" ghost={false}></PageHeader>
+		<div className="p-2 mt-1">
+			<PageHeader className="site-page-header mb-1 " title="Upload" ghost={false}></PageHeader>
 			{showProgress ? (
 				<BulkUploadProgress progressObject={uploadProgress} />
 			) : (
@@ -239,16 +204,12 @@ const BulkUpload = () => {
 					<div className="container mt-3">
 						<BulkUploadDropFileInput />
 					</div>
-					<div className="mb-5">
-						<BulkUploadPageTable
-							newFiles={newFiles}
-							onUpload={handleUpload}
-							onGetTableData={(val) => setTableData(val)}
-						/>
+					<div>
+						<BulkUploadPageTable onUpload={handleUpload} />
 					</div>
 				</div>
 			)}
-		</>
+		</div>
 	);
 };
 
