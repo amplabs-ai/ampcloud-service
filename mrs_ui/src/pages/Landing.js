@@ -36,7 +36,7 @@ const Landing = () => {
                                 flexDirection: "column",
                             }}
                         >
-                            <span className="display-4 text-center mb-3" style={{ fontSize: 80 }}><b>Big Data to Build Better <br/>Batteries</b></span>
+                            <span className="display-4 text-center mb-3" style={{ fontSize: 80 }}><b>Build Better Batteries</b></span>
                             <p className="para" style={{ lineHeight: "1.6", padding: "0px 90px" }}>
                                 AmpLabs builds tools for scientists, researchers, and engineers to modernize our energy systems.
                             </p>

@@ -46,8 +46,8 @@ const initialChartFilters = {
 	coulombicEfficiency: [{ column: null, operation: null, filterValue: null }],
 	differentialCapacity: [{ column: 'reduction_factor', operation: '=', filterValue: '10' },{ column: 'test_datapoint_ordinal', operation: '%', filterValue: '10' }, { column: 'cycle_index', operation: '%', filterValue: '100' }],
 	galvanostaticPlot: [{ column: 'cycle_index', operation: '%', filterValue: '100' }],
-	voltageTime: [{ column: 'test_datapoint_ordinal', operation: '%', filterValue: '10' }],
-	currentTime: [{ column: 'test_datapoint_ordinal', operation: '%', filterValue: '10' }],
+	voltageTime: [{ column: 'test_datapoint_ordinal', operation: '%', filterValue: '100' }],
+	currentTime: [{ column: 'test_datapoint_ordinal', operation: '%', filterValue: '100' }],
 	energyDensity: [{ column: 'cycle_index', operation: '%', filterValue: '100' }]
 }
 export { initialChartOptions, scatterPlotChartId, initialChartFilters };

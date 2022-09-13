@@ -3,7 +3,7 @@ import { audit } from "../../auditAction/audit";
 import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../../chartConfig/cellIdViewCode";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
 import { SearchOutlined } from "@ant-design/icons";
-import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography, Switch } from "antd";
+import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography, Switch, Radio } from "antd";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import axios from "axios";
 import Highlighter from "react-highlight-words";
@@ -69,6 +69,17 @@ const DashboardFilterBar = (props) => {
 		}
 	}, [state.selectedCellIds, accessToken, userPlan]);
 
+	const handleValueChange = (e) => {
+		if(e.target.value === "standard_plot"){
+			action.loadCellData(state.selectedCellIds, "type-2")
+		}
+		else if(e.target.value === "custom_plot"){
+			action.plotCellData(state.selectedCellIds);
+		}
+		else{
+			action.editCellData(state.selectedCellIds)
+		}
+	  };
 	const onVisibilityToggle = (record, checked) => {
 		// setLoading(true);
 		axios
@@ -391,7 +402,21 @@ const DashboardFilterBar = (props) => {
 					/>
 
 					<span style={{ float: "right", fontSize: "0.9rem" }}>
-					<Button
+					<Radio.Group
+						onChange={handleValueChange}
+						value={
+							state.shallShowSecondChart ? "standard_plot" : 
+							state.shallShowMeta ? "custom_plot" : 
+							"metadata"}
+						style={{
+						marginBottom: 8,
+						}}
+					>
+						<Radio.Button value="standard_plot">Standard Plots</Radio.Button>
+						<Radio.Button value="custom_plot">Custom Plots</Radio.Button>
+						<Radio.Button value="metadata">Metadata</Radio.Button>
+					</Radio.Group>
+					{/* <Button
 						disabled={state.disableSelection}
 						key="1"
 						size="medium"
@@ -410,8 +435,9 @@ const DashboardFilterBar = (props) => {
 						onClick={() => {action.editCellData(state.selectedCellIds)}}
 					>
 						Metadata
-					</Button>
-					<Text type="secondary">{state.dashboardType === "private" ? (
+					</Button> */}
+					<Text type="secondary">
+					{/* {state.dashboardType === "private" ? (
 							<DashboardShareButton
 								ref={dashboardRef}
 								cellIds={state.selectedCellIds}
@@ -419,7 +445,8 @@ const DashboardFilterBar = (props) => {
 								step={state.appliedStep}
 								dashboard="cycle"
 							/>
-						) : null}  Total: {cellIds.length}</Text>
+						) : null}   */}
+						Total: {cellIds.length}</Text>
 					</span>
 					<br />
 					<Table

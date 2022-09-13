@@ -334,7 +334,7 @@ const SideBar = (props) => {
 							</div>
 							<div className="col-md-6">
 								<Button type="primary" block onClick={() => onLoad("type-2")} disabled={!checkedKeys.length}>
-									Plot
+									Load
 								</Button>
 							</div>
 						</div>

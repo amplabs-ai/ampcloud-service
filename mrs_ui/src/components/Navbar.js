@@ -143,7 +143,7 @@ const Navbar = () => {
 										</Link>
 									</Dropdown> */}
 									<Link className="nav-link" to="/dashboard">
-										Data
+										View Data
 									</Link>
 								</li>
 
