@@ -16,7 +16,6 @@ import DashboardFilterBar from "./DashboardFilterBar";
 const { Content } = Layout;
 
 const Dashboard = (props) => {
-
 	const { state, action, dashboardRef } = useDashboard();
 	const accessToken = useAuth0Token();
 	// if used in shared dashboard
@@ -93,10 +92,13 @@ const Dashboard = (props) => {
 					></PageHeader> */}
 					<Layout hasSider>
 						{props.type === "shared" ? null : <SideBar page="dashboard" />}
-						<Layout className="site-layout" style={{ marginLeft: "auto" }}>
-							<Content>
-								{state.shallShowFilterBar ?
-								(<DashboardFilterBar/>) : null}
+						<Layout className="site-layout" style={{ marginLeft: "auto", height: "90vh" }}>
+							<Content
+								style={{
+									overflow: "auto",
+								}}
+							>
+								{state.shallShowFilterBar ? <DashboardFilterBar /> : null}
 								{state.shallShowEdit ? (
 									<ViewMetadata />
 								) : state.shallShowMeta ? (
@@ -104,7 +106,7 @@ const Dashboard = (props) => {
 								) : state.shallShowSecondChart ? (
 									<ChartContainerType2 />
 								) : (
-									<DefaultDashboard/>
+									<DefaultDashboard />
 								)}
 							</Content>
 						</Layout>
