@@ -5,42 +5,48 @@ import "antd/dist/antd.css";
 import Table from "ant-responsive-table";
 import Tutorial from "../tutorial/Tutorial";
 import SummaryChart from "../summary-charts/SummaryChart";
+import axios from "axios";
 
 const { Title } = Typography;
 
 const DefaultDashboard = () => {
-	const [cathodeTypesSummary, setCathodeTypesSummary] = useState([]);
-	const [formFactorTypesSummary, setFormFactorTypesSummary] = useState([]);
+	const [summaryData, setSummaryData] = useState({});
 	const { user } = useAuth0();
 	const name = user.email.split("@")[0];
 	const cardTitle = <div className="text-center">Summary</div>;
 
+	const dummy = [
+		{
+			cathode_stats: [
+				{
+					cathode: "NMC",
+					count: 2,
+				},
+			],
+			cell_id_count: 53,
+			cycle_count: 10968,
+			form_factor_stats: [
+				{
+					count: 2,
+					form_factor: "NA",
+				},
+			],
+			size: 2.13594067,
+		},
+	];
+
 	useEffect(() => {
 		const getSummaryData = () => {
-			setTimeout(() => {
-				setCathodeTypesSummary([
-					{
-						name: "type1",
-						count: 12,
-					},
-					{
-						name: "type12",
-						count: 1000,
-					},
-				]);
-			}, 4000);
-			setTimeout(() => {
-				setFormFactorTypesSummary([
-					{
-						name: "type1",
-						count: 12,
-					},
-					{
-						name: "type12",
-						count: 1000,
-					},
-				]);
-			}, 2000);
+			axios
+				.get("/echarts/metadataSummary")
+				.then((res) => {
+					console.log("summaryData", res);
+					let summaryData = res.data.records[0];
+					setSummaryData(summaryData);
+				})
+				.catch((error) => {
+					console.log("error :>> ", error);
+				});
 		};
 		getSummaryData();
 	}, []);
@@ -74,24 +80,24 @@ const DefaultDashboard = () => {
 						cell.
 					</p>
 				</div>
-				<Card title={cardTitle} bordered={false} loading={!cathodeTypesSummary.length}>
+				<Card title={cardTitle} bordered={false} loading={!Object.keys(summaryData).length}>
 					<div className="row">
 						<div className="col-md-4 text-center">
-							<Statistic title="Cells" value={112893} />
+							<Statistic title="Cells" value={summaryData.cell_id_count} />
 						</div>
 						<div className="col-md-4 text-center">
-							<Statistic title="Cycles" value={112893} />
+							<Statistic title="Cycles" value={summaryData.cycle_count} />
 						</div>
 						<div className="col-md-4 text-center">
-							<Statistic title="GBs" value={112893} />
+							<Statistic title="GBs" value={Math.round(summaryData.size * 100) / 100} />
 						</div>
 					</div>
 					<div className="row justify-content-around my-3">
 						<div className="col-md-6">
-							<SummaryChart data={cathodeTypesSummary} title="Cathode Types" />
+							<SummaryChart data={summaryData.cathode_stats} title="Cathode" type="cathode_stats" />
 						</div>
 						<div className="col-md-6">
-							<SummaryChart data={formFactorTypesSummary} title="Form-Factor Types" />
+							<SummaryChart data={summaryData.form_factor_stats} title="Form-Factor" type="form_factor_stats" />
 						</div>
 					</div>
 				</Card>

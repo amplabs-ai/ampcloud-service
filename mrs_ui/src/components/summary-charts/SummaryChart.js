@@ -1,42 +1,7 @@
 import React from "react";
 import ReactEcharts from "echarts-for-react";
 
-const summaryData = [
-	{
-		name: "type1",
-		count: 1300000000000090,
-	},
-	{
-		name: "type2",
-		count: 1000,
-	},
-	{
-		name: "type3",
-		count: 1400,
-	},
-	{
-		name: "type4",
-		count: 800,
-	},
-	{
-		name: "type5",
-		count: 12,
-	},
-	{
-		name: "type6",
-		count: 1000,
-	},
-	{
-		name: "type7",
-		count: 12,
-	},
-	{
-		name: "type8",
-		count: 1000,
-	},
-];
-
-const SummaryChart = ({ title }) => {
+const SummaryChart = ({ title, type, data }) => {
 	return (
 		<div>
 			<ReactEcharts
@@ -54,10 +19,14 @@ const SummaryChart = ({ title }) => {
 					series: [
 						{
 							type: "bar",
+							encode: {
+								x: type,
+								y: "count",
+							},
 						},
 					],
 					dataset: {
-						source: summaryData,
+						source: data,
 					},
 				}}
 			/>
