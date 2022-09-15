@@ -17,7 +17,7 @@ let CHART_API_ENDPOINTS = {
 	galvanostaticPlot: "/echarts/galvanostaticPlot",
 	voltageTime: "/echarts/voltageTime",
 	currentTime: "/echarts/currentTime",
-	energyDensity: "/echarts/energyDensity"
+	energyDensity: "/echarts/energyDensity",
 };
 
 const instance = new WorkerBuilder(Worker);
@@ -69,8 +69,9 @@ const ChartContainerType2 = () => {
 	const userPlan = useUserPlan();
 
 	useEffect(() => {
-		setChartLoadingError((prev)=> {
-			return {...prev,
+		setChartLoadingError((prev) => {
+			return {
+				...prev,
 				capacityRetention: false,
 				coulombicEfficiency: false,
 				differentialCapacity: false,
@@ -78,8 +79,8 @@ const ChartContainerType2 = () => {
 				voltageTime: false,
 				currentTime: false,
 				energyDensity: false,
-			}
-		})
+			};
+		});
 		let check = true;
 		Object.values(chartsLoaded).forEach((c) => {
 			if (!c) {
@@ -103,7 +104,7 @@ const ChartContainerType2 = () => {
 
 	useEffect(() => {
 		if (accessToken && state.checkedCellIds.length && userPlan) {
-			handleFilterChange(state.checkedCellIds, accessToken)
+			handleFilterChange(state.checkedCellIds, accessToken);
 		}
 	}, [state.selectedCellIds, accessToken, userPlan]);
 
@@ -117,30 +118,30 @@ const ChartContainerType2 = () => {
 			return;
 		}
 		let data = {
-			cell_ids: cellIds.map((c) => c.cell_id)
-		  };
+			cell_ids: cellIds.map((c) => c.cell_id),
+		};
 		let request = {
-		method: "post",
-		headers: {
-			Authorization: "Bearer " + accessToken,
-			"Content-Type": "application/json",
-		},
-		}
-		request.data = data
-		data.filters = initialChartFilters["differentialCapacity"]
+			method: "post",
+			headers: {
+				Authorization: "Bearer " + accessToken,
+				"Content-Type": "application/json",
+			},
+		};
+		request.data = data;
+		data.filters = initialChartFilters["differentialCapacity"];
 		_fetchData("differentialCapacity", request);
-		data.filters = initialChartFilters["galvanostaticPlot"]
+		data.filters = initialChartFilters["galvanostaticPlot"];
 		_fetchData("galvanostaticPlot", request);
-		data.filters = initialChartFilters["voltageTime"]
+		data.filters = initialChartFilters["voltageTime"];
 		_fetchData("voltageTime", request);
-		data.filters = initialChartFilters["currentTime"]
+		data.filters = initialChartFilters["currentTime"];
 		_fetchData("currentTime", request);
 
-		data.filters = []
+		data.filters = [];
 		_fetchData("coulombicEfficiency", request);
 		_fetchData("capacityRetention", request);
 		_fetchData("energyDensity", request);
-		
+
 		return true;
 	};
 
@@ -148,7 +149,7 @@ const ChartContainerType2 = () => {
 		switch (apiType) {
 			case "capacityRetention":
 				setChartLoadingError((prev) => {
-					return { ...prev, capacityRetention: show};
+					return { ...prev, capacityRetention: show };
 				});
 				break;
 			case "coulombicEfficiency":
@@ -190,7 +191,7 @@ const ChartContainerType2 = () => {
 		switch (apiType) {
 			case "capacityRetention":
 				setChartLoadSpiner((prev) => {
-					return { ...prev, capacityRetention: show};
+					return { ...prev, capacityRetention: show };
 				});
 				break;
 			case "coulombicEfficiency":
@@ -210,7 +211,6 @@ const ChartContainerType2 = () => {
 				break;
 			case "voltageTime":
 				setChartLoadSpiner((prev) => {
-					console.log("inside loaing spinner")
 					return { ...prev, voltageTime: show };
 				});
 				break;
@@ -238,20 +238,19 @@ const ChartContainerType2 = () => {
 			...request,
 			url: CHART_API_ENDPOINTS[apiType],
 			cancelToken: cancelReqToken[apiType].token,
-		  })
+		})
 			.then((result) => {
-				
 				result = typeof result.data == "string" ? JSON.parse(result.data.replace(/\bNaN\b/g, "null")) : result.data;
 				switch (apiType) {
 					case "capacityRetention":
 						setChartData((prev) => {
-							return { ...prev, capacityRetention: result.records[0]};
+							return { ...prev, capacityRetention: result.records[0] };
 						});
 						setFilteredData((prev) => {
-							return { ...prev, capacityRetention: result.records[0]};
+							return { ...prev, capacityRetention: result.records[0] };
 						});
 						setChartsLoaded((prev) => {
-							return { ...prev, capacityRetention: true};
+							return { ...prev, capacityRetention: true };
 						});
 						break;
 					case "coulombicEfficiency":
@@ -289,7 +288,6 @@ const ChartContainerType2 = () => {
 						break;
 					case "voltageTime":
 						setChartData((prev) => {
-							console.log("setting data")
 							return { ...prev, voltageTime: result.records[0] };
 						});
 						setFilteredData((prev) => {
@@ -327,7 +325,7 @@ const ChartContainerType2 = () => {
 				handleChartLoadSpinner(apiType, false);
 			})
 			.catch((err) => {
-				console.log(err)
+				console.log(err);
 				if (err.response.data.status === 400) {
 					message.error(err.response.data.detail);
 					message.error(err.response.data.detail);
@@ -337,8 +335,9 @@ const ChartContainerType2 = () => {
 	};
 
 	useEffect(() => {
-		setChartLoadingError((prev)=> {
-			return {...prev,
+		setChartLoadingError((prev) => {
+			return {
+				...prev,
 				capacityRetention: false,
 				coulombicEfficiency: false,
 				differentialCapacity: false,
@@ -346,8 +345,8 @@ const ChartContainerType2 = () => {
 				voltageTime: false,
 				currentTime: false,
 				energyDensity: false,
-			}
-		})
+			};
+		});
 		let check = true;
 		Object.values(chartsLoaded).forEach((c) => {
 			if (!c) {
@@ -381,11 +380,7 @@ const ChartContainerType2 = () => {
 
 	return (
 		<div>
-			<ViewCodeModal
-				code={codeContent}
-				modalVisible={modalVisible}
-				setModalVisible={setModalVisible}
-			/>
+			<ViewCodeModal code={codeContent} modalVisible={modalVisible} setModalVisible={setModalVisible} />
 			{loading ? (
 				<div className="text-center mt-5">
 					<Spin size="large" />

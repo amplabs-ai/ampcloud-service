@@ -9,17 +9,20 @@ export const DashboardProvider = ({ children }) => {
 	const userPlan = useUserPlan();
 
 	const loadCellData = (selectedCellIds, dashboardType) => {
-		if(dashboardType === "type-2"){
-			let cellIdsChanged = !(state.selectedCellIds.every(v => selectedCellIds.includes(v)) && state.selectedCellIds.length === selectedCellIds.length)
-			if(cellIdsChanged || !state.shallShowSecondChart)
-			{dispatch({
-				type: "LOAD_CELL_IDS_SECOND_DASHBOARD",
-				payload: {
-					selectedCellIds
-				},
-			});}
-		}
-		else {
+		if (dashboardType === "type-2") {
+			let cellIdsChanged = !(
+				state.selectedCellIds.every((v) => selectedCellIds.includes(v)) &&
+				state.selectedCellIds.length === selectedCellIds.length
+			);
+			if (cellIdsChanged || !state.shallShowSecondChart) {
+				dispatch({
+					type: "LOAD_CELL_IDS_SECOND_DASHBOARD",
+					payload: {
+						selectedCellIds,
+					},
+				});
+			}
+		} else {
 			dispatch({
 				type: "LOAD_CELL_IDS",
 				payload: {
@@ -95,20 +98,24 @@ export const DashboardProvider = ({ children }) => {
 			selectedCellIdsAfterRefresh = selectedCellIdsAfterRefresh.filter((cell) => !cell.includes(cellIdDeleted));
 		}
 
-		if(cellIdVisibilityUpdated){
-			selectedCellIdsAfterRefresh = selectedCellIdsAfterRefresh.map(element => 
-				element.split("_")[0] === cellIdVisibilityUpdated.index ? `${cellIdVisibilityUpdated.index}_${cellIdVisibilityUpdated.visibility}_${cellIdVisibilityUpdated.cell_id}` : element	
+		if (cellIdVisibilityUpdated) {
+			selectedCellIdsAfterRefresh = selectedCellIdsAfterRefresh.map((element) =>
+				element.split("_")[0] === cellIdVisibilityUpdated.index
+					? `${cellIdVisibilityUpdated.index}_${cellIdVisibilityUpdated.visibility}_${cellIdVisibilityUpdated.cell_id}`
+					: element
 			);
 		}
-		if(cellIdUpdated){
-			selectedCellIdsAfterRefresh = cellIdUpdated.map(element => {
-				let cell = selectedCellIdsAfterRefresh.find(item => {return item.split("_")[0] == element.index})
-				return `${element.index}_${cell.split("_")[1]}_${element.cell_id}`	
-		});
+		if (cellIdUpdated) {
+			selectedCellIdsAfterRefresh = cellIdUpdated.map((element) => {
+				let cell = selectedCellIdsAfterRefresh.find((item) => {
+					return item.split("_")[0] == element.index;
+				});
+				return `${element.index}_${cell.split("_")[1]}_${element.cell_id}`;
+			});
 		}
 		dispatch({
 			type: "REFRESH_SIDEBAR",
-			payload: { selectedCellIdsAfterRefresh, dashboardType},
+			payload: { selectedCellIdsAfterRefresh, dashboardType },
 		});
 	};
 
@@ -145,10 +152,10 @@ export const DashboardProvider = ({ children }) => {
 		dispatch({
 			type: "SET_DISABLE_SELECTION",
 			payload: {
-				disableSelection: value
-			}
-		})
-	}
+				disableSelection: value,
+			},
+		});
+	};
 
 	const value = {
 		state: state,

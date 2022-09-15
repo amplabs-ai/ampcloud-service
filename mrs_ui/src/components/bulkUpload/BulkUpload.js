@@ -153,8 +153,8 @@ const BulkUpload = () => {
 				cell_id: file.cellId,
 				is_public: file.isPublic,
 				column_mappings: file.mappings,
-				test_type: "cycle"
-			}
+				test_type: "cycle",
+			};
 		});
 		axios
 			.post("/upload/cells/initialize", JSON.stringify(initialRequestBody), {
@@ -185,7 +185,10 @@ const BulkUpload = () => {
 
 	useEffect(() => {
 		if (isRedirection()) {
-			setTimeout(() => navigate("/dashboard"), 1000);
+			setTimeout(
+				() => navigate("/dashboard", { state: { cellIds: tableData.map((t) => t.cellId), from: "upload" } }),
+				1000
+			);
 		}
 	}, [uploadProgress]);
 

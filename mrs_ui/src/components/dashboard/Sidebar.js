@@ -46,8 +46,6 @@ const _generateTreeData = (data, userPlan) => {
 				},
 			],
 		},
-
-
 	];
 	let amplabsDirInfo = {};
 	let dataMatrIoDirInfo = {
@@ -174,9 +172,6 @@ const SideBar = (props) => {
 		if (accessToken && userPlan) {
 			setIsCelldataLoaded(false);
 			let endpoint = "/cells/cycle/meta";
-			// const accessToken = await getAccessTokenSilently();
-			// setCheckedCellIds([]);
-			// setCheckedKeys([]);
 			axios
 				.get(endpoint, {
 					headers: {
@@ -186,41 +181,31 @@ const SideBar = (props) => {
 				.then((res) => {
 					if (res.status === 200 && res.data) {
 						let treeData = _generateTreeData(res.data.records[0], userPlan);
+						console.log("treeData", treeData);
 						setTreeData(treeData);
-						navigate(location.pathname, { replace: true });
-
-						if (location.state !== null) {
-							let key = ""
-							treeData[0].children.forEach((data) => {
-								if (data.key.includes(location.state?.cellId)) {
-									key = data.key
-									return false
+						// navigate(location.pathname, { replace: true });
+						if (location.state && location.state.cellIds && location.state.cellIds.length) {
+							let { cellIds } = location.state;
+							let data = [...treeData[1].children, ...treeData[0].children];
+							let checkedKeys = new Set();
+							data.forEach((data) => {
+								if (cellIds.includes(data.title)) {
+									checkedKeys.add(data.key);
 								}
-
-							})
-							if (key === "") {
-
-								treeData[1].children.forEach((data) => {
-									if (data.key.includes(location.state?.cellId)) {
-										key = data.key
-										return false
-									}
-								})
-							}
-							setCheckedKeys([key]);
-							setCheckedCellIds([key.substring(key.indexOf("_") + 1)]);
+							});
+							console.log("checkedKeys", checkedKeys);
+							checkedKeys = Array.from(checkedKeys);
+							setCheckedKeys(checkedKeys);
+							let checkedCellIds = checkedKeys.map((key) => key.substring(key.indexOf("_") + 1));
+							setCheckedCellIds(checkedCellIds);
 							if (location.state?.from === "upload") {
-								action.loadCellData([key.substring(key.indexOf("_") + 1)]);
+								action.loadCellData(checkedCellIds, "type-2");
+							} else {
+								action.plotCellData(checkedCellIds);
 							}
-							else {
-								action.plotCellData([key.substring(key.indexOf("_") + 1)]);
-							}
-
-
-						}
-						else{
-							setCheckedKeys(state.selectedCellIds.map(element => `cell_${element}`))
-							setCheckedCellIds(state.selectedCellIds)
+						} else {
+							setCheckedKeys(state.selectedCellIds.map((element) => `cell_${element}`));
+							setCheckedCellIds(state.selectedCellIds);
 						}
 						setFilteredTreeData(() => {
 							setIsCelldataLoaded(true);
@@ -352,8 +337,7 @@ const SideBar = (props) => {
 										checkedKeys={checkedKeys}
 										treeData={filteredTreeData}
 										autoExpandParent={true}
-										defaultExpandedKeys={["amplabs", "datamatrio", "private","public"]}
-
+										defaultExpandedKeys={["amplabs", "datamatrio", "private", "public"]}
 									/>
 								</>
 							) : (
@@ -361,10 +345,8 @@ const SideBar = (props) => {
 							)}
 						</div>
 					</>
-					{/* )} */}
 				</SimpleBarReact>
 			</Sider>
-			{/* <Divider type="vertical" className="handle" /> */}
 		</>
 	);
 };
