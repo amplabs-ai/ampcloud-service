@@ -645,6 +645,20 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
+  /echarts/metadataSummary:
+    get:
+      security:
+        - {}
+      summary: Returns public metadata summary
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_metadata_summary
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+          
   /download/cells/cycle_data_json:
     get:
       security:

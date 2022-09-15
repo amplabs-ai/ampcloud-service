@@ -215,3 +215,8 @@ def get_stats_columns_data():
     data = request.json
     status, detail, *records = get_stats_columns_data_service(data, email)
     return Response(status, detail, records).to_dict(), status
+
+
+def get_metadata_summary():
+    status, detail, *records = get_metadata_summary_service()
+    return Response(status, detail, records).to_dict(), status

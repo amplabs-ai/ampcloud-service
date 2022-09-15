@@ -354,3 +354,55 @@ FROM
 WHERE cell_id IN ({cell_ids}) and (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or email in (select distinct email from cell_metadata where is_public='true'))
     {filters} order by cell_id, cycle_index
 """
+
+COUNT_CATHODE_FILES = """
+    SELECT count(index), cathode
+    FROM cell_metadata 
+    WHERE cathode is NOT NULL and is_public is TRUE
+    GROUP BY cathode
+"""
+
+COUNT_FORM_FACTOR = """
+    SELECT count(index), form_factor
+    FROM cell_metadata
+    WHERE form_factor is NOT NULL and is_public is TRUE
+    GROUP BY form_factor
+"""
+
+PUBLIC_CELL_IDS = """
+  SELECT COUNT(index)
+  FROM cell_metadata
+  WHERE is_public is TRUE
+"""
+
+TOTAL_CYCLE_INDEX = """
+  SELECT COUNT(cycle_index)
+  FROM CYCLE_STATS 
+  JOIN cell_metadata
+  ON CYCLE_STATS.cell_id = cell_metadata.cell_id 
+  WHERE cell_metadata.is_public is TRUE
+"""
+
+SIZE_CELL_METADATA = """
+  SELECT (table_size/total_records)*total_public_records AS size 
+  FROM (SELECT pg_relation_size('cell_metadata') as table_size) AS A,
+  (select count(index) as total_records from cell_metadata) AS B, 
+  (select count(index)as total_public_records from cell_metadata where is_public is TRUE)AS C
+"""
+
+SIZE_CYCLE_STATS = """
+  SELECT (table_size/total_records)*total_public_records AS size 
+  FROM (SELECT pg_relation_size('cycle_stats') as table_size) AS A,
+  (select count(index) as total_records from cycle_stats) AS B, 
+  (select count(cycle_stats.index)as total_public_records from cycle_stats 
+    join cell_metadata on cycle_stats.cell_id = cell_metadata.cell_id
+    where cell_metadata.is_public is TRUE)AS C
+"""
+
+SIZE_CYCLE_TIMESERIES = """
+  select (table_size/total_records)*c as size from 
+  (select pg_relation_size('cycle_timeseries') as table_size, 
+  count(index) as total_records, count(index) filter 
+  (where cell_id in (select cell_id from cell_metadata where is_public is true)) 
+  as c from cycle_timeseries) as A;
+"""

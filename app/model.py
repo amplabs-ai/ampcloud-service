@@ -569,6 +569,34 @@ class ArchiveOperator:
             columns=columns, cell_ids=cell_ids, email=email, filters=filters))
         return result
 
+    def get_cathode_count_files_query(self):
+        result = self.session.execute(COUNT_CATHODE_FILES)
+        return result
+
+    def get_form_factor_count_files_query(self):
+        result = self.session.execute(COUNT_FORM_FACTOR)
+        return result
+
+    def get_public_files_count_query(self):
+        result = self.session.execute(PUBLIC_CELL_IDS)
+        return result
+
+    def get_cycle_index_count_query(self):
+        result = self.session.execute(TOTAL_CYCLE_INDEX)
+        return result
+
+    def get_size_cell_metadata_query(self):
+        result = self.session.execute(SIZE_CELL_METADATA)
+        return result
+
+    def get_size_cycle_stats_query(self):
+        result = self.session.execute(SIZE_CYCLE_STATS)
+        return result
+
+    def get_size_cycle_timeseries_query(self):
+        result = self.session.execute(SIZE_CYCLE_TIMESERIES)
+        return result
+
     # DASHBOARD
     def get_shared_dashboard_by_id(self, dashboard_id):
         return self.session.execute(f"select * from shared_dashboard where uuid = '{dashboard_id}'").fetchone()

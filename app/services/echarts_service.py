@@ -548,3 +548,58 @@ def __generate_filter_string(filters, rf = None):
     if rf:
         return filter_string, reduction_factor
     return filter_string
+
+def get_metadata_summary_service():
+    try:
+        ao = ArchiveOperator()
+        ao.set_session()
+        records = {}
+
+        archive_cells = ao.get_cathode_count_files_query()
+        cathode_values = []
+        for row in archive_cells:
+            row = dict(row)
+            cathode_values.append(row)
+        records['cathode_stats'] = cathode_values
+        
+        form_factor_values = []
+        archive_cells = ao.get_form_factor_count_files_query()
+        for row in archive_cells:
+            row = dict(row)
+            form_factor_values.append(row)
+        records['form_factor_stats'] = form_factor_values
+
+        archive_cells = ao.get_public_files_count_query()
+        for row in archive_cells:
+            row = dict(row)
+            records['cell_id_count'] = row['count']
+
+        archive_cells = ao.get_cycle_index_count_query()
+        for row in archive_cells:
+            row = dict(row)
+            records['cycle_count'] = row['count']
+
+        size = 0
+        archive_cells = ao.get_size_cell_metadata_query()
+        for row in archive_cells:
+            row = dict(row)
+            size += row['size']
+
+        archive_cells = ao.get_size_cycle_stats_query()
+        for row in archive_cells:
+            row = dict(row)
+            size += row['size']
+
+        archive_cells = ao.get_size_cycle_timeseries_query()
+        for row in archive_cells:
+            row = dict(row)
+            size += row['size']
+
+        records['size'] = size/1000000000
+
+        return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+    except Exception as err:
+        logging.error(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+    finally:
+        ao.release_session()
