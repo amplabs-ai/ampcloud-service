@@ -546,6 +546,14 @@ class ArchiveOperator:
             return self.session.execute(
                 CAPACITY_RETENTION.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
 
+    def get_all_data_from_Capacity_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            return self.session.execute(
+                CAPACITY_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string))
+        else:
+            return self.session.execute(
+                CAPACITY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
+
     def get_all_data_from_EnergyDensity_query(self, cell_id, email, filter_string):
         if len(cell_id) > 1:
             return pd.read_sql(

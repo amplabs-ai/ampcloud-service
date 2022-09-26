@@ -560,6 +560,23 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+  /echarts/capacity:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches charge-discharge capacity  vs cycle number results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_capacity
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
   /echarts/coulombicEfficiency:
     post:
       security:

@@ -189,6 +189,20 @@ def get_capacity_retention():
 
 
 @with_authentication(allow_public=True)
+def get_capacity():
+    email = g.user
+    req_data = request.json
+    st = datetime.datetime.now()
+    status, detail, *records = get_capacity_service(req_data, email)
+    et = datetime.datetime.now()
+    size = float(asizeof(records)/1000)
+    fetch_time = (et-st).total_seconds()*1000
+    logging.info("User {email} Action CHART_PREPARATION_TIME data Capacity size {size} fetch_time {fetch_time}".format
+                 (email=email, size=size, fetch_time=fetch_time))
+    return Response(status, detail, records).to_dict(), status
+
+
+@with_authentication(allow_public=True)
 def get_energy_desnity():
     email = g.user
     req_data = request.json

@@ -30,23 +30,14 @@ def read_generic(file, mapping='test_time,current,voltage', column_mapping=None)
             elif 'step' in column and 'index' in column:
                 columns_to_rename[col] = LABEL.STEP_INDEX.value
     else:
-        updated_columns = []
-        missing_col_count = 1
-        for a in df_time_series_file.columns:
-            if "Unnamed" in a:
-                updated_columns.append(f"--missing header({missing_col_count})--")
-                missing_col_count+=1
-            else:
-                updated_columns.append(a)
-
-        df_time_series_file.columns = updated_columns
-        for key, value in column_mapping.items():
+        columns_to_drop = []
+        for i, (key, value) in enumerate(column_mapping.items()):
             if value == "" or value == None:
-                df_time_series_file.drop(key, axis=1, inplace=True)
+                columns_to_drop.append(df_time_series_file.columns.values[i])
             else:
-                columns_to_rename[key] = value
-
-    df_time_series_file.rename(columns=columns_to_rename, inplace=True)
+                df_time_series_file.columns.values[i] = value
+    
+    df_time_series_file.drop(columns_to_drop, axis=1, inplace=True)
     column_list = mapping.split(",")
     missing_columns = set(column_list).difference(set(df_time_series_file.columns))
     if missing_columns:
