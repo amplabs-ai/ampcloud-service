@@ -18,6 +18,7 @@ let CHART_API_ENDPOINTS = {
 	voltageTime: "/echarts/voltageTime",
 	currentTime: "/echarts/currentTime",
 	energyDensity: "/echarts/energyDensity",
+	capacity: "/echarts/capacity"
 };
 
 const instance = new WorkerBuilder(Worker);
@@ -32,6 +33,7 @@ const ChartContainerType2 = () => {
 		voltageTime: false,
 		currentTime: false,
 		energyDensity: false,
+		capacity: false
 	});
 	const [chartLoadingError, setChartLoadingError] = useState({
 		capacityRetention: false,
@@ -41,6 +43,7 @@ const ChartContainerType2 = () => {
 		voltageTime: false,
 		currentTime: false,
 		energyDensity: false,
+		capacity: false
 	});
 	const [chartData, setChartData] = useState({});
 	const [cancelReqToken, setCancelReqToken] = useState({
@@ -51,6 +54,7 @@ const ChartContainerType2 = () => {
 		voltageTime: axios.CancelToken.source(),
 		currentTime: axios.CancelToken.source(),
 		energyDensity: axios.CancelToken.source(),
+		capacity: axios.CancelToken.source()
 	});
 	const [filteredData, setFilteredData] = useState({});
 	const [chartsLoaded, setChartsLoaded] = useState({
@@ -61,6 +65,7 @@ const ChartContainerType2 = () => {
 		voltageTime: false,
 		currentTime: false,
 		energyDensity: false,
+		capacity: false
 	});
 	const [loading, setLoading] = useState(false);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -79,6 +84,7 @@ const ChartContainerType2 = () => {
 				voltageTime: false,
 				currentTime: false,
 				energyDensity: false,
+				capacity: false
 			};
 		});
 		let check = true;
@@ -141,6 +147,7 @@ const ChartContainerType2 = () => {
 		_fetchData("coulombicEfficiency", request);
 		_fetchData("capacityRetention", request);
 		_fetchData("energyDensity", request);
+		_fetchData("capacity", request);
 
 		return true;
 	};
@@ -180,6 +187,11 @@ const ChartContainerType2 = () => {
 			case "energyDensity":
 				setChartLoadingError((prev) => {
 					return { ...prev, energyDensity: show };
+				});
+				break;
+			case "capacity":
+				setChartLoadingError((prev) => {
+					return { ...prev, capacity: show};
 				});
 				break;
 			default:
@@ -224,6 +236,11 @@ const ChartContainerType2 = () => {
 					return { ...prev, energyDensity: show };
 				});
 				break;
+			case "capacity":
+				setChartLoadSpiner((prev) => {
+					return { ...prev, capacity: show };
+				});
+				break;
 			default:
 				break;
 		}
@@ -251,6 +268,17 @@ const ChartContainerType2 = () => {
 						});
 						setChartsLoaded((prev) => {
 							return { ...prev, capacityRetention: true };
+						});
+						break;
+					case "capacity":
+						setChartData((prev) => {
+							return { ...prev, capacity: result.records[0]};
+						});
+						setFilteredData((prev) => {
+							return { ...prev, capacity: result.records[0]};
+						});
+						setChartsLoaded((prev) => {
+							return { ...prev, capacity: true};
 						});
 						break;
 					case "coulombicEfficiency":
@@ -345,6 +373,7 @@ const ChartContainerType2 = () => {
 				voltageTime: false,
 				currentTime: false,
 				energyDensity: false,
+				capacity: false
 			};
 		});
 		let check = true;
@@ -380,7 +409,11 @@ const ChartContainerType2 = () => {
 
 	return (
 		<div>
-			<ViewCodeModal code={codeContent} modalVisible={modalVisible} setModalVisible={setModalVisible} />
+			<ViewCodeModal 
+				code={codeContent}
+				modalVisible={modalVisible}
+				setModalVisible={setModalVisible}
+			/>
 			{loading ? (
 				<div className="text-center mt-5">
 					<Spin size="large" />
@@ -388,46 +421,6 @@ const ChartContainerType2 = () => {
 			) : (
 				<div ref={dashboardRef}>
 					<div className="row pb-5">
-						<div className="col-md-6 mt-2">
-							<DashboardChart
-								data={filteredData["capacityRetention"] || []}
-								chartName="capacityRetention"
-								chartLoadingError={chartLoadingError["capacityRetention"]}
-								formatCode={formatCode}
-								shallShowLoadSpinner={chartLoadSpiner["capacityRetention"]}
-								fetchData={_fetchData}
-							/>
-						</div>
-						<div className="col-md-6 mt-2">
-							<DashboardChart
-								data={filteredData["coulombicEfficiency"] || []}
-								chartName="coulombicEfficiency"
-								chartLoadingError={chartLoadingError["coulombicEfficiency"]}
-								formatCode={formatCode}
-								shallShowLoadSpinner={chartLoadSpiner["coulombicEfficiency"]}
-								fetchData={_fetchData}
-							/>
-						</div>
-						<div className="col-md-6 mt-2">
-							<DashboardChart
-								data={filteredData["voltageTime"] || []}
-								chartName="voltageTime"
-								chartLoadingError={chartLoadingError["voltageTime"]}
-								formatCode={formatCode}
-								shallShowLoadSpinner={chartLoadSpiner["voltageTime"]}
-								fetchData={_fetchData}
-							/>
-						</div>
-						<div className="col-md-6 mt-2">
-							<DashboardChart
-								data={filteredData["currentTime"] || []}
-								chartName="currentTime"
-								chartLoadingError={chartLoadingError["currentTime"]}
-								formatCode={formatCode}
-								shallShowLoadSpinner={chartLoadSpiner["currentTime"]}
-								fetchData={_fetchData}
-							/>
-						</div>
 						<div className="col-md-6 mt-2">
 							<DashboardChart
 								data={filteredData["galvanostaticPlot"] || []}
@@ -448,13 +441,63 @@ const ChartContainerType2 = () => {
 								fetchData={_fetchData}
 							/>
 						</div>
-						<div className="col-md-12 mt-2">
+						<div className="col-md-6 mt-2">
+							<DashboardChart
+								data={filteredData["capacity"] || []}
+								chartName="capacity"
+								chartLoadingError={chartLoadingError["capacity"]}
+								formatCode={formatCode}
+								shallShowLoadSpinner={chartLoadSpiner["capacity"]}
+								fetchData={_fetchData}
+							/>
+						</div>
+						<div className="col-md-6 mt-2">
+							<DashboardChart
+								data={filteredData["coulombicEfficiency"] || []}
+								chartName="coulombicEfficiency"
+								chartLoadingError={chartLoadingError["coulombicEfficiency"]}
+								formatCode={formatCode}
+								shallShowLoadSpinner={chartLoadSpiner["coulombicEfficiency"]}
+								fetchData={_fetchData}
+							/>
+						</div>
+						<div className="col-md-6 mt-2">
 							<DashboardChart
 								data={filteredData["differentialCapacity"] || []}
 								chartName="differentialCapacity"
 								chartLoadingError={chartLoadingError["differentialCapacity"]}
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["differentialCapacity"]}
+								fetchData={_fetchData}
+							/>
+						</div>
+						<div className="col-md-6 mt-2">
+							<DashboardChart
+								data={filteredData["capacityRetention"] || []}
+								chartName="capacityRetention"
+								chartLoadingError={chartLoadingError["capacityRetention"]}
+								formatCode={formatCode}
+								shallShowLoadSpinner={chartLoadSpiner["capacityRetention"]}
+								fetchData={_fetchData}
+							/>
+						</div>
+						<div className="col-md-6 mt-2">
+							<DashboardChart
+								data={filteredData["voltageTime"] || []}
+								chartName="voltageTime"
+								chartLoadingError={chartLoadingError["voltageTime"]}
+								formatCode={formatCode}
+								shallShowLoadSpinner={chartLoadSpiner["voltageTime"]}
+								fetchData={_fetchData}
+							/>
+						</div>
+						<div className="col-md-6 mt-2">
+							<DashboardChart
+								data={filteredData["currentTime"] || []}
+								chartName="currentTime"
+								chartLoadingError={chartLoadingError["currentTime"]}
+								formatCode={formatCode}
+								shallShowLoadSpinner={chartLoadSpiner["currentTime"]}
 								fetchData={_fetchData}
 							/>
 						</div>

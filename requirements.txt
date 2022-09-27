@@ -22,3 +22,4 @@ python-dotenv==0.20.0
 stripe==3.5.0
 pympler==1.0.1
 python-dotenv==0.20.0
+scikit-image==0.19.3

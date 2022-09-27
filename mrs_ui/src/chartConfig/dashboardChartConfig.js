@@ -257,6 +257,22 @@ export const getChartMetadata = (chartName) => {
 				code: sourceCode.capacityRetention,
 			};
 			break;
+    case "capacity":
+      result = {
+        endpoint: `/echarts/capacity`,
+        xAxis: {
+          mapToId: "cycle_index",
+          title: "Cycle Index",
+        },
+        yAxis: {
+          mapToId: "value",
+          title: "Capacity / Ah",
+        },
+        chartTitle: "Capacity  vs. Cycle Index",
+        chartId: "capacity",
+        code: sourceCode.capacity,
+      };
+      break;
 		case "coulombicEfficiency":
 			result = {
 				endpoint: `/echarts/coulombicEfficiency`,
@@ -282,9 +298,9 @@ export const getChartMetadata = (chartName) => {
 				},
 				yAxis: {
 					mapToId: "v",
-					title: "Voltage",
+					title: "Voltage (V)",
 				},
-				chartTitle: "Specific Capacity vs Voltage",
+				chartTitle: "Voltage vs Specific Capacity ",
 				chartId: "galvanostaticPlot",
 				code: sourceCode.galvanostaticPlot,
 			};
@@ -294,11 +310,11 @@ export const getChartMetadata = (chartName) => {
 				endpoint: `/echarts/voltageTime`,
 				xAxis: {
 					mapToId: "test_time",
-					title: "Test Time",
+					title: "Test Time (s)",
 				},
 				yAxis: {
 					mapToId: "voltage",
-					title: "Voltage",
+					title: "Voltage (V)",
 				},
 				chartTitle: "Voltage vs Test Time",
 				chartId: "voltageTime",
@@ -310,11 +326,11 @@ export const getChartMetadata = (chartName) => {
 				endpoint: `/echarts/currentTime`,
 				xAxis: {
 					mapToId: "test_time",
-					title: "Test Time",
+					title: "Test Time (s)",
 				},
 				yAxis: {
 					mapToId: "current",
-					title: "Current",
+					title: "Current (A)",
 				},
 				chartTitle: "Current vs Test Time",
 				chartId: "currentTime",
@@ -330,7 +346,7 @@ export const getChartMetadata = (chartName) => {
 				},
 				yAxis: {
 					mapToId: "energy_density",
-					title: "Energy Density",
+					title: "Energy Density (Wh/mg)",
 				},
 				chartTitle: "Energy Density vs Cyle Index",
 				chartId: "energyDensity",
@@ -342,7 +358,7 @@ export const getChartMetadata = (chartName) => {
 				endpoint: `/echarts/differentialCapacity`,
 				xAxis: {
 					mapToId: "voltage",
-					title: "Voltage",
+					title: "Voltage (V)",
 				},
 				yAxis: {
 					mapToId: "dq_dv",

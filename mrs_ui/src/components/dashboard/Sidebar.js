@@ -44,6 +44,11 @@ const _generateTreeData = (data, userPlan) => {
 					key: "closed-loop_optimization",
 					children: [],
 				},
+				{
+					title: "TRI competition",
+					key: "tri_competition",
+					children: [],
+				},
 			],
 		},
 	];
@@ -51,6 +56,7 @@ const _generateTreeData = (data, userPlan) => {
 	let dataMatrIoDirInfo = {
 		capacityDegrad: {},
 		closeLoopOpt: {},
+		triCompetition: {}
 	};
 	data.map((cellMeta) => {
 		let cellType = cellMeta.type + "_";
@@ -101,6 +107,12 @@ const _generateTreeData = (data, userPlan) => {
 					} else {
 					}
 					batchIndex = dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop];
+				} else if (!cellId.includes("_")) {
+					x[3].children[2].children.push({
+					title: cellId,
+					key: "cell_" + index + "_" + cellType + cellId,
+				});
+				break;
 				} else {
 					// project: capacity degradation
 					projectDirIndex = 0;
@@ -183,7 +195,7 @@ const SideBar = (props) => {
 						let treeData = _generateTreeData(res.data.records[0], userPlan);
 						console.log("treeData", treeData);
 						setTreeData(treeData);
-						// navigate(location.pathname, { replace: true });
+						navigate(location.pathname, { replace: true });
 						if (location.state && location.state.cellIds && location.state.cellIds.length) {
 							let { cellIds } = location.state;
 							let data = [...treeData[1].children, ...treeData[0].children];

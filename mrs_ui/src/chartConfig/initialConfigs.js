@@ -18,7 +18,6 @@ const initialChartOptions = {
 	// 	bottom: "15%",
 	// 	containLabel: true,
 	// },
-	// grid: { containLabel: true },
 	// grid: {
 	// 	left: window.screen.width < 600 ? "8%" : "5%",
 	// 	right: window.screen.width < 600 ? "5%" : "5%",
@@ -55,6 +54,7 @@ const initialChartFilters = {
 	galvanostaticPlot: [{ column: "cycle_index", operation: "%", filterValue: "100" }],
 	voltageTime: [{ column: "test_datapoint_ordinal", operation: "%", filterValue: "100" }],
 	currentTime: [{ column: "test_datapoint_ordinal", operation: "%", filterValue: "100" }],
-	energyDensity: [{ column: "cycle_index", operation: "%", filterValue: "100" }],
+	energyDensity: [{ column: null, operation: null, filterValue: null }],
+	capacity: [{ column: null, operation: null, filterValue: null }]
 };
 export { initialChartOptions, scatterPlotChartId, initialChartFilters };
