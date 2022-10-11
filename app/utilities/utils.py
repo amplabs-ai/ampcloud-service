@@ -120,7 +120,8 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
     # Initialize the cycle_data time frame
     df_c = init_stats_df(no_cycles)
     step = 60 / len(df_c.index)
-
+    initial_cycle = True
+    reset_test_time_by = 0
     for c_ind in df_c.index:
         if email and cell_id:
             status[f"{email}|{cell_id}"]['progress']['percentage'] += step
@@ -134,6 +135,13 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
 
         if not df_f.empty:
             try:
+                if initial_cycle:
+                    prev_cycle_end = df_f['test_time'].max()
+
+                if not initial_cycle and prev_cycle_end > df_f['test_time'].min():
+                    reset_test_time_by = reset_test_time_by + prev_cycle_end
+                    prev_cycle_end = df_f['test_time'].max()
+                initial_cycle = False
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_INDEX.value)] = x
                 df_c.iloc[c_ind,
@@ -161,6 +169,8 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
 
 
                 # set cycle specific values from calculated quantities
+                df_t.loc[df_t.cycle_index == x,
+                         LABEL.TEST_TIME.value] = df_f[LABEL.TEST_TIME.value] + reset_test_time_by
                 df_t.loc[df_t.cycle_index == x,
                          LABEL.CYCLE_TIME.value] = df_f[LABEL.CYCLE_TIME.value]
                 df_t.loc[df_t.cycle_index == x,
@@ -258,20 +268,20 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
                               df_c.columns.get_loc(LABEL.CYCLE_AH_EFF.value)] = 0
                 else:
                     df_c.iloc[c_ind,
-                              df_c.columns.get_loc(LABEL.CYCLE_AH_EFF.value)] = df_c.iloc[c_ind, df_c.columns.get_loc(
-                        LABEL.CYCLE_AH_D.value)] / df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_AH_C.value)]
+                              df_c.columns.get_loc(LABEL.CYCLE_AH_EFF.value)] = (df_c.iloc[c_ind, df_c.columns.get_loc(
+                        LABEL.CYCLE_AH_D.value)] / df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_AH_C.value)]) * 100
 
                 if df_c.iloc[c_ind,
                              df_c.columns.get_loc(LABEL.CYCLE_E_C.value)] == 0:
                     df_c.iloc[c_ind,
                               df_c.columns.get_loc(LABEL.CYCLE_E_EFF.value)] = 0
                 else:
-                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_E_EFF.value)] = df_c.iloc[
+                    df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_E_EFF.value)] = (df_c.iloc[
                                                                                           c_ind, df_c.columns.get_loc(
                                                                                               LABEL.CYCLE_E_D.value)] / \
                                                                                       df_c.iloc[
                                                                                           c_ind, df_c.columns.get_loc(
-                                                                                              LABEL.CYCLE_E_C.value)]
+                                                                                              LABEL.CYCLE_E_C.value)]) * 100
 
             except Exception as err:
                 logging.error(err)
@@ -544,7 +554,7 @@ def extract_cell_metdata(df_c_md):
 
 
 def init_stats_df(no_cycles):
-    a = [0 for _ in range(no_cycles)]  # using loops
+    a = [0 for _ in range(no_cycles+1)]  # using loops
     df_c = pd.DataFrame(data=a, columns=[LABEL.CYCLE_INDEX.value])
     df_c[LABEL.CYCLE_INDEX.value] = 0
     df_c[LABEL.CYCLE_MAX_V.value] = 0

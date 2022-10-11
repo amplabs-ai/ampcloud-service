@@ -250,29 +250,29 @@ export const getChartMetadata = (chartName) => {
 				},
 				yAxis: {
 					mapToId: "capacity_retention",
-					title: "Disharge Capacity Retention / %",
+					title: "Disharge Capacity Retention (%)",
 				},
 				chartTitle: "Capacity Retention vs. Cycle Index",
 				chartId: "capacityRetention",
 				code: sourceCode.capacityRetention,
 			};
 			break;
-    case "capacity":
-      result = {
-        endpoint: `/echarts/capacity`,
-        xAxis: {
-          mapToId: "cycle_index",
-          title: "Cycle Index",
-        },
-        yAxis: {
-          mapToId: "value",
-          title: "Capacity / Ah",
-        },
-        chartTitle: "Capacity  vs. Cycle Index",
-        chartId: "capacity",
-        code: sourceCode.capacity,
-      };
-      break;
+		case "capacity":
+			result = {
+				endpoint: `/echarts/capacity`,
+				xAxis: {
+				mapToId: "cycle_index",
+				title: "Cycle Index",
+				},
+				yAxis: {
+				mapToId: "value",
+				title: "Capacity (Ah)",
+				},
+				chartTitle: "Capacity  vs. Cycle Index",
+				chartId: "capacity",
+				code: sourceCode.capacity,
+			};
+			break;
 		case "coulombicEfficiency":
 			result = {
 				endpoint: `/echarts/coulombicEfficiency`,
@@ -282,7 +282,7 @@ export const getChartMetadata = (chartName) => {
 				},
 				yAxis: {
 					mapToId: "value",
-					title: "Coulombic Efficiency",
+					title: "Coulombic Efficiency (%)",
 				},
 				chartTitle: "Coulombic Efficiency vs Cyle Index",
 				chartId: "coulombicEfficiency",
@@ -294,7 +294,7 @@ export const getChartMetadata = (chartName) => {
 				endpoint: `/echarts/galvanostaticPlot`,
 				xAxis: {
 					mapToId: "specific_capacity",
-					title: "Specific Capacity",
+					title: "Specific Capacity (Ah/g)",
 				},
 				yAxis: {
 					mapToId: "v",
@@ -346,7 +346,7 @@ export const getChartMetadata = (chartName) => {
 				},
 				yAxis: {
 					mapToId: "energy_density",
-					title: "Energy Density (Wh/mg)",
+					title: "Energy Density (Wh/g)",
 				},
 				chartTitle: "Energy Density vs Cyle Index",
 				chartId: "energyDensity",

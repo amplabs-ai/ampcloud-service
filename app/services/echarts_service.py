@@ -197,42 +197,41 @@ def get_differential_capacity_service(req_data, email):
         series_list= result_df['series'].dropna().unique()
         for series in series_list:
             try:
-                charge_Q = np.array(result_df[(result_df['series'] == series) & (result_df['current'] >0)]['charge_capacity'].to_numpy())
-                charge_voltage = np.array(result_df[(result_df['series'] == series) & (result_df['current'] >0)]['voltage'].to_numpy())
-                
-                discharge_Q = np.array(result_df[(result_df['series'] == series) & (result_df['current'] <0)]['discharge_capacity'].to_numpy())
-                discharge_voltage = np.array(result_df[(result_df['series'] == series) & (result_df['current'] <0)]['voltage'].to_numpy())
-                
+                charge_Q = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['charge_capacity'].to_numpy()
+                charge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['voltage'].to_numpy()
                 charge_Q_reduced = block_reduce(charge_Q, block_size=(reduction_factor,), func=np.mean, cval=charge_Q[-1])
-                discharge_Q_reduced = block_reduce(discharge_Q, block_size=(reduction_factor,), func=np.mean, cval=discharge_Q[-1])
-                
                 charge_voltage_reduced = block_reduce(charge_voltage, block_size=(reduction_factor,), func=np.mean, cval=charge_voltage[-1])
-                discharge_voltage_reduced = block_reduce(discharge_voltage, block_size=(reduction_factor,), func=np.mean, cval=discharge_voltage[-1])
-                
                 dQdV_charge = np.diff(charge_Q_reduced) / np.diff(charge_voltage_reduced)
-                dQdV_discharge = np.diff(discharge_Q_reduced) / np.diff(discharge_voltage_reduced)
 
                 df_charge = pd.DataFrame()
                 df_charge['dq_dv'] = pd.Series(dQdV_charge)
                 df_charge['voltage'] = pd.Series(charge_voltage_reduced[:-1])
                 df_charge['series'] = series+ " c"
+                df_charge = df_charge.sort_values(by = ['voltage'])
+                df_charge = df_charge.replace([np.inf, -np.inf], np.NaN)
+                records.append({"id": f"{series}: c", "cell_id": series.split(' ')[0], "source": df_charge.to_dict('records')})
+            except Exception as e:
+                print(e)
+                pass
+
+            try:
+                discharge_Q = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['discharge_capacity'].to_numpy()
+                discharge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['voltage'].to_numpy()
+                discharge_Q_reduced = block_reduce(discharge_Q, block_size=(reduction_factor,), func=np.mean, cval=discharge_Q[-1])
+                discharge_voltage_reduced = block_reduce(discharge_voltage, block_size=(reduction_factor,), func=np.mean, cval=discharge_voltage[-1])
+                dQdV_discharge = np.diff(discharge_Q_reduced) / np.diff(discharge_voltage_reduced)
 
                 df_discharge = pd.DataFrame()
                 df_discharge['dq_dv'] = pd.Series(dQdV_discharge)
                 df_discharge['voltage'] = pd.Series(discharge_voltage_reduced[:-1]) 
                 df_discharge['series'] = series+ " d"
-
-                df_charge = df_charge.sort_values(by = ['voltage'])
                 df_discharge = df_discharge.sort_values(by = ['voltage'])
-
-                df_charge = df_charge.replace([np.inf, -np.inf], np.NaN)
                 df_discharge = df_discharge.replace([np.inf, -np.inf], np.NaN)
-
-                records.append({"id": f"{series}_c", "cell_id": series.split(' ')[0], "source": df_charge.to_dict('records')})
-                records.append({"id": f"{series}_d", "cell_id": series.split(' ')[0], "source": df_discharge.to_dict('records')})
-
-            except Exception as err:
+                records.append({"id": f"{series}: d", "cell_id": series.split(' ')[0], "source": df_discharge.to_dict('records')})
+            except Exception as e:
+                print(e)
                 pass
+
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except DataError as err:
         return 400, str(err.__dict__['orig']).split('\n')[0]
@@ -241,7 +240,6 @@ def get_differential_capacity_service(req_data, email):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
-
 
 def get_voltage_time_service(req_data, email):
     try:

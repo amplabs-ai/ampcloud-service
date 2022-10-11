@@ -35,12 +35,7 @@ const initialChartOptions = {
 };
 
 const scatterPlotChartId = [
-	"timeSeries",
 	"plotter",
-	"capacityRetention",
-	"coulombicEfficiency",
-	"differentialCapacity",
-	"galvanostaticPlot",
 ];
 
 const initialChartFilters = {
