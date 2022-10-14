@@ -368,11 +368,12 @@ paths:
                   is_public:
                     type: boolean
                     example: true
-                  column_mappings:
-                    type: object
+                  template:
+                    type: string
                 required:
                   - cell_id
                   - test_type
+                  - template
       tags:
         - Upload
       responses:
@@ -781,6 +782,35 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+  /template:
+    post:
+      security:
+         - {}
+         - BearerAuth: []
+      summary: Get new template details from user
+      x-openapi-router-controller: app.controllers.template_controller
+      operationId: create_template
+      tags:
+        - Template
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Get already created template details
+      x-openapi-router-controller: app.controllers.template_controller
+      operationId: get_details_from_template
+      tags:
+        - Template
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
 
 tags:
   - name: Cell Meta
@@ -790,6 +820,7 @@ tags:
   - name: Echart - Get json data required for plotting
   - name: Display Name
   - name: Healthcheck
+  - name: Template
 
 servers:
   - url: https://www.amplabs.ai

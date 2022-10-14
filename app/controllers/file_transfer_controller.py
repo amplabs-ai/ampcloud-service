@@ -38,8 +38,8 @@ def upload_file(tester):
     try:
         start_time = datetime.datetime.now()
         file = request.files['file']
-        column_mapping = status[f"{email}|{data['cell_id']}"]['column_mappings']
-        df = file_data_read_service(tester, file, column_mapping)
+        template = status[f"{email}|{data['cell_id']}"]['template']
+        df = file_data_read_service(tester, file, template,email)
         end_time = datetime.datetime.now()
         read_time = (end_time - start_time).total_seconds()*1000
 
@@ -49,14 +49,14 @@ def upload_file(tester):
         if not status[f"{email}|{data['cell_id']}"]['file_count']:
             status[f"{email}|{data['cell_id']}"]['progress']['steps']['READ FILE'] = True
             threading.Thread(target=file_data_process_service,
-                             args=(data['cell_id'], email)).start()
+                            args=(data['cell_id'], email)).start()
 
         end_time = datetime.datetime.now()
         processing_time = (end_time - start_time).total_seconds()*1000
         upload_time = processing_time + read_time
         size = float((df.memory_usage(index=True).sum())/1000)
         logging.info("User {email} Action UPLOAD_FILE file {file_name} size {size} read_time {read_time} processing_time {proc_time} upload_time {upload_time}".format
-                     (email=email, file_name=file.filename, size=size, read_time=read_time, proc_time=processing_time, upload_time=upload_time))
+                    (email=email, file_name=file.filename, size=size, read_time=read_time, proc_time=processing_time, upload_time=upload_time))
         return Response(200, "SUCCESS").to_dict(), 200
     except KeyError as err:
         print(err)

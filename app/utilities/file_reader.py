@@ -2,42 +2,20 @@ import gzip
 import datetime
 import pandas as pd
 from app.archive_constants import ARCHIVE_COLS, FORMAT, INP_LABELS, LABEL
+from app.utilities.file_parsing import unit_conversion,col_mappings,get_template_data
 
 
-def read_generic(file, mapping='test_time,current,voltage', column_mapping=None):
+
+def read_generic(file,template,email, mapping='test_time,current,voltage'):
+    
     df_tmerge = pd.DataFrame()
     with gzip.open(file, 'rb') as decompressed_file:
         df_time_series_file = pd.read_csv(decompressed_file, sep=',')
-    # validating renaming optional columns:
-    columns_to_rename = {}
-    if not column_mapping:
-         for col in df_time_series_file.columns:
-            column = col.lower().strip()
-            if 'discharge' in column and 'capacity' in column:
-                columns_to_rename[col] = LABEL.AH_D.value
-            elif 'charge' in column and 'capacity' in column:
-                columns_to_rename[col] = LABEL.AH_C.value
-            elif 'discharge' in column and 'energy' in column:
-                columns_to_rename[col] = LABEL.E_D.value
-            elif 'charge' in column and 'energy' in column:
-                columns_to_rename[col] = LABEL.E_C.value
-            elif 'date' in column and 'time' in column:
-                columns_to_rename[col] = LABEL.DATE_TIME.value
-            elif 'cell' in column and 'temperature' in column:
-                columns_to_rename[col] = LABEL.CELL_TEMP.value
-            elif 'environment' in column and 'temperature' in column:
-                columns_to_rename[col] = LABEL.ENV_TEMP.value
-            elif 'step' in column and 'index' in column:
-                columns_to_rename[col] = LABEL.STEP_INDEX.value
-    else:
-        columns_to_drop = []
-        for i, (key, value) in enumerate(column_mapping.items()):
-            if value == "" or value == None:
-                columns_to_drop.append(df_time_series_file.columns.values[i])
-            else:
-                df_time_series_file.columns.values[i] = value
+
+    template_data = get_template_data(template,email)
+    unit_conversion(df_time_series_file,template_data)
+    col_mappings(df_time_series_file,template_data)
     
-    df_time_series_file.drop(columns_to_drop, axis=1, inplace=True)
     column_list = mapping.split(",")
     missing_columns = set(column_list).difference(set(df_time_series_file.columns))
     if missing_columns:

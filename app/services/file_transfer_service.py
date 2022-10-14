@@ -59,7 +59,7 @@ def init_file_upload_service(email, request):
 
         status[f"{email}|{data.get('cell_id')}"] = {
             "dataframes": [],
-            "column_mappings": data.get('column_mappings'),
+            "template": data.get('template'),
             "progress": {'percentage': 1, 'message': "IN PROGRESS", "steps": OrderedDict([
                 ("READ FILE", False),
                 ("STATS CALCULATION", False),
@@ -72,13 +72,13 @@ def init_file_upload_service(email, request):
     return 200, "Success"
 
 
-def file_data_read_service(tester, file,column_mapping):
+def file_data_read_service(tester, file,template,email):
     if tester == TESTER.ARBIN.value:
         data = read_arbin(file)
     if tester == TESTER.MACCOR.value:
         data = read_maccor(file)
     if tester == TESTER.GENERIC.value:
-        data = read_generic(file,column_mapping= column_mapping)
+        data = read_generic(file,template,email)
     if tester == TESTER.ORNL.value:
         data = read_ornlabuse(file)
     if tester == TESTER.SNL.value:

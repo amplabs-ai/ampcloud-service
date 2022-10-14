@@ -37,6 +37,24 @@ AUTH0_ALGORITHMS = ["RS256"]
 BATTERY_ARCHIVE = "info@batteryarchive.org"
 DATA_MATR_IO = "data.matr.io@tri.global"
 
+#AWS Creds and conn:
+AWS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+DOMAIN_NAME = os.getenv('DOMAIN_NAME')
+
+
+#unit_conversion
+units = {
+    "deci": 'COL_NAME = COL_NAME * 0.1',
+    "centi": 'COL_NAME = COL_NAME * 0.01',
+    "milli": 'COL_NAME = COL_NAME * 0.001',
+    "micro": 'COL_NAME = COL_NAME * 0.000001',
+    "nano": 'COL_NAME = COL_NAME * 0.000000001',
+    "kelvin": 'COL_NAME = COL_NAME - 273.15',
+    "fahrenheit": 'COL_NAME = [(COL_NAME-32)*5]/9',
+    "hours": 'COL_NAME = COL_NAME * 3600',
+    "minutes": 'COL_NAME = COL_NAME * 60'
+}
 
 class TEST_TYPE(Enum):
     ABUSE = "abuse"
