@@ -29,10 +29,28 @@ def get_details_from_template_service(email):
     try:
         response = client_sdb.select(
                         SelectExpression=f"select * from `{DOMAIN_NAME}` where itemName() LIKE '{email}||%' ")
-        records = []
-        for element in response['Items']:
-            records.append(element["Name"].split("||")[1])
+        records = {}
+        if response.get('Items'):
+            for element in response['Items']:
+                attri_lst = []
+                for value in element['Attributes']:
+                    attri_dict = {}
+                    attri_dict["column"] = value['Name']
+                    attri_dict["mapping"] = value['Value'].split("||")[0]
+                    attri_dict["unit"] = value['Value'].split("||")[1]
+                    attri_lst.append(attri_dict)
+                records[element["Name"].split("||")[1]] = attri_lst
         return 200,"Records Retrived", records
     except Exception as err:
         print(err)
-        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']    
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+
+
+def delete_template_service(email,template):
+    try:
+        template = f"{email}||{template}"
+        response = client_sdb.delete_attributes(DomainName=DOMAIN_NAME,ItemName=template)
+        return 200,"Template Deleted"
+    except Exception as err:
+        print(err)
+        return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']

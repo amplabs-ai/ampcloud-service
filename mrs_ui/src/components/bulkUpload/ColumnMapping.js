@@ -3,17 +3,20 @@ import { Alert, Button, Modal, Select, Spin, Tabs } from "antd";
 import ColumnMapForm from "./ColumnMapForm";
 import { useFileUpload } from "../../context/FileUploadContext";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
+import { useAuth0Token } from "../../utility/useAuth0Token";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
-const REQUIRED_HEADERS = ["test_time", "cycle_index", "current", "voltage"];
 
 const ColumnMapping = ({ closeModal }) => {
 	const [activeKey, setActiveKey] = useState("0");
 	const [cellSelectOptions, setCellSelectOptions] = useState(null);
 	const [cellsSelected, setCellsSelected] = useState(1);
 	const [colMapError, setColMapError] = useState([]);
+    const [templateData, setTemplateData] = useState({});
 
+    const accessToken = useAuth0Token();
 	const {
 		state: { filesToMapHeader, tableData, showParsingSpinner, supportedColumns, showPackDataCellInput },
 		action: { setFilesToMapHeader, setTableData, setShowPackDataCellInput },
@@ -30,6 +33,30 @@ const ColumnMapping = ({ closeModal }) => {
 			));
 		setCellSelectOptions(options);
 	}, [tableData]);
+
+    useEffect(() => {
+		if(accessToken){
+			getTemplateData()
+		}
+    },[accessToken])
+
+    const getTemplateData = () =>{
+        axios
+            .get("/template", {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            })
+            .then((response) => {
+
+                if (response.data.status === 200) {
+                    setTemplateData(response.data.records[0])
+                }
+            })
+            .catch((error) => {
+                console.error("file upload err", error);
+            });
+    }
 
 	const onEdit = (targetKey, userAction) => {
 		if (userAction === "remove") {
@@ -75,27 +102,17 @@ const ColumnMapping = ({ closeModal }) => {
 		let data = filesToMapHeader;
 		data.forEach((file) => {
 			let err = `${file.fileName}: `;
-			let missingHeaders = [];
-			REQUIRED_HEADERS.forEach((h) => {
-				if (!Object.values(file.mappings).includes(h)) {
-					missingHeaders.push(h);
-				}
-			});
-
-			let duplicateMappings = getDuplicateMappings(file.mappings);
 			let isDuplicateCellId = checkDuplicateCellId(file.cellId, file.id);
+            let isTemplateSelected = file.template ? true: false;
 
-			if (!file.cellId || missingHeaders.length || duplicateMappings.length || isDuplicateCellId) {
+			if (!file.cellId || isDuplicateCellId || !isTemplateSelected) {
 				if (!file.cellId) {
 					err += "missing cell id, ";
 				} else if (isDuplicateCellId) {
 					err += "duplicate cell id, ";
 				}
-				if (missingHeaders.length) {
-					err += `missing headers(${missingHeaders.join(", ")}), `;
-				}
-				if (duplicateMappings.length) {
-					err += `found duplicates(${duplicateMappings.join(", ")})`;
+                if (!isTemplateSelected) {
+					err += `template not selected or deleted`;
 				}
 				errors.push(err);
 			}
@@ -114,17 +131,6 @@ const ColumnMapping = ({ closeModal }) => {
 		return !filesToMapHeader.every(test) || !tableData.every(test);
 	};
 
-	const getDuplicateMappings = (mappings) => {
-		const toFindDuplicates = (arr) =>
-			arr.filter((item, index) => {
-				if (item) {
-					return arr.indexOf(item) !== index;
-				}
-				return false;
-			});
-		const duplicateElements = toFindDuplicates(Object.values(mappings));
-		return duplicateElements;
-	};
 
 	const doSaveColMappings = async () => {
 		if (validateFileMappingsAndInfo()) return;
@@ -156,9 +162,25 @@ const ColumnMapping = ({ closeModal }) => {
 		let newFilesToMapHeader = [...filesToMapHeader];
 		let index = newFilesToMapHeader.findIndex((file) => file.fileName === fileName);
 		let obj = newFilesToMapHeader[index];
-		obj.mappings[item] = value;
+		obj.mappings[item][0] = value;
 		setFilesToMapHeader(newFilesToMapHeader);
 	};
+
+    const onColMetricChange = (item, value, fileName) => {
+		let newFilesToMapHeader = [...filesToMapHeader];
+		let index = newFilesToMapHeader.findIndex((file) => file.fileName === fileName);
+		let obj = newFilesToMapHeader[index];
+		obj.mappings[item][1] = value;
+		setFilesToMapHeader(newFilesToMapHeader);
+	};
+
+    const onTemplateSelect = (value, fileName) => {
+        let newFilesToMapHeader = [...filesToMapHeader];
+		let index = newFilesToMapHeader.findIndex((file) => file.fileName === fileName);
+		let obj = newFilesToMapHeader[index];
+		obj["template"] = value;
+		setFilesToMapHeader(newFilesToMapHeader);  
+    }
 
 	return (
 		<div>
@@ -190,6 +212,10 @@ const ColumnMapping = ({ closeModal }) => {
 										onFileInfoInputChange={onFileInfoInputChange}
 										options={supportedColumns}
 										formInfo={fileObj}
+                                        onTemplateSelect={onTemplateSelect}
+                                        getTemplateData={getTemplateData}
+                                        templateData={templateData}
+                                        onColMetricChange={onColMetricChange}
 									/>
 								</TabPane>
 							);

@@ -107,6 +107,8 @@ const BulkUploadDropFileInput = (props) => {
 						id: uuidv4(),
 						key: uuidv4(),
 						mappings: getDefaultMappings(headers),
+						template:"",
+						new_template:""
 					});
 				},
 			});
@@ -121,18 +123,16 @@ const BulkUploadDropFileInput = (props) => {
 			let res = matches.bestMatch.rating >= 0.2 ? matches.bestMatch.target : "";
 			return supportedColumns[res] || "";
 		};
-		let countMissingHeader = 0;
 		let mappings = {};
-		headers.forEach((h) => {
+		headers.forEach((h, index) => {
 			let key = h;
 			let value = "";
 			if (!key) {
-				countMissingHeader++;
-				key = `--missing header(${countMissingHeader})--`;
+				key = `--missing header||${index}`;
 			} else {
 				value = getDefaultValue(key);
 			}
-			mappings[key] = Object.values(mappings).includes(value) ? "" : value;
+			mappings[key] = [Object.values(mappings).includes(value) ? "" : value,"none"];
 		});
 		console.log("default mappings", mappings);
 		return mappings;
@@ -163,6 +163,7 @@ const BulkUploadDropFileInput = (props) => {
 				onCancel={onCloseMappingModal}
 				footer={null}
 				destroyOnClose
+				width={700}
 			>
 				<ColumnMapping closeModal={onCloseMappingModal} />
 			</Modal>

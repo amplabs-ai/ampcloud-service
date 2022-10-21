@@ -54,24 +54,13 @@ const UploadPageTable = (props) => {
 			align: "center",
 		},
 		{
-			title: "Unmapped Columns Count",
+			title: "Template",
 			dataIndex: "",
 			render: (_, record) => {
-				let count = Object.values(record.mappings).filter((v) => v === "").length;
-				return count;
+				let template = Object.values(record.template);
+				return template
 			},
-			key: "unmappedColumnsCount",
-			width: 100,
-			align: "center",
-		},
-		{
-			title: "Mapped Columns Count",
-			dataIndex: "",
-			render: (_, record) => {
-				let count = Object.values(record.mappings).filter((v) => v !== "").length;
-				return count;
-			},
-			key: "mappedColumnsCount",
+			key: "template",
 			width: 100,
 			align: "center",
 		},

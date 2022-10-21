@@ -152,6 +152,7 @@ const BulkUpload = () => {
 			return {
 				cell_id: file.cellId,
 				is_public: file.isPublic,
+				template:file.template,
 				column_mappings: file.mappings,
 				test_type: "cycle",
 			};

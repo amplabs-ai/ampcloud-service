@@ -1,21 +1,24 @@
 import gzip
 import datetime
 import pandas as pd
+from app.amplabs_exception.amplabs_exception import AmplabsException
 from app.archive_constants import ARCHIVE_COLS, FORMAT, INP_LABELS, LABEL
-from app.utilities.file_parsing import unit_conversion,col_mappings,get_template_data
+from app.utilities.file_parsing import unit_conversion, col_mappings, get_template_data
 
 
+def read_generic(file, template, email, mapping='test_time,current,voltage'):
 
-def read_generic(file,template,email, mapping='test_time,current,voltage'):
-    
     df_tmerge = pd.DataFrame()
     with gzip.open(file, 'rb') as decompressed_file:
         df_time_series_file = pd.read_csv(decompressed_file, sep=',')
+    try:
+        template_data = get_template_data(template,email)
+        unit_conversion(df_time_series_file,template_data)
+        df_time_series_file = col_mappings(df_time_series_file,template_data)
+    except Exception as err:
+        print(err)
+        raise AmplabsException("File not in accordance with the selected template")
 
-    template_data = get_template_data(template,email)
-    unit_conversion(df_time_series_file,template_data)
-    col_mappings(df_time_series_file,template_data)
-    
     column_list = mapping.split(",")
     missing_columns = set(column_list).difference(set(df_time_series_file.columns))
     if missing_columns:

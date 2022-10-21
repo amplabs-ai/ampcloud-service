@@ -50,10 +50,12 @@ units = {
     "milli": 'COL_NAME = COL_NAME * 0.001',
     "micro": 'COL_NAME = COL_NAME * 0.000001',
     "nano": 'COL_NAME = COL_NAME * 0.000000001',
+    "celcius": 'COL_NAME = COL_NAME',
     "kelvin": 'COL_NAME = COL_NAME - 273.15',
     "fahrenheit": 'COL_NAME = [(COL_NAME-32)*5]/9',
     "hours": 'COL_NAME = COL_NAME * 3600',
-    "minutes": 'COL_NAME = COL_NAME * 60'
+    "minutes": 'COL_NAME = COL_NAME * 60',
+    "seconds": 'COL_NAME = COL_NAME'
 }
 
 class TEST_TYPE(Enum):

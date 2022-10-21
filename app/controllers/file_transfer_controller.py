@@ -1,6 +1,7 @@
 from builtins import float, print
 import datetime
 import threading
+from app.amplabs_exception.amplabs_exception import AmplabsException
 from app.services.file_transfer_service import *
 from app.utilities.user_plan import set_user_plan
 from app.utilities.utils import status
@@ -39,7 +40,7 @@ def upload_file(tester):
         start_time = datetime.datetime.now()
         file = request.files['file']
         template = status[f"{email}|{data['cell_id']}"]['template']
-        df = file_data_read_service(tester, file, template,email)
+        df = file_data_read_service(tester, file, template, email)
         end_time = datetime.datetime.now()
         read_time = (end_time - start_time).total_seconds()*1000
 
@@ -58,6 +59,13 @@ def upload_file(tester):
         logging.info("User {email} Action UPLOAD_FILE file {file_name} size {size} read_time {read_time} processing_time {proc_time} upload_time {upload_time}".format
                     (email=email, file_name=file.filename, size=size, read_time=read_time, proc_time=processing_time, upload_time=upload_time))
         return Response(200, "SUCCESS").to_dict(), 200
+    
+    except AmplabsException as err:
+        status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
+        status[f"{email}|{data['cell_id']}"]['progress']['message'] = err.message
+        logging.error(
+            "User {email} Action UPLOAD_FILE error PARSING_ERROR".format(email=email))
+        return Response(400, "BAD REQUEST").to_dict(), 400
     except KeyError as err:
         print(err)
         if 'not present' in err.args[0]:

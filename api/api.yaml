@@ -811,6 +811,28 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+    delete:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Delete a template
+      x-openapi-router-controller: app.controllers.template_controller
+      operationId: delete_template
+      tags:
+        - Template
+      parameters:
+        - name: template
+          in: query
+          description: Name of the template to be deleted
+          required: true
+          schema:
+            type: string
+            example: Test_Template
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong.
 
 tags:
   - name: Cell Meta

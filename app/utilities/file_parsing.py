@@ -1,3 +1,4 @@
+import copy
 from app.utilities.aws_connection import client_sdb
 from app.archive_constants import DOMAIN_NAME, units
 
@@ -14,42 +15,25 @@ def unit_conversion(df_time_series_file,template_data):
         temp = elements['Value'].split("||")
         unit = temp[1]
         if unit != "none":
-            df_time_series_file.eval(units[unit].replace('COL_NAME',column_name),inplace=True)
+            df_time_series_file.eval(units[unit].replace('COL_NAME',f"`{column_name}`"),inplace=True)
 
 def col_mappings(df_time_series_file,template_data):
     column_mapping = {}
     for elements in template_data["Items"][0]["Attributes"]:
         column_name = elements['Name']
         temp = elements['Value'].split("||")
-        map = temp[0]
-        column_mapping[column_name] = map
-    # columns_to_rename = {}
-    # if not column_mapping:
-        # for col in df_time_series_file.columns:
-        #     column = col.lower().strip()
-        #     if 'discharge' in column and 'capacity' in column:
-        #         columns_to_rename[col] = LABEL.AH_D.value
-        #     elif 'charge' in column and 'capacity' in column:
-        #         columns_to_rename[col] = LABEL.AH_C.value
-        #     elif 'discharge' in column and 'energy' in column:
-        #         columns_to_rename[col] = LABEL.E_D.value
-        #     elif 'charge' in column and 'energy' in column:
-        #         columns_to_rename[col] = LABEL.E_C.value
-        #     elif 'date' in column and 'time' in column:
-        #         columns_to_rename[col] = LABEL.DATE_TIME.value
-        #     elif 'cell' in column and 'temperature' in column:
-        #         columns_to_rename[col] = LABEL.CELL_TEMP.value
-        #     elif 'environment' in column and 'temperature' in column:
-        #         columns_to_rename[col] = LABEL.ENV_TEMP.value
-        #     elif 'step' in column and 'index' in column:
-        #         columns_to_rename[col] = LABEL.STEP_INDEX.value
-    # else:
-    columns_to_drop = []
-    for i, (key, value) in enumerate(column_mapping.items()):
-        if value == "" or value == None:
-            columns_to_drop.append(df_time_series_file.columns.values[i])
-        else:
-            df_time_series_file.columns.values[i] = value
+        mapping = temp[0]
+        column_mapping[column_name] = mapping
 
+    columns_to_drop = []
+    df_columns = copy.deepcopy(df_time_series_file.columns.values)
+    for i, (key, value) in enumerate(column_mapping.items()):
+        col_index_in_df =  int(key.split("||")[1]) if "missing header" in key else df_time_series_file.columns.get_loc(key)
+        if value == "" or value == None:
+            columns_to_drop.append(df_columns[col_index_in_df])
+        else:
+            df_columns[col_index_in_df] = value
+    df_time_series_file.columns = df_columns
     df_time_series_file.drop(columns_to_drop, axis=1, inplace=True)
+    return df_time_series_file
     
