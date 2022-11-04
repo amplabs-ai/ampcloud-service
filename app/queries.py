@@ -1,3 +1,11 @@
+FILTER_DASHBOARD = """
+SELECT active_mass,ah,anode,cathode,cell_metadata.cell_id,form_factor,cell_metadata.index,test,tester
+  FROM cell_metadata 
+  JOIN cycle_metadata on cell_metadata.cell_id = cycle_metadata.cell_id AND cell_metadata.email = cycle_metadata.email
+  WHERE cell_metadata.email IN ('{email}')
+    AND is_public IS {is_public} {filters}
+"""
+
 CAPACITY_QUERY = """
 SELECT
     r.cell_id,
@@ -428,21 +436,21 @@ WHERE cell_id IN ({cell_ids}) and (email in ('{email}', 'info@batteryarchive.org
 COUNT_CATHODE_FILES = """
     SELECT count(index), cathode
     FROM cell_metadata 
-    WHERE cathode is NOT NULL and is_public is TRUE
+    WHERE (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) and cathode is NOT NULL
     GROUP BY cathode
 """
 
 COUNT_FORM_FACTOR = """
     SELECT count(index), form_factor
     FROM cell_metadata
-    WHERE form_factor is NOT NULL and is_public is TRUE
+    WHERE (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) and form_factor is NOT NULL
     GROUP BY form_factor
 """
 
-PUBLIC_CELL_IDS = """
+CELL_IDS = """
   SELECT COUNT(index)
   FROM cell_metadata
-  WHERE is_public is TRUE
+  WHERE (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
 """
 
 TOTAL_CYCLE_INDEX = """
@@ -450,14 +458,14 @@ TOTAL_CYCLE_INDEX = """
   FROM CYCLE_STATS 
   JOIN cell_metadata
   ON CYCLE_STATS.cell_id = cell_metadata.cell_id 
-  WHERE cell_metadata.is_public is TRUE
+  WHERE (cell_metadata.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
 """
 
 SIZE_CELL_METADATA = """
   SELECT (table_size/total_records)*total_public_records AS size 
   FROM (SELECT pg_relation_size('cell_metadata') as table_size) AS A,
   (select count(index) as total_records from cell_metadata) AS B, 
-  (select count(index)as total_public_records from cell_metadata where is_public is TRUE)AS C
+  (select count(index)as total_public_records from cell_metadata where (cell_metadata.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')))AS C
 """
 
 SIZE_CYCLE_STATS = """
@@ -466,13 +474,54 @@ SIZE_CYCLE_STATS = """
   (select count(index) as total_records from cycle_stats) AS B, 
   (select count(cycle_stats.index)as total_public_records from cycle_stats 
     join cell_metadata on cycle_stats.cell_id = cell_metadata.cell_id
-    where cell_metadata.is_public is TRUE)AS C
+    where (cell_metadata.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')))AS C
 """
 
 SIZE_CYCLE_TIMESERIES = """
   select (table_size/total_records)*c as size from 
   (select pg_relation_size('cycle_timeseries') as table_size, 
   count(index) as total_records, count(index) filter 
-  (where cell_id in (select cell_id from cell_metadata where is_public is true)) 
+  (where cell_id in (select cell_id from cell_metadata where (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')))) 
   as c from cycle_timeseries) as A;
+"""
+
+ANODE_FILTER_QUERY = """
+  select DISTINCT(anode) as Anode
+  from cell_metadata where anode is not NULL and anode != '' and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
+"""
+
+CATHODE_FILTER_QUERY = """
+  select DISTINCT(cathode) as Cathode
+  from cell_metadata where cathode is not NULL and cathode != '' and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
+"""
+
+AH_FILTER_QUERY = """
+  select MAX(ah) as max_capacity,
+  MIN(ah) as min_capacity
+  from cell_metadata where email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
+"""
+
+FORMAT_SHAPE_FILTER_QUERY = """
+  select DISTINCT(form_factor) as Format_shape
+  from cell_metadata where form_factor is not NULL and form_factor != '' and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
+"""
+
+TEST_TYPE_FILTER_QUERY = """
+  select DISTINCT(test) as Type_of_test
+  from cell_metadata where test is not NULL and test != '' and email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
+"""
+
+TEMPERATURE_FILTER_QUERY = """
+  select MAX(temperature) as max_temp,
+  MIN(temperature) as min_temp 
+  FROM cycle_metadata
+  where email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
+"""
+
+RATE_FILTER_QUERY = """
+  select MAX(crate_c) as max_charge_rate,
+  MIN(crate_c) as min_charge_rate,
+  MAX(crate_d) as max_discharge_rate,
+  MIN(crate_d) as min_discharge_rate
+  from cycle_metadata where email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
 """

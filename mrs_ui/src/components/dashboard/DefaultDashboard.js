@@ -6,12 +6,14 @@ import Table from "ant-responsive-table";
 import Tutorial from "../tutorial/Tutorial";
 import SummaryChart from "../summary-charts/SummaryChart";
 import axios from "axios";
+import { useAuth0Token } from "../../utility/useAuth0Token";
 
 const { Title } = Typography;
 
 const DefaultDashboard = () => {
 	const [summaryData, setSummaryData] = useState({});
 	const { user } = useAuth0();
+	const accessToken = useAuth0Token();
 	const name = user.email.split("@")[0];
 	const cardTitle = <div className="text-center">Summary</div>;
 
@@ -38,7 +40,9 @@ const DefaultDashboard = () => {
 	useEffect(() => {
 		const getSummaryData = () => {
 			axios
-				.get("/echarts/metadataSummary")
+				.get("/echarts/metadataSummary",{headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},})
 				.then((res) => {
 					console.log("summaryData", res);
 					let summaryData = res.data.records[0];
@@ -48,8 +52,10 @@ const DefaultDashboard = () => {
 					console.log("error :>> ", error);
 				});
 		};
+		if (accessToken){
 		getSummaryData();
-	}, []);
+		}
+	}, [accessToken]);
 
 	return (
 		<>

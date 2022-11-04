@@ -590,3 +590,20 @@ def init_stats_df(no_cycles):
     df_c[LABEL.CYCLE_MIN_REST_V.value] = 0
     df_c[LABEL.CYCLE_TOTAL_REST_TIME.value] = 0
     return df_c
+
+
+def __generate_filter_string(filters, rf = None):
+    filter_string = ""
+    reduction_factor = 10
+    for filter in filters:
+        if filter['column'] == 'reduction_factor':
+            reduction_factor = int(filter['filterValue'])
+            continue
+        if filter['operation'] == '%':
+            filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
+        else:
+            filter_str = f"CAST({filter['column']} as varchar) {filter['operation']}'{filter['filterValue']}'"
+        filter_string = filter_string+f"and {filter_str}"
+    if rf:
+        return filter_string, reduction_factor
+    return filter_string

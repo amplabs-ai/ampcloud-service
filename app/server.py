@@ -32,7 +32,7 @@ app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
 app.add_error_handler(401, unauthorized_exception)
 app.add_error_handler(ProblemException, problem_exception)
-CORS(app.app, origins=["https://localhost:3000", "https://www.amplabs.ai", "https://65.1.73.220:4000"], supports_credentials=True)
+CORS(app.app, origins=["https://localhost:3000", "https://www.amplabs.ai", "https://65.1.73.220:4000", "https://amp-labs-h4.vercel.app"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
 

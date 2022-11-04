@@ -14,31 +14,47 @@ paths:
       responses:
         "200":
           description: Successfull
-  /cells/{test}/meta:
-    get:
+  /cells/meta:
+    post:
       security:
         - {}
         - BearerAuth: []
       summary: Fetches metadata for all cells for the email logged in.
       x-openapi-router-controller: app.controllers.cell_metadata_controller
       operationId: get_cells
-      tags:
+      tags: 
         - Cell Meta
-      parameters:
-        - name: test
-          in: path
-          description: test type
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            enum: [cycle]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              nullable: true
+              properties:
+                filters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      column:
+                        type: string
+                      operation:
+                        type: string
+                        enum: ["=", ">", "<", ">=", "<=", "!=", "%"]
+                      filterValue:
+                        type: string
+                        example: 1
+                    required:
+                      - column
+                      - operation
+                      - filterValue
       responses:
         "200":
           description: Successfull
         "500":
           description: Something went wrong.
+  /cells/{test}/meta:
     patch:
       security:
         - BearerAuth: []
@@ -833,7 +849,18 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
-
+  /metadata:
+    get:
+      summary: Get all available metadata for different fields
+      x-openapi-router-controller: app.controllers.filter_controller
+      operationId: get_filter_data
+      tags:
+        - Filter
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
 tags:
   - name: Cell Meta
   - name: Test Meta

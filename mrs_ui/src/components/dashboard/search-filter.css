@@ -1,0 +1,40 @@
+.filter-slider .ant-slider-rail {
+    height: 5px
+}
+
+.filter-slider .ant-slider-track {
+    height: 5px;
+    background-color: #4abaff
+}
+
+.filter-slider .ant-slider-handle {
+    height: 15px;
+    width: 15px;
+    border: 5px solid #4abaff;
+}
+
+.filter-select .ant-select-selector {
+    border-radius: 5px !important;
+}
+
+.filter-radio.ant-radio-button-wrapper{
+    border-radius: 5px;
+}
+
+.filter-radio.ant-radio-button-wrapper.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled){
+    background-color: #4abaff;
+    font-weight: 700;
+    border:none;
+}
+
+.filter-radio.ant-radio-button-wrapper:first-child{
+    border-radius: 5px;
+}
+
+.filter-radio.ant-radio-button-wrapper:last-child{
+    border-radius: 5px;
+}
+
+.filter-radio.ant-radio-button-wrapper:not(:first-child):before{
+    display: none;
+}

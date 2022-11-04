@@ -5,6 +5,7 @@ from app.model import ArchiveOperator
 import logging
 from sqlalchemy.exc import DataError
 from skimage.measure import block_reduce
+from app.utilities.utils import __generate_filter_string
 
 
 def get_cycle_quantities_by_step_service(cell_id, step, email, mod_step, dashboard_id=None):
@@ -589,29 +590,13 @@ def get_stats_columns_data_service(data, email):
         ao.release_session()
 
 
-def __generate_filter_string(filters, rf = None):
-    filter_string = ""
-    reduction_factor = 10
-    for filter in filters:
-        if filter['column'] == 'reduction_factor':
-            reduction_factor = int(filter['filterValue'])
-            continue
-        if filter['operation'] == '%':
-            filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
-        else:
-            filter_str = f"{filter['column']}{filter['operation']}'{filter['filterValue']}'"
-        filter_string = filter_string+f"and {filter_str}"
-    if rf:
-        return filter_string, reduction_factor
-    return filter_string
-
-def get_metadata_summary_service():
+def get_metadata_summary_service(email):
     try:
         ao = ArchiveOperator()
         ao.set_session()
         records = {}
 
-        archive_cells = ao.get_cathode_count_files_query()
+        archive_cells = ao.get_cathode_count_files_query(email)
         cathode_values = []
         for row in archive_cells:
             row = dict(row)
@@ -619,34 +604,34 @@ def get_metadata_summary_service():
         records['cathode_stats'] = cathode_values
         
         form_factor_values = []
-        archive_cells = ao.get_form_factor_count_files_query()
+        archive_cells = ao.get_form_factor_count_files_query(email)
         for row in archive_cells:
             row = dict(row)
             form_factor_values.append(row)
         records['form_factor_stats'] = form_factor_values
 
-        archive_cells = ao.get_public_files_count_query()
+        archive_cells = ao.get_files_count_query(email)
         for row in archive_cells:
             row = dict(row)
             records['cell_id_count'] = row['count']
 
-        archive_cells = ao.get_cycle_index_count_query()
+        archive_cells = ao.get_cycle_index_count_query(email)
         for row in archive_cells:
             row = dict(row)
             records['cycle_count'] = row['count']
 
         size = 0
-        archive_cells = ao.get_size_cell_metadata_query()
+        archive_cells = ao.get_size_cell_metadata_query(email)
         for row in archive_cells:
             row = dict(row)
             size += row['size']
 
-        archive_cells = ao.get_size_cycle_stats_query()
+        archive_cells = ao.get_size_cycle_stats_query(email)
         for row in archive_cells:
             row = dict(row)
             size += row['size']
 
-        archive_cells = ao.get_size_cycle_timeseries_query()
+        archive_cells = ao.get_size_cycle_timeseries_query(email)
         for row in archive_cells:
             row = dict(row)
             size += row['size']

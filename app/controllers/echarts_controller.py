@@ -231,6 +231,8 @@ def get_stats_columns_data():
     return Response(status, detail, records).to_dict(), status
 
 
+@with_authentication()
 def get_metadata_summary():
-    status, detail, *records = get_metadata_summary_service()
+    email = g.user
+    status, detail, *records = get_metadata_summary_service(email)
     return Response(status, detail, records).to_dict(), status

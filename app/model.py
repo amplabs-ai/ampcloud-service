@@ -405,6 +405,11 @@ class ArchiveOperator:
     def get_all_cell_meta(self, email, test):
         return self.select_table(CellMeta, email, test)
 
+    def get_all_cell_meta_filter(self,email,filter_string):
+        result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = True,filters = filter_string))
+        return result 
+
+
     def get_all_cell_meta_with_id(self, cell_id, email):
         return self.get_all_data_from_table_with_id(CellMeta, cell_id, email)
 
@@ -426,11 +431,19 @@ class ArchiveOperator:
         return self.session.query(CellMeta).filter(
             CellMeta.email.notin_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), CellMeta.test == 'cycle', CellMeta.is_public == 'true'
             ).all()
-    
+
+    def get_all_cell_meta_for_community_filter(self,email,filter_string):
+        result = self.session.execute(FILTER_DASHBOARD.format(email=email,filters=filter_string,is_public=True))
+        return result
+ 
     def get_all_private_cell_meta(self, email, test):
         return self.session.query(CellMeta).filter(
             CellMeta.email == email, CellMeta.test == test, CellMeta.is_public == 'false'
             ).all()
+    
+    def get_all_private_cell_meta_filter(self, email, filter_string):
+        result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = False,filters = filter_string))
+        return result
     # TEST METADATA
 
     def get_all_test_metadata_from_table(self, test_model, email):
@@ -577,34 +590,64 @@ class ArchiveOperator:
             columns=columns, cell_ids=cell_ids, email=email, filters=filters))
         return result
 
-    def get_cathode_count_files_query(self):
-        result = self.session.execute(COUNT_CATHODE_FILES)
+    def get_cathode_count_files_query(self,email):
+        result = self.session.execute(COUNT_CATHODE_FILES.format(email=email))
         return result
 
-    def get_form_factor_count_files_query(self):
-        result = self.session.execute(COUNT_FORM_FACTOR)
+    def get_form_factor_count_files_query(self,email):
+        result = self.session.execute(COUNT_FORM_FACTOR.format(email=email))
         return result
 
-    def get_public_files_count_query(self):
-        result = self.session.execute(PUBLIC_CELL_IDS)
+    def get_files_count_query(self,email):
+        result = self.session.execute(CELL_IDS.format(email=email))
         return result
 
-    def get_cycle_index_count_query(self):
-        result = self.session.execute(TOTAL_CYCLE_INDEX)
+    def get_cycle_index_count_query(self,email):
+        result = self.session.execute(TOTAL_CYCLE_INDEX.format(email=email))
         return result
 
-    def get_size_cell_metadata_query(self):
-        result = self.session.execute(SIZE_CELL_METADATA)
+    def get_size_cell_metadata_query(self,email):
+        result = self.session.execute(SIZE_CELL_METADATA.format(email=email))
         return result
 
-    def get_size_cycle_stats_query(self):
-        result = self.session.execute(SIZE_CYCLE_STATS)
+    def get_size_cycle_stats_query(self,email):
+        result = self.session.execute(SIZE_CYCLE_STATS.format(email=email))
         return result
 
-    def get_size_cycle_timeseries_query(self):
-        result = self.session.execute(SIZE_CYCLE_TIMESERIES)
+    def get_size_cycle_timeseries_query(self,email):
+        result = self.session.execute(SIZE_CYCLE_TIMESERIES.format(email=email))
         return result
 
+
+    # FILTERS
+    def get_anode_filter_query(self, email):
+        result = self.session.execute(ANODE_FILTER_QUERY.format(email=email))
+        return result
+
+    def get_cathode_filter_query(self, email):
+        result = self.session.execute(CATHODE_FILTER_QUERY.format(email=email))
+        return result
+
+    def get_capacity_filter_query(self, email):
+        result = self.session.execute(AH_FILTER_QUERY.format(email=email))
+        return result
+
+    def get_format_filter_query(self, email):
+        result = self.session.execute(FORMAT_SHAPE_FILTER_QUERY.format(email=email))
+        return result
+
+    def get_test_filter_query(self, email):
+        result = self.session.execute(TEST_TYPE_FILTER_QUERY.format(email=email))
+        return result
+
+    def get_temp_filter_query(self, email):
+        result = self.session.execute(TEMPERATURE_FILTER_QUERY.format(email=email))
+        return result
+
+    def get_rate_filter_query(self, email):
+        result = self.session.execute(RATE_FILTER_QUERY.format(email=email))
+        return result
+    
     # DASHBOARD
     def get_shared_dashboard_by_id(self, dashboard_id):
         return self.session.execute(f"select * from shared_dashboard where uuid = '{dashboard_id}'").fetchone()

@@ -206,6 +206,9 @@ const ViewMetadata = (props) => {
 		let cellIdUpdated = [];
 		for (let i = 0; i < data.length; i++) {
 			const item = data[i];
+			Object.keys(item).forEach(key => {
+				item[key] = key !== 'index' && item[key] !== null ? item[key].toString() : item[key]
+			})
 			cellIdUpdated.push({
 				cell_id: item.cell_id,
 				index: item.index,

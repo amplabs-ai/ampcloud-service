@@ -2,9 +2,10 @@ import logging
 from app.archive_constants import RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO, TEST_TYPE
 from app.model import AbuseMeta, AbuseTimeSeries, ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries
 from flask import g
+from app.utilities.utils import __generate_filter_string
 
 
-def get_cellmeta_service(email, test, dashboard_id=None):
+def get_cellmeta_service(email,req_data, dashboard_id=None):
 
     def add_type(row, key, value):
         row[key] = value
@@ -20,28 +21,31 @@ def get_cellmeta_service(email, test, dashboard_id=None):
             else:
                 cell_id = dashboard_data.cell_id.split(',')
                 email = dashboard_data.shared_by
-                archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, email, test)
+                archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, email)
                 records = [cell.to_dict() for cell in archive_cells]
                 return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []
+        filter_string = ""
+        if req_data.get('filters'):
+            filter_string = __generate_filter_string(req_data.get('filters'))
+
         archive_cells = ao.get_all_shared_cell_meta_with_id(
-            ["Amplabs Sample"], email, test)
-        for cell in archive_cells:
-            print(cell.to_dict())
+            ["Amplabs Sample"], email, "cycle")
+
         # archive_cells = ao.get_all_cell_meta_for_community(email)
         records = [add_type(cell.to_dict(), "type", "public/other")
                    for cell in archive_cells]
-        archive_cells = ao.get_all_cell_meta_for_community(email, for_current_user=True)
-        records.extend([add_type(cell.to_dict(), "type", "public/user")
+        archive_cells = ao.get_all_cell_meta_for_community_filter(email,filter_string)
+        records.extend([add_type(dict(cell), "type", "public/user")
                    for cell in archive_cells])
-        archive_cells_ba = ao.get_all_cell_meta(BATTERY_ARCHIVE, test)
-        records.extend([add_type(cell.to_dict(), "type",
+        archive_cells_ba = ao.get_all_cell_meta_filter(BATTERY_ARCHIVE,filter_string)
+        records.extend([add_type(dict(cell), "type",
                        "public/battery-archive") for cell in archive_cells_ba])
-        archive_cells_dm = ao.get_all_cell_meta(DATA_MATR_IO, test)
-        records.extend([add_type(cell.to_dict(), "type",
+        archive_cells_dm = ao.get_all_cell_meta_filter(DATA_MATR_IO,filter_string)
+        records.extend([add_type(dict(cell), "type",
                        "public/data.matr.io") for cell in archive_cells_dm])
-        archive_cells = ao.get_all_private_cell_meta(email, test)
-        records.extend([add_type(cell.to_dict(), "type", "private")
+        archive_cells = ao.get_all_private_cell_meta_filter(email,filter_string)
+        records.extend([add_type(dict(cell), "type", "private")
                         for cell in archive_cells])
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except Exception as err:
