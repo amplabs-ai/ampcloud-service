@@ -4,9 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 from app.archive_constants import LABEL
-
 import warnings
-
 warnings.filterwarnings('ignore')
 
 status = {}
@@ -27,7 +25,6 @@ def sort_timeseries(df_tmerge):
     # print(df_tmerge)
     """
     Sort cycle timeseries data
-
     :param df_tmerge: dataframe returned after reading cycle timeseries data
     :return: sorted dataframe
     """
@@ -35,29 +32,23 @@ def sort_timeseries(df_tmerge):
     # Rebuild Cycle Index and test time to increment from file to file
     # This method does not depend on data from a specific testers
     if not df_tmerge.empty:
-
         df_t = df_tmerge.sort_values(
             by=[LABEL.DATE_TIME.value, LABEL.TEST_TIME.value])
         df_t = df_t.reset_index(drop=True)
-
         cycles = df_t[[
             LABEL.CYCLE_INDEX_FILE.value, LABEL.CYCLE_INDEX.value,
             LABEL.FILENAME.value, LABEL.TEST_TIME.value
         ]].to_numpy()
-
         max_cycle = 1
         past_index = 1
         max_time = 0
         last_file = ""
         delta_t = 0
         start = 0
-
         for x in cycles:
-
             if start == 0:
                 last_file = x[2]
                 start += 1
-
             if x[2] != last_file:
                 delta_t = max_time
                 x[3] += delta_t
@@ -66,9 +57,7 @@ def sort_timeseries(df_tmerge):
                 x[3] += delta_t
                 max_time = x[3]
                 last_file = x[2]
-
             if x[0] < max_cycle:
-
                 if past_index == x[0]:
                     past_index = x[0]
                     x[1] = max_cycle
@@ -76,46 +65,37 @@ def sort_timeseries(df_tmerge):
                     past_index = x[0]
                     x[1] = max_cycle + 1
                     max_cycle = x[1]
-
             else:
                 past_index = x[0]
                 max_cycle = x[0]
                 x[1] = x[0]
-
         df_tmp = pd.DataFrame(data=cycles[:, [1]],
                               columns=[LABEL.CYCLE_INDEX.value])
         df_t[LABEL.CYCLE_INDEX.value] = df_tmp[LABEL.CYCLE_INDEX.value]
-
         df_tmp = pd.DataFrame(data=cycles[:, [3]],
                               columns=[LABEL.TEST_TIME.value])
         df_t[LABEL.TEST_TIME.value] = pd.to_numeric(
             df_tmp[LABEL.TEST_TIME.value])
-
         df_ts = df_t.sort_values(by=[LABEL.TEST_TIME.value])
-
         # Remove quantities only needed to tag files
         df_ts.drop(LABEL.FILENAME.value, axis=1, inplace=True)
         df_ts.drop(LABEL.CYCLE_INDEX_FILE.value, axis=1, inplace=True)
-
     return df_ts
 
 
 def calc_cycle_stats(df_t, cell_id=None, email=None):
     """
     Calculate cycle states from cycle timeseries data
-
     :param cell_id: cell_id for
     :param df_t: cycle timeseries data frame.
     :return: tuple of dataframes of calculated stats and timeseries data
     """
-
     cycle_index_was_present = True
     if LABEL.CYCLE_INDEX.value not in df_t.columns:
         cycle_index_was_present = False
         df_t[LABEL.CYCLE_INDEX.value] = 1
     df_t = df_t.sort_values(by=[LABEL.CYCLE_INDEX.value, LABEL.TEST_TIME.value]).reset_index(drop=True)
     df_t[LABEL.CYCLE_TIME.value] = 0
-
     no_cycles = int(df_t[LABEL.CYCLE_INDEX.value].max())
     # Initialize the cycle_data time frame
     df_c = init_stats_df(no_cycles)
@@ -132,12 +112,10 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
             df_f[LABEL.E_C.value] = 0
             df_f[LABEL.AH_D.value] = 0
             df_f[LABEL.E_D.value] = 0
-
         if not df_f.empty:
             try:
                 if initial_cycle:
                     prev_cycle_end = df_f['test_time'].max()
-
                 if not initial_cycle and prev_cycle_end > df_f['test_time'].min():
                     reset_test_time_by = reset_test_time_by + prev_cycle_end
                     prev_cycle_end = df_f['test_time'].max()
@@ -159,14 +137,12 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.TEST_TIME.value)] = df_f.loc[
                     df_f[LABEL.TEST_TIME.value].idxmax()].test_time
-
                 df_f = calc_cycle_quantities(df_f)
 
                 # get df according to charge/discharge/rest
                 df_f_c = df_f[df_f[LABEL.I.value] > 0]
                 df_f_d = df_f[df_f[LABEL.I.value] < 0]
                 df_f_r = df_f[df_f[LABEL.I.value] == 0]
-
 
                 # set cycle specific values from calculated quantities
                 df_t.loc[df_t.cycle_index == x,
@@ -208,12 +184,10 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
                     df_c.loc[df_c.cycle_index == x,
                              LABEL.REST_STEP_COUNT.value] = len(pd.unique(df_f_r[LABEL.STEP_INDEX.value]))
                     df_t.loc[df_t.cycle_index == x, LABEL.STEP_DATAPOINT_ORDINAL.value] = df_f.groupby([LABEL.STEP_INDEX.value]).cumcount()+1
-
                 df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_START_TS.value)] = df_f[LABEL.DATE_TIME.value].iloc[0]
                 df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_END_TS.value)] = df_f[LABEL.DATE_TIME.value].iloc[-1]
                 df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_DURATION.value)] = (
                         df_f[LABEL.DATE_TIME.value].iloc[-1] - df_f[LABEL.DATE_TIME.value].iloc[0]).total_seconds()
-
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_AH_C.value)] = df_f_c[LABEL.AH_C.value].max()
                 df_c.iloc[c_ind,
@@ -222,35 +196,30 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
                           df_c.columns.get_loc(LABEL.CYCLE_E_C.value)] = df_f_c[LABEL.E_C.value].max()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_E_D.value)] = df_f_d[LABEL.E_D.value].max()
-
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MAX_P.value)] = df_f[LABEL.POWER.value].abs().max()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MAX_C_P.value)] = df_f_c[LABEL.POWER.value].abs().max()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MAX_D_P.value)] = df_f_d[LABEL.POWER.value].abs().max()
-
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MIN_P.value)] = df_f[LABEL.POWER.value].abs().min()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MIN_C_P.value)] = df_f_c[LABEL.POWER.value].abs().min()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MIN_D_P.value)] = df_f_d[LABEL.POWER.value].abs().min()
-
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MEAN_P.value)] = df_f[LABEL.POWER.value].mean()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MEAN_C_P.value)] = df_f_c[LABEL.POWER.value].mean()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MEAN_D_P.value)] = df_f_d[LABEL.POWER.value].mean()
-
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MEAN_V.value)] = df_f[LABEL.V.value].mean()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MEAN_C_V.value)] = df_f_c[LABEL.V.value].mean()
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.CYCLE_MEAN_D_V.value)] = df_f_d[LABEL.V.value].mean()
-
                 df_c.iloc[c_ind,
                           df_c.columns.get_loc(LABEL.DATAPOINT_COUNT.value)] = len(df_f)
 
@@ -282,7 +251,6 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
                                                                                       df_c.iloc[
                                                                                           c_ind, df_c.columns.get_loc(
                                                                                               LABEL.CYCLE_E_C.value)]) * 100
-
             except Exception as err:
                 logging.error(err)
 
@@ -312,6 +280,7 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
 
     df_tt_c = df_tt[df_tt[LABEL.STEP_TYPE.value] == "Charge"]
     df_tt_d = df_tt[df_tt[LABEL.STEP_TYPE.value] == "Discharge"]
+
     if not df_tt_c.empty:
         df_cc[LABEL.DV_START_C.value] = df_tt_c[LABEL.DATAPOINT_DV.value].iloc[
             0]
@@ -413,7 +382,6 @@ def calc_cycle_quantities(df):
             x[8] = "Charge"
         else:
             x[8] = "Rest"
-
         if step_index_present:
             if not step_time_present:
                 if step_start == -1:
@@ -422,7 +390,6 @@ def calc_cycle_quantities(df):
                     step_start = 0
                     # x[11] = step_ordinal
                     # step_ordinal = 1
-
                 else:
                     if last_step != x[9]:
                         initial_step_time = x[0]
@@ -449,7 +416,6 @@ def calc_cycle_quantities(df):
                 last_v_c = x[2]
                 last_ah_c = x[3]
                 last_e_c = x[4]
-
             if x[1] <= 0:
                 if calc_discharge_capacity:
                     x[5] = (x[0] - last_time) * (x[1] + last_i_d) * 0.5 + last_ah_d
@@ -488,10 +454,9 @@ def calc_cycle_quantities(df):
         df_tmp = pd.DataFrame(data=tmp_arr[:, [10]], columns=[LABEL.STEP_TIME.value])
         df_tmp.index += df.index[0]
         df[LABEL.STEP_TIME.value] = df_tmp[LABEL.STEP_TIME.value]
-
-
         # df_tmp = pd.DataFrame(data=tmp_arr[:, [11]], columns=[LABEL.STEP_DATAPOINT_ORDINAL.value])
         # df_tmp.index += df.index[0]
+
     df_tmp = pd.DataFrame(data=tmp_arr[:, [8]], columns=[LABEL.STEP_TYPE.value])
     df_tmp.index += df.index[0]
     df[LABEL.STEP_TYPE.value] = df_tmp[LABEL.STEP_TYPE.value]
@@ -509,7 +474,6 @@ def calc_cycle_quantities(df):
 
 def split_cycle_metadata(df_c_md):
     df_cell_md = extract_cell_metdata(df_c_md)
-
     # Build test metadata
     df_test_md = pd.DataFrame()
     df_test_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
@@ -518,13 +482,11 @@ def split_cycle_metadata(df_c_md):
     df_test_md[LABEL.SOC_MAX.value] = [df_c_md[LABEL.SOC_MAX.value]]
     df_test_md[LABEL.SOC_MIN.value] = [df_c_md[LABEL.SOC_MIN.value]]
     df_test_md[LABEL.TEMP.value] = [df_c_md[LABEL.TEMP.value]]
-
     return df_cell_md, df_test_md
 
 
 def split_abuse_metadata(df_c_md):
     df_cell_md = extract_cell_metdata(df_c_md)
-
     # Build test metadata
     df_test_md = pd.DataFrame()
     df_test_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
@@ -533,7 +495,6 @@ def split_abuse_metadata(df_c_md):
     df_test_md[LABEL.INDENTOR.value] = [df_c_md[LABEL.INDENTOR.value]]
     df_test_md[LABEL.NAIL_SPEED.value] = [df_c_md[LABEL.NAIL_SPEED.value]]
     df_test_md[LABEL.TEMP.value] = [df_c_md[LABEL.TEMP.value]]
-
     return df_cell_md, df_test_md
 
 
@@ -549,7 +510,6 @@ def extract_cell_metdata(df_c_md):
     df_cell_md[LABEL.TEST.value] = [df_c_md[LABEL.TEST.value]]
     # df_cell_md[LABEL.MAPPING.value] = [df_c_md[LABEL.MAPPING.value]]
     df_cell_md[LABEL.TESTER.value] = [df_c_md[LABEL.TESTER.value]]
-
     return df_cell_md
 
 

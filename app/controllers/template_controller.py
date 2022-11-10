@@ -4,6 +4,7 @@ from app.services.template_service import *
 from app.response import Response
 import logging
 
+
 @with_authentication()
 def create_template():
     try:
@@ -15,6 +16,7 @@ def create_template():
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
+
 @with_authentication()
 def get_details_from_template():
     try:
@@ -24,6 +26,7 @@ def get_details_from_template():
     except Exception as err:
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
+
 
 @with_authentication()
 def delete_template(template):

@@ -41,7 +41,7 @@ const DashboardFilterBar = (props) => {
 	};
 
 	useEffect(() => {
-		if (accessToken && state.selectedCellIds.length && userPlan) {
+		if (props.type === "shared" || (accessToken && state.selectedCellIds.length && userPlan)) {
 			let data;
 			data = _cleanCellIds(state.selectedCellIds);
 			let cellIdData = [];
@@ -135,6 +135,9 @@ const DashboardFilterBar = (props) => {
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
+		if(state.dashboardId){
+			params.append("dashboard_id", state.dashboardId)
+		}
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
@@ -189,6 +192,9 @@ const DashboardFilterBar = (props) => {
 		setLoading(true);
 		let params = new URLSearchParams();
 		params.append("cell_id", k);
+		if(state.dashboardId){
+			params.append("dashboard_id", state.dashboardId)
+		}
 		axios
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
@@ -379,7 +385,7 @@ const DashboardFilterBar = (props) => {
 
 	const getColsToDisplay = (cols) => {
 		return cols.filter((col) => {
-			if (["shared", "public"].includes(state.dashboardType) && col.title === "Delete") {
+			if (["shared", "public"].includes(state.dashboardType) && (col.title === "Delete" || col.title === "Public")) {
 				return false;
 			}
 			return true;
@@ -402,7 +408,7 @@ const DashboardFilterBar = (props) => {
 					/>
 
 					<span style={{ float: "right", fontSize: "0.9rem" }}>
-					<Radio.Group
+					{state.dashboardId ? null :<Radio.Group
 						onChange={handleValueChange}
 						value={
 							state.shallShowSecondChart ? "standard_plot" : 
@@ -415,7 +421,7 @@ const DashboardFilterBar = (props) => {
 						<Radio.Button value="standard_plot">Standard Plots</Radio.Button>
 						<Radio.Button value="custom_plot">Custom Plots</Radio.Button>
 						<Radio.Button value="metadata">Metadata</Radio.Button>
-					</Radio.Group>
+					</Radio.Group>}
 					{/* <Button
 						disabled={state.disableSelection}
 						key="1"
@@ -437,15 +443,15 @@ const DashboardFilterBar = (props) => {
 						Metadata
 					</Button> */}
 					<Text type="secondary">
-					{/* {state.dashboardType === "private" ? (
+					{state.dashboardType === "private" ? (
 							<DashboardShareButton
 								ref={dashboardRef}
 								cellIds={state.selectedCellIds}
-								shareDisabled={true}
-								step={state.appliedStep}
+								// shareDisabled={true}
+								// step={state.appliedStep}
 								dashboard="cycle"
 							/>
-						) : null}   */}
+						) : null}  
 						Total: {cellIds.length}</Text>
 					</span>
 					<br />

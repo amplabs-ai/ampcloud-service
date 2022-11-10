@@ -25,6 +25,7 @@ def create_template_service(email,request):
         print(err)
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
 
+
 def get_details_from_template_service(email):
     try:
         response = client_sdb.select(

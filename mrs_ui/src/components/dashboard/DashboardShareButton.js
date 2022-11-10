@@ -31,7 +31,7 @@ const DashboardShareButton = (props, ref) => {
 	const [metaImageDash, setMetaImageDash] = useState(null);
 	const [shallShowShareDashModal, setShallShowShareDashModal] = useState(false);
 	const [shareLoadingMsg, setShareLoadingMsg] = useState("");
-	const [shareType, setShareType] = useState("private");
+	const [shareType, setShareType] = useState("public");
 	const [loading, setLoading] = useState(false);
 	const [shareLink, setShareLink] = useState("");
 
@@ -150,7 +150,7 @@ const DashboardShareButton = (props, ref) => {
 	const cleanCellIds = (cellIds) => {
 		let x = [];
 		cellIds.map((k) => {
-			x.push(k.substring(k.indexOf("_") + 1));
+			x.push(k.split("_").slice(2).join("_"));
 		});
 		return x;
 	};
@@ -160,11 +160,8 @@ const DashboardShareButton = (props, ref) => {
 		if (checked) {
 			setLoading(true);
 			let data = JSON.stringify({
-				shared_to: [],
 				cell_id: cleanCellIds(props.cellIds),
-				test: props.dashboard,
-				step: props.step,
-				sample: props.sample,
+				test: "cycle",
 				is_public: true,
 			});
 
@@ -216,69 +213,20 @@ const DashboardShareButton = (props, ref) => {
 					<div className="text-center">{shareLoadingMsg}</div>
 				) : (
 					<div>
-						<Alert className="mb-1" message="Loaded Cell Ids with step will be shared!" type="info" showIcon closable />
-						<span className="fw-bold ms-1">Type: </span>
-						<Switch checkedChildren="Public" unCheckedChildren="Private" onChange={onShareWithChange} />
+						<Alert className="mb-1" message="Loaded Cell Ids will be shared!" type="info" showIcon closable />
+						{/* <span className="fw-bold ms-1">Type: </span> */}
 						{shareType === "public" ? (
 							loading ? (
 								<div>
 									<Spin />
 								</div>
 							) : (
-								<div style={{ display: "flex" }}>
-									<div style={{ width: "50%" }} className="text-center">
-										<button
-											className="btn btn-link"
-											onClick={(e) => {
-												e.preventDefault();
-												shareOnLinkedIn();
-											}}
-										>
-											<FaLinkedin size={70} />
-										</button>
-										<p>LinkedIn</p>
-									</div>
-									<div style={{ width: "50%" }} className="text-center">
-										<a
-											title="Mail"
-											href={`mailto:?subject=Amplabs.ai - Dashboard&body=${formatString(
-												SHARE_TEXT,
-												props.dashboard,
-												shareLink
-											)}`}
-											target="_blank"
-											rel="noreferrer"
-										>
-											<FaEnvelope size={80} />
-										</a>
-										<p>Email</p>
-									</div>
-									<div style={{ width: "50%" }} className="text-center">
-										<div
-											className="btn btn-link"
-											title="Direct Link"
-											onClick={(e) => {
-												e.preventDefault();
-												copyToClipboard(shareLink);
-												message.success("Copied to clipboard!");
-												message.success("Copied to clipboard!");
-											}}
-										>
-											<FaLink size={70} />
-										</div>
-										<p>Copy Direct Link</p>
-									</div>
-								</div>
-							)
-						) : (
+								
 							<DashSharePrivate
-								step={props.step}
-								sample={props.sample}
 								dashboard={props.dashboard}
 								cellIds={cleanCellIds(props.cellIds)}
-							/>
-						)}
-						<Card
+							/>)) : null}
+						{/* <Card
 							loading={!metaImageDash}
 							// cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
 							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
@@ -290,7 +238,7 @@ const DashboardShareButton = (props, ref) => {
 							)}
 							<br />
 							{shareLink ? formatString(SHARE_TEXT, props.dashboard, shareLink) : null}
-						</Card>
+						</Card> */}
 					</div>
 				)}
 			</Modal>

@@ -18,7 +18,8 @@ let CHART_API_ENDPOINTS = {
 	voltageTime: "/echarts/voltageTime",
 	currentTime: "/echarts/currentTime",
 	energyDensity: "/echarts/energyDensity",
-	capacity: "/echarts/capacity"
+	capacity: "/echarts/capacity",
+	operatingPotential: "/echarts/operatingPotential"
 };
 
 const instance = new WorkerBuilder(Worker);
@@ -33,7 +34,8 @@ const ChartContainerType2 = () => {
 		voltageTime: false,
 		currentTime: false,
 		energyDensity: false,
-		capacity: false
+		capacity: false,
+		operatingPotential: false
 	});
 	const [chartLoadingError, setChartLoadingError] = useState({
 		capacityRetention: false,
@@ -43,7 +45,8 @@ const ChartContainerType2 = () => {
 		voltageTime: false,
 		currentTime: false,
 		energyDensity: false,
-		capacity: false
+		capacity: false,
+		operatingPotential: false
 	});
 	const [chartData, setChartData] = useState({});
 	const [cancelReqToken, setCancelReqToken] = useState({
@@ -54,7 +57,8 @@ const ChartContainerType2 = () => {
 		voltageTime: axios.CancelToken.source(),
 		currentTime: axios.CancelToken.source(),
 		energyDensity: axios.CancelToken.source(),
-		capacity: axios.CancelToken.source()
+		capacity: axios.CancelToken.source(),
+		operatingPotential: axios.CancelToken.source()
 	});
 	const [filteredData, setFilteredData] = useState({});
 	const [chartsLoaded, setChartsLoaded] = useState({
@@ -65,7 +69,8 @@ const ChartContainerType2 = () => {
 		voltageTime: false,
 		currentTime: false,
 		energyDensity: false,
-		capacity: false
+		capacity: false,
+		operatingPotential: false
 	});
 	const [loading, setLoading] = useState(false);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -84,7 +89,8 @@ const ChartContainerType2 = () => {
 				voltageTime: false,
 				currentTime: false,
 				energyDensity: false,
-				capacity: false
+				capacity: false,
+				operatingPotential: false
 			};
 		});
 		let check = true;
@@ -109,7 +115,7 @@ const ChartContainerType2 = () => {
 	}, []);
 
 	useEffect(() => {
-		if (accessToken && state.checkedCellIds.length && userPlan) {
+		if (state.dashboardId || (accessToken && state.checkedCellIds?.length && userPlan)) {
 			handleFilterChange(state.checkedCellIds, accessToken);
 		}
 	}, [state.selectedCellIds, accessToken, userPlan]);
@@ -120,13 +126,15 @@ const ChartContainerType2 = () => {
 
 	// runs when api call is needed / gets cellIds from filter bar
 	const handleFilterChange = (cellIds, accessToken) => {
-		if (!cellIds.length) {
-			return;
+		let params = new URLSearchParams();
+		if (state.dashboardId) {
+			params.append("dashboard_id", state.dashboardId);
 		}
 		let data = {
 			cell_ids: cellIds.map((c) => c.cell_id),
 		};
 		let request = {
+			params: params,
 			method: "post",
 			headers: {
 				Authorization: "Bearer " + accessToken,
@@ -145,9 +153,10 @@ const ChartContainerType2 = () => {
 
 		data.filters = [];
 		_fetchData("coulombicEfficiency", request);
-		_fetchData("capacityRetention", request);
+		// _fetchData("capacityRetention", request);
 		_fetchData("energyDensity", request);
 		_fetchData("capacity", request);
+		_fetchData("operatingPotential", request);
 
 		return true;
 	};
@@ -192,6 +201,11 @@ const ChartContainerType2 = () => {
 			case "capacity":
 				setChartLoadingError((prev) => {
 					return { ...prev, capacity: show};
+				});
+				break;
+			case "operatingPotential":
+				setChartLoadingError((prev) => {
+					return { ...prev, operatingPotential: show };
 				});
 				break;
 			default:
@@ -241,6 +255,11 @@ const ChartContainerType2 = () => {
 					return { ...prev, capacity: show };
 				});
 				break;
+			case "operatingPotential":
+				setChartLoadSpiner((prev) => {
+					return { ...prev, operatingPotential: show };
+				});
+				break;	
 			default:
 				break;
 		}
@@ -347,6 +366,17 @@ const ChartContainerType2 = () => {
 							return { ...prev, energyDensity: true };
 						});
 						break;
+					case "operatingPotential":
+						setChartData((prev) => {
+							return { ...prev, operatingPotential: result.records[0] };
+						});
+						setFilteredData((prev) => {
+							return { ...prev, operatingPotential: result.records[0] };
+						});
+						setChartsLoaded((prev) => {
+							return { ...prev, operatingPotential: true };
+						});
+						break;
 					default:
 						break;
 				}
@@ -354,7 +384,7 @@ const ChartContainerType2 = () => {
 			})
 			.catch((err) => {
 				console.log(err);
-				if (err.response.data.status === 400) {
+				if (err.response.data.status === 400) {	
 					message.error(err.response.data.detail);
 					message.error(err.response.data.detail);
 				}
@@ -373,7 +403,8 @@ const ChartContainerType2 = () => {
 				voltageTime: false,
 				currentTime: false,
 				energyDensity: false,
-				capacity: false
+				capacity: false,
+				operatingPotential: false
 			};
 		});
 		let check = true;
@@ -453,6 +484,16 @@ const ChartContainerType2 = () => {
 						</div>
 						<div className="col-md-6 mt-2">
 							<DashboardChart
+								data={filteredData["operatingPotential"] || []}
+								chartName="operatingPotential"
+								chartLoadingError={chartLoadingError["operatingPotential"]}
+								formatCode={formatCode}
+								shallShowLoadSpinner={chartLoadSpiner["operatingPotential"]}
+								fetchData={_fetchData}
+							/>
+						</div>
+						<div className="col-md-6 mt-2">
+							<DashboardChart
 								data={filteredData["coulombicEfficiency"] || []}
 								chartName="coulombicEfficiency"
 								chartLoadingError={chartLoadingError["coulombicEfficiency"]}
@@ -471,7 +512,7 @@ const ChartContainerType2 = () => {
 								fetchData={_fetchData}
 							/>
 						</div>
-						<div className="col-md-6 mt-2">
+						{/* <div className="col-md-6 mt-2">
 							<DashboardChart
 								data={filteredData["capacityRetention"] || []}
 								chartName="capacityRetention"
@@ -480,7 +521,7 @@ const ChartContainerType2 = () => {
 								shallShowLoadSpinner={chartLoadSpiner["capacityRetention"]}
 								fetchData={_fetchData}
 							/>
-						</div>
+						</div> */}
 						<div className="col-md-6 mt-2">
 							<DashboardChart
 								data={filteredData["voltageTime"] || []}

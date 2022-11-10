@@ -99,17 +99,14 @@ def file_data_process_service(cell_id, email):
         test_metadata = status[f"{email}|{cell_id}"]['test_metadata']
         ao.remove_cell_from_archive(cell_id, email)
         ao.add_all(cell_metadata, 'cell_metadata')
-
         if status[f"{email}|{cell_id}"]['test_type'] == TEST_TYPE.CYCLE.value:
             # df_tmerge_sorted = sort_timeseries(df_tmerge)
             # status[f"{email}|{cell_id}"]['progress']['percentage'] = 25
             stat_df, final_df = calc_cycle_stats(df_tmerge, cell_id, email)
             status[f"{email}|{cell_id}"]['progress']['steps']["STATS CALCULATION"] = True
-
             final_df['cell_id'] = cell_id
             final_df['email'] = email
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 70
-
             ao.add_all(test_metadata, 'cycle_metadata')
             status[f"{email}|{cell_id}"]['progress']['percentage'] = 75
             if stat_df is not None:
@@ -133,7 +130,6 @@ def file_data_process_service(cell_id, email):
         status[f"{email}|{cell_id}"]['progress']['steps']["WRITING TO DATABASE"] = True
         status[f"{email}|{cell_id}"]['progress']['percentage'] = 100
         status[f"{email}|{cell_id}"]['progress']['message'] = "COMPLETED"
-
     except Exception as err:
         logging.error(err)
         status[f"{email}|{cell_id}"]['progress']['percentage'] = -1

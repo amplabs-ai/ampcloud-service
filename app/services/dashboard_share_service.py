@@ -1,26 +1,35 @@
-import uuid
+import shortuuid
 from app.model import ArchiveOperator, SharedDashboard
 import logging
-
 
 def dashboard_share_add_service(data, email):
     ao = ArchiveOperator()
     ao.set_session()
-    data['shared_to'].append(email)
+    # data['shared_to'].append(email)
     try:
-        dashboard_uuid = uuid.uuid4()
+        dashboard_data = ao.get_shared_dashboard_by_email(email)
+        for row in dashboard_data:
+            row = dict(row)
+            if (set(data['cell_id']) == set((list(row["cell_id"].split(','))))):
+                return 200, row["uuid"]
+        dashboard_uuid = shortuuid.uuid()
         dashboard_values = {
             "uuid": dashboard_uuid,
             "shared_by": email,
-            "shared_to": ",".join(data['shared_to']),
+            # "shared_to": " ",
+            # "shared_to": ",".join(data['shared_to']),
             "cell_id": ",".join(data['cell_id']),
-            "test": data['test'],
-            "step": data['step'],
-            "sample": data.get('sample'),
+            "test": 'cycle',
+            # "step": " ",
+            # "sample": " ",
+            "is_public": True,
+            # "test": data['test'],
+            # "step": data['step'],
+            # "sample": data.get('sample'),
             "is_public": data['is_public']
         }
-        ao.session.execute(SharedDashboard.__table__.insert(), dashboard_values)
-        return 200, dashboard_uuid
+        ao.session.execute(SharedDashboard.__table__.insert(), dashboard_values)                
+        return 200,dashboard_uuid
     except Exception as err:
         logging.error(err)
         return 500, "Internal Server Error"

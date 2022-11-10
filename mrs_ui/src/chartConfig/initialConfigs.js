@@ -1,23 +1,12 @@
 const initialChartOptions = {
 	animation: false,
-	tooltip: [
-		{
-			trigger: "axis",
-			axisPointer: { type: "cross" },
-			triggerOn: "click",
-			valueFormatter: (value) => value.toExponential(4),
-			// showContent: false,
-		},
-	],
 	// animation: false,
-	// grid: {
-	// 	width: "95%",
-	// 	height: "70%",
-	// 	left: "3%",
-	// 	right: "4%",
-	// 	bottom: "15%",
-	// 	containLabel: true,
-	// },
+	grid: {
+		left: "10%",
+		right: "10%",
+		bottom: "16%",
+		containLabel: true,
+	},
 	// grid: {
 	// 	left: window.screen.width < 600 ? "8%" : "5%",
 	// 	right: window.screen.width < 600 ? "5%" : "5%",
@@ -35,21 +24,24 @@ const initialChartOptions = {
 };
 
 const scatterPlotChartId = [
-	"plotter",
+	"energyDensity",
+	"capacity",
+	"operatingPotential",
+	"coulombicEfficiency"
 ];
 
 const initialChartFilters = {
 	capacityRetention: [{ column: null, operation: null, filterValue: null }],
 	coulombicEfficiency: [{ column: null, operation: null, filterValue: null }],
 	differentialCapacity: [
-		{ column: "reduction_factor", operation: "=", filterValue: "10" },
-		{ column: "test_datapoint_ordinal", operation: "%", filterValue: "10" },
-		{ column: "cycle_index", operation: "%", filterValue: "100" },
+		{ column: "reduction_factor", operation: "=", filterValue: "15" },
+		{ column: "cycle_index", operation: "%", filterValue: "1" },
 	],
-	galvanostaticPlot: [{ column: "cycle_index", operation: "%", filterValue: "100" }],
+	galvanostaticPlot: [{ column: "cycle_index", operation: "%", filterValue: "1" }],
 	voltageTime: [{ column: "test_datapoint_ordinal", operation: "%", filterValue: "100" }],
 	currentTime: [{ column: "test_datapoint_ordinal", operation: "%", filterValue: "100" }],
 	energyDensity: [{ column: null, operation: null, filterValue: null }],
-	capacity: [{ column: null, operation: null, filterValue: null }]
+	capacity: [{ column: null, operation: null, filterValue: null }],
+	operatingPotential: [{ column: null, operation: null, filterValue: null }],
 };
 export { initialChartOptions, scatterPlotChartId, initialChartFilters };

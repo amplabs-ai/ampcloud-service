@@ -5,6 +5,7 @@ from app.utilities.utils import status
 import logging
 import copy
 
+
 # @with_authentication()
 def get_status(cell_id):
     try:

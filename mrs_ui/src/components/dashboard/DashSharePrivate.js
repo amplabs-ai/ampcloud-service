@@ -26,16 +26,16 @@ const DashSharePrivate = (props) => {
 	};
 
 	const generateLink = () => {
-		if (!sharedWith.length) {
-			return;
-		}
+		// if (!sharedWith.length) {
+		// 	return;
+		// }
 		setBtnLoading(true);
 		let data = JSON.stringify({
-			shared_to: sharedWith,
+			// shared_to: sharedWith,
 			cell_id: props.cellIds,
 			test: props.dashboard,
-			step: props.step,
-			is_public: false,
+			// step: props.step,
+			is_public: true,
 		});
 
 		let config = {
@@ -52,8 +52,8 @@ const DashSharePrivate = (props) => {
 			.then(function (response) {
 				setBtnLoading(false);
 				setShareLink(
-					(process.env.REACT_APP_ENV === "production" ? process.env.REACT_APP_PROD_URI : "http://localhost:3000") +
-						`/dashboard/${props.dashboard}/share/` +
+					(process.env.REACT_APP_ENV === "production" ? process.env.REACT_APP_PROD_URI : "https://65.1.73.220:4000") +
+						`/dashboard/share/` +
 						response.data.detail
 				);
 			})
@@ -66,29 +66,10 @@ const DashSharePrivate = (props) => {
 
 	return (
 		<div className="my-2">
-			<Input.Group compact>
-				<Input
-					style={{
-						width: "calc(100% - 200px)",
-					}}
-					placeholder="Enter email adderess"
-					type="email"
-					onChange={(e) => setInputMail(e.target.value)}
-					value={inputMail}
-				/>
-				<Button onClick={addShareMail}>Add</Button>
-			</Input.Group>
 			<div className="pt-1">
 				{/* <span className="me-1">Shared With:</span> */}
-				{sharedWith.map((user) => {
-					return (
-						<span key={user} className="badge bg-light text-dark fw-normal m-1" style={{ fontSize: "16px" }}>
-							{user} <FaTimes style={{ cursor: "pointer" }} onClick={() => removeSharedWith(user)} />
-						</span>
-					);
-				})}
 				<div className="mt-1">
-					<Button type="link" loading={btnLoading} onClick={generateLink}>
+					<Button  loading={btnLoading} onClick={generateLink}>
 						share access & generate link
 					</Button>
 				</div>

@@ -17,6 +17,7 @@ def unit_conversion(df_time_series_file,template_data):
         if unit != "none":
             df_time_series_file.eval(units[unit].replace('COL_NAME',f"`{column_name}`"),inplace=True)
 
+
 def col_mappings(df_time_series_file,template_data):
     column_mapping = {}
     for elements in template_data["Items"][0]["Attributes"]:
@@ -24,7 +25,6 @@ def col_mappings(df_time_series_file,template_data):
         temp = elements['Value'].split("||")
         mapping = temp[0]
         column_mapping[column_name] = mapping
-
     columns_to_drop = []
     df_columns = copy.deepcopy(df_time_series_file.columns.values)
     for i, (key, value) in enumerate(column_mapping.items()):

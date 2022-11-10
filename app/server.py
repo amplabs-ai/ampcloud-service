@@ -16,6 +16,7 @@ from app.controllers.echarts_controller import get_timeseries_columns_data, get_
 from app.controllers.file_transfer_controller import download_timeseries_plot_data, download_stats_plot_data
 import logging
 
+
 # Create and configure logger
 logging.basicConfig(filename="logs/audit.log",
                     format='%(asctime)s %(levelname)s "%(message)s"',
@@ -27,6 +28,7 @@ app.add_api('../api/api.yaml', options={'swagger_url': '/api'})
 app.app.config['DATABASE_URI'] = AMPLABS_DB_URL
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 
+
 # Error Handlers
 app.add_error_handler(404, client_exception)
 app.add_error_handler(400, client_exception)
@@ -35,6 +37,7 @@ app.add_error_handler(ProblemException, problem_exception)
 CORS(app.app, origins=["https://localhost:3000", "https://www.amplabs.ai", "https://65.1.73.220:4000", "https://amp-labs-h4.vercel.app"], supports_credentials=True)
 Compress(app.app)
 print("Connected to database: {}".format(app.app.config['DATABASE_URI']))
+
 
 # Private Routes, not documented
 app.add_url_rule('/dashboard/share/validate-id', 'dashboard_share_validate_id', dashboard_share_validate_id,
@@ -50,6 +53,7 @@ app.add_url_rule('/user/get_user_plan', 'get_user_plan', get_user_plan, methods=
 app.add_url_rule('/user/update_user_plan', 'update_user_plan', update_user_plan, methods=['POST'])
 app.add_url_rule('/stripe/webhook', 'webhook', webhook, methods=['POST'])
 
+
 @app.route("/")
 def my_index():
     return render_template("index.html", flask_token="amplabs token")
@@ -64,6 +68,5 @@ def index(path):
 if __name__ == "__main__":
     engine_ = create_engine(app.app.config['DATABASE_URI'], echo=True)
     Model.metadata.create_all(engine_)
-
     # app.run(debug=True, host='0.0.0.0',port='4000',ssl_context='adhoc')
     app.run(debug=True, host='0.0.0.0',port='4000')

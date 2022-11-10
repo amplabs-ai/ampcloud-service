@@ -36,7 +36,6 @@ def dashboard_share_url():
             dashboard_id = request.args.to_dict().get('dashboard_id')
             status, detail, *records = dashboard_share_update_service(data, email, dashboard_id)
             return Response(status, detail).to_dict(), status
-
     except Exception as err:
         logging.error(err)
         return Response(500, "Internal Server Error").to_dict(), 500
@@ -63,6 +62,7 @@ def dashboard_share_linkedin():
         payload = {}
         response = requests.request("POST", url, data=payload)
         accessToken = json.loads(response.text).get('access_token')
+
         # get user id from access_token
         url = "https://api.linkedin.com/v2/me"
         payload = {}
@@ -141,11 +141,9 @@ def dashboard_share_linkedin():
         headers = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + accessToken,
-
         }
 
         response = requests.request("POST", url, headers=headers, data=payload)
-
         return Response(200, "Success", json.loads(response.text)).to_dict(), 200
     except Exception as err:
         logging.error(err)

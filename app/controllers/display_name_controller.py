@@ -2,6 +2,7 @@ from app.response import Response
 import logging
 from app.archive_constants import display_names
 
+
 def get_display_timeseries():
     try:
         records = display_names['timeseries']
@@ -9,6 +10,7 @@ def get_display_timeseries():
     except Exception as err:
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
+
 
 def get_display_cycle():
     try:

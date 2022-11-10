@@ -4,6 +4,10 @@ import Gradient from "javascript-color-gradient";
 import { scatterPlotChartId } from "./initialConfigs";
 
 const colorTransitions = [
+	['#e98d6b', '#e3685c', '#d14a61', '#b13c6c', '#8f3371', '#6c2b6d'],
+	['#7dba91', '#59a590', '#40908e', '#287a8c', '#1c6488', '#254b7f'],
+	["#ecaf80","#4a2262"],
+	["#a4cc90", "#2c3071"],
 	["#1f77b4", "#2193b0", "#6dd5ed"],
 	["#ff7f0e", "#ff9966", "#ff5e62"],
 	["#2ca02c", "#56ab2f", "#a8e063"],
@@ -21,10 +25,12 @@ export const _createChartDataSeries = (data, xAxis, yAxis, displayColMapping = n
 		data.forEach((d) => {
 			yAxis.forEach((y) => {
 				x.push({
-					type: "scatter",
-					symbolSize: 5,
-					name: `${d.id}: ${displayColMapping[y]}`,
+					legendHoverLink: true,
+					type: "line",
+					symbolSize: 7,
+					symbol: "circle",
 					showSymbol: false,
+					name: `${d.id}: ${displayColMapping[y]}`,
 					datasetId: d.id,
 					encode: {
 						x: xAxis,
@@ -37,10 +43,12 @@ export const _createChartDataSeries = (data, xAxis, yAxis, displayColMapping = n
 		console.log("daatat", data);
 		data.forEach((d) => {
 			x.push({
-				type: scatterPlotChartId.indexOf(chartId) !== -1 ? "scatter" : "line",
-				symbolSize: scatterPlotChartId.indexOf(chartId) !== -1 ? 5 : 10,
+				type: "line",
+				showSymbol: scatterPlotChartId.indexOf(chartId) !== -1 ? true : false,
+				symbolSize: scatterPlotChartId.indexOf(chartId) !== -1 ? 7 : 10,
+				symbol: "circle",
 				name: d.id,
-				showSymbol: false,
+				legendHoverLink: true,
 				datasetId: d.id,
 				encode: {
 					x: xAxis,
@@ -92,6 +100,20 @@ export const _createChartLegend = (data, chartId, yAxis = null) => {
 export const chartConfig = (chartName, data) => {
 	let { xAxis, yAxis, chartId, chartTitle } = getChartMetadata(chartName);
 	return {
+		tooltip: [
+			{
+				trigger: "axis",
+				axisPointer: { type: "cross" },
+				triggerOn: "click",
+				formatter: function (params) {
+					let tooltip_str = ""
+					params.forEach((param) => {
+						tooltip_str+=`${param.marker} <b>${param.seriesName}</b>(${parseFloat(param.value[xAxis.mapToId]).toPrecision(5)}<b>, </b>${parseFloat(param.value[yAxis.mapToId]).toPrecision(5)}) <br>`
+					})
+					return tooltip_str
+				  }
+			},
+		],
 		title: {
 			show: true,
 			id: chartId,
@@ -106,7 +128,11 @@ export const chartConfig = (chartName, data) => {
 		dataset: data,
 		series: _createChartDataSeries(data, xAxis.mapToId, yAxis.mapToId, yAxis.displayColMapping, chartId),
 		xAxis: {
+			splitLine: {
+				show: false
+			 },
 			type: "value",
+			min: chartId === "galvanostaticPlot" ? -0.0005 :0,
 			name: xAxis.title,
 			nameLocation: "middle",
 			nameGap: 25,
@@ -115,20 +141,51 @@ export const chartConfig = (chartName, data) => {
 				padding: [5, 0],
 			},
 			scale: true,
+			axisLine: {
+				lineStyle: {
+				  color: "black"
+				}
+			  }
 		},
 		yAxis:
 			chartId === "plotter"
-				? { scale: true }
+				? { scale: true,
+					axisLabel: {
+						formatter: function (value, index){
+							return parseFloat(value).toPrecision(3);
+						}
+					  }, 
+					  splitLine: {
+						show: false
+					 },
+					  axisLine: {
+						lineStyle: {
+						  color: "black"
+						}
+					  }}
 				: {
 						type: "value",
 						name: yAxis.title,
 						nameLocation: "middle",
-						nameGap: 35,
+						nameGap: 40,
 						nameTextStyle: {
 							fontSize: window.screen.width < 600 ? 12 : 16,
 						},
 						scale: true,
 						padding: [0, 5],
+						axisLabel: {
+							formatter: function (value, index){
+								return parseFloat(value).toPrecision(3);
+							}
+						  },
+						  splitLine: {
+							show: false
+						 },
+						  axisLine: {
+							lineStyle: {
+							  color: "black"
+							}
+						  }
 				  },
 		legend: _createChartLegend(data, chartId, yAxis),
 		color: _createChartColors(data),
@@ -266,9 +323,9 @@ export const getChartMetadata = (chartName) => {
 				},
 				yAxis: {
 				mapToId: "value",
-				title: "Capacity (Ah)",
+				title: "Specific Capacity (mAh/g)",
 				},
-				chartTitle: "Capacity  vs. Cycle Index",
+				chartTitle: "Specific Capacity  vs. Cycle Index",
 				chartId: "capacity",
 				code: sourceCode.capacity,
 			};
@@ -294,7 +351,7 @@ export const getChartMetadata = (chartName) => {
 				endpoint: `/echarts/galvanostaticPlot`,
 				xAxis: {
 					mapToId: "specific_capacity",
-					title: "Specific Capacity (Ah/g)",
+					title: "Specific Capacity (mAh/g)",
 				},
 				yAxis: {
 					mapToId: "v",
@@ -310,13 +367,13 @@ export const getChartMetadata = (chartName) => {
 				endpoint: `/echarts/voltageTime`,
 				xAxis: {
 					mapToId: "test_time",
-					title: "Test Time (s)",
+					title: "Time (s)",
 				},
 				yAxis: {
 					mapToId: "voltage",
 					title: "Voltage (V)",
 				},
-				chartTitle: "Voltage vs Test Time",
+				chartTitle: "Voltage vs Time",
 				chartId: "voltageTime",
 				code: sourceCode.voltageTime,
 			};
@@ -326,13 +383,13 @@ export const getChartMetadata = (chartName) => {
 				endpoint: `/echarts/currentTime`,
 				xAxis: {
 					mapToId: "test_time",
-					title: "Test Time (s)",
+					title: "Time (s)",
 				},
 				yAxis: {
 					mapToId: "current",
 					title: "Current (A)",
 				},
-				chartTitle: "Current vs Test Time",
+				chartTitle: "Current vs Time",
 				chartId: "currentTime",
 				code: sourceCode.currentTime,
 			};
@@ -346,7 +403,7 @@ export const getChartMetadata = (chartName) => {
 				},
 				yAxis: {
 					mapToId: "energy_density",
-					title: "Energy Density (Wh/g)",
+					title: "Energy Density (Wh/Kg)",
 				},
 				chartTitle: "Energy Density vs Cyle Index",
 				chartId: "energyDensity",
@@ -367,6 +424,22 @@ export const getChartMetadata = (chartName) => {
 				chartTitle: "dQ/dV vs Voltage",
 				chartId: "differentialCapacity",
 				code: sourceCode.differentialCapacity,
+			};
+			break;
+		case "operatingPotential":
+			result = {
+				endpoint: `/echarts/operatingPotential`,
+				xAxis: {
+					mapToId: "cycle_index",
+					title: "Cycle Index",
+				},
+				yAxis: {
+					mapToId: "value",
+					title: "Operating Potential",
+				},
+				chartTitle: "Operating Potential vs Cycle Index",
+				chartId: "operatingPotential",
+				code: sourceCode.operatingPotentialChart,
 			};
 			break;
 		default:

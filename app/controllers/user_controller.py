@@ -8,6 +8,7 @@ from app.utilities.user_plan import set_user_plan
 from flask import g, request
 from jose import jwt
 
+
 @with_authentication()
 def get_user_plan():
     email = g.user
@@ -27,4 +28,3 @@ def update_user_plan():
         return Response(405, "Not permitted").to_dict(), 405  
     status, detail, *records = update_user_plan_service(email)
     return Response(status, detail, records).to_dict(), status
-

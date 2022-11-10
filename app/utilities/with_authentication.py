@@ -10,6 +10,7 @@ from jose import jwt
 _last_result_time = None
 _last_result_value = None
 
+
 def get_keys():
     global _last_result_time
     global _last_result_value
@@ -57,7 +58,6 @@ def with_authentication(allow_public = None):
                     g.user = "public"
                 else:
                     abort(401)
-
             return f(*args, **kwargs)
         return decorated_function
     return decorator

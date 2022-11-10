@@ -24,7 +24,7 @@ export const DashboardProvider = ({ children }) => {
 			}
 		} else {
 			dispatch({
-				type: "LOAD_CELL_IDS",
+				type: "LOAD_CELL_IDS_SECOND_DASHBOARD",
 				payload: {
 					selectedCellIds,
 				},
@@ -108,7 +108,7 @@ export const DashboardProvider = ({ children }) => {
 		if (cellIdUpdated) {
 			selectedCellIdsAfterRefresh = cellIdUpdated.map((element) => {
 				let cell = selectedCellIdsAfterRefresh.find((item) => {
-					return item.split("_")[0] == element.index;
+					return item.split("_")[0] === element.index;
 				});
 				return `${element.index}_${cell.split("_")[1]}_${element.cell_id}`;
 			});

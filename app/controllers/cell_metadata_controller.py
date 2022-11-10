@@ -7,6 +7,7 @@ from app.utilities.with_authentication import with_authentication
 from flask import request, g
 from app.response import Response
 
+
 @with_authentication(allow_public=True)
 def get_cells():
     email = g.user
@@ -14,6 +15,7 @@ def get_cells():
     dashboard_id = request.args.to_dict().get('dashboard_id')
     status, detail, *records = get_cellmeta_service(email,req_data, dashboard_id)
     return Response(status, detail, records).to_dict(), status
+
 
 @with_authentication(allow_public=True)
 def get_cell_with_id(test, cell_id):

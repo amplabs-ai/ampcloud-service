@@ -1,14 +1,13 @@
 import uuid
 import threading
-
 import pandas as pd
 from app.aio import GAReader
 from app.archive_cell import ArchiveCell
 from app.archive_constants import LABEL, TEST_TYPE
 from flask import request, jsonify
 from app.response import Response
-
 from app.model import ArchiveOperator
+
 
 # Routes
 "tracker -> msg"
@@ -64,7 +63,6 @@ def ga_publish(dataset_id):
             return jsonify(
                 {"message": "object is unreadable, missing a field or incorrect token", "dataset_id": dataset_id})
         cell_id = metadata[LABEL.CELL_ID.value]
-
         # Launch task into new thread
         ga_status[tracker] = "IN_PROGRESS"
         data = gareader.read_data(int(dataset_id), columns)
@@ -77,7 +75,6 @@ def ga_publish(dataset_id):
                            test_type=TEST_TYPE.CYCLE.value,
                            metadata=metadata,
                            data=data)
-
         threading.Thread(target=ga_finish, name="data_thread",
                          args=(tracker, cell, ga_status)).start()
         # # Add something from metadata into response

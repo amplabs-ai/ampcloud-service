@@ -433,16 +433,18 @@ const SideBar = (props) => {
               // style={{
               //   minWidth: 150,
               // }}
-              onChange={(value) => {
-                onFilterChange("manufacturer", value);
-              }}
-              value={selectedFilters.manufacturer}
+              // onChange={(value) => {
+              //   onFilterChange("manufacturer", value);
+              // }}
+              // value={selectedFilters.manufacturer}
               className="filter-select"
               placeholder="Manufacturer"
               dropdownStyle={{ borderRadius: "5px" }}
             >
               <OptGroup label="Manufacturer">
                 <Option value="">Any</Option>
+                <Option value="lg">LG</Option>
+                <Option value="samsung">Samsung</Option>
               </OptGroup>
             </Select>
             {/* </div> */}
@@ -487,8 +489,12 @@ const SideBar = (props) => {
               className="filter-select"
               placeholder="Format Dimension"
             >
-              <OptGroup label="Format Dimension">
+              <OptGroup label="Format Dimension"> 
                 <Option value="">Any</Option>
+                <Option value="">21700</Option>
+                <Option value="">18650</Option>
+                <Option value="">26650</Option>
+                <Option value="">32650</Option>
               </OptGroup>
             </Select>
           </Col>
@@ -583,6 +589,9 @@ const SideBar = (props) => {
             >
               <OptGroup label="Type of Test">
                 <Option value="">Any</Option>
+                <Option value="">Cell Thermal Performance</Option>
+                <Option value="">Thermal Runaway</Option>
+                <Option value="">Aging</Option>
                 {metadataSummary["test_type"].map((item) => (
                   <Option value={item}>{item}</Option>
                 ))}
@@ -607,6 +616,10 @@ const SideBar = (props) => {
             >
               <OptGroup label="Opening Voltage">
                 <Option value="">Any</Option>
+                <Option value="">2</Option>
+                <Option value="">3</Option>
+                <Option value="">4</Option>
+                <Option value="">5</Option>
               </OptGroup>
             </Select>
           </Col>
@@ -657,7 +670,7 @@ const SideBar = (props) => {
         <br></br>
         <Row>
           <Col span={6} style={{paddingRight:"20px"}}>
-            <h7 style={{ fontWeight: "700" }}>Charge Rate C</h7>
+            <h7 style={{ fontWeight: "700" }}>Charge C Rate</h7>
             <Slider
               // value = {selectedFilters.crate_c}
               onAfterChange={(value) => {
@@ -680,7 +693,7 @@ const SideBar = (props) => {
             />
           </Col>
           <Col span={6} style={{paddingRight:"20px"}}>
-            <h7 style={{ fontWeight: "700" }}>Discharge Rate C</h7>
+            <h7 style={{ fontWeight: "700" }}>DischargeC  Rate</h7>
             <Slider
               // value = {selectedFilters.crate_c}
               onAfterChange={(value) => {
@@ -774,7 +787,7 @@ const SideBar = (props) => {
                   Aviation
                 </Option>
                 <Option disabled={true} value="undefined">
-                  Undefined
+                Military Grade 
                 </Option>
               </OptGroup>
             </Select>

@@ -22,8 +22,9 @@ const Dashboard = (props) => {
 	useEffect(() => {
 		if (props.dashboardId && props.type === "shared") {
 			let config = {
-				method: "get",
-				url: `/cells/cycle/meta?dashboard_id=${props.dashboardId}`,
+				data: {},
+				method: "POST",
+				url: `/cells/meta?dashboard_id=${props.dashboardId}`,
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -33,7 +34,7 @@ const Dashboard = (props) => {
 				.then(function (response) {
 					let data = response.data.records[0];
 					let cellIds = data.map((d) => {
-						return "share_" + d.cell_id;
+						return d.index +"_share_" + d.cell_id;
 					});
 					action.loadCellData(cellIds);
 					action.setDashboardType(props.type);
@@ -98,12 +99,12 @@ const Dashboard = (props) => {
 									overflow: "auto",
 								}}
 							>
-								{state.shallShowFilterBar ? <DashboardFilterBar /> : null}
+								{state.shallShowFilterBar ? <DashboardFilterBar type = "shared" /> : null}
 								{state.shallShowEdit ? (
 									<ViewMetadata />
 								) : state.shallShowMeta ? (
 									<Plotter />
-								) : state.shallShowSecondChart ? (
+								) : state.shallShowSecondChart || props.type === "shared" ? (
 									<ChartContainerType2 />
 								) : (
 									<DefaultDashboard />

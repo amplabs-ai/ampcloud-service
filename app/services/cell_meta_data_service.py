@@ -6,32 +6,31 @@ from app.utilities.utils import __generate_filter_string
 
 
 def get_cellmeta_service(email,req_data, dashboard_id=None):
-
     def add_type(row, key, value):
         row[key] = value
         return row
-
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id and email != "public":
+        if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to):
-                return 401, "Unauthorised Access"
-            else:
-                cell_id = dashboard_data.cell_id.split(',')
-                email = dashboard_data.shared_by
-                archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, email)
-                records = [cell.to_dict() for cell in archive_cells]
-                return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+            print(dashboard_data)
+            # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to):
+            #     return 401, "Unauthorised Access"
+            # else:
+            cell_id = dashboard_data.cell_id.split(',')
+            email = dashboard_data.shared_by
+            archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, email, "cycle")
+            records = [cell.to_dict() for cell in archive_cells]
+            return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []
         filter_string = ""
         if req_data.get('filters'):
             filter_string = __generate_filter_string(req_data.get('filters'))
-
+        # if filter_string:
+        #     filter_string = 'where' + filter_string
         archive_cells = ao.get_all_shared_cell_meta_with_id(
             ["Amplabs Sample"], email, "cycle")
-
         # archive_cells = ao.get_all_cell_meta_for_community(email)
         records = [add_type(cell.to_dict(), "type", "public/other")
                    for cell in archive_cells]
@@ -99,7 +98,6 @@ def update_cell_metadata_service(email, test, request_data):
         private_cell_ids_dict = dict()
         for row in private_cell_ids:
             private_cell_ids_dict[row.cell_id] = row.index
-
         edited_cell_ids = {}
         for item in request_data:
             try:
@@ -107,7 +105,6 @@ def update_cell_metadata_service(email, test, request_data):
                     return 400, RESPONSE_MESSAGE['CELL_ID_EXISTS'].format(item['cell_id'])
             except KeyError:
                 edited_cell_ids[item['cell_id']] = True
-
         for item in request_data:
             cell_id = ao.session.query(CellMeta).filter(
                 CellMeta.index == item['index']).first().cell_id

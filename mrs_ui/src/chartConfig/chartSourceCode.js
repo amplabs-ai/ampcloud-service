@@ -19,7 +19,7 @@ import plotly.express as px
 import plotly.io as pio
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{0}"
+    url = "https://65.1.73.220:4000/echarts/energyAndCapacityDecay?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -73,7 +73,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/energyAndCapacityDecay?{0}"
+    url = "https://65.1.73.220:4000/echarts/energyAndCapacityDecay?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -128,7 +128,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/efficiency?{0}"
+    url = "https://65.1.73.220:4000/echarts/efficiency?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -183,7 +183,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}"
+    url = "https://65.1.73.220:4000/echarts/cycleQuantitiesByStep?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -237,7 +237,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/cycleQuantitiesByStep?{0}"
+    url = "https://65.1.73.220:4000/echarts/cycleQuantitiesByStep?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -290,7 +290,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/compareByCycleTime?{0}"
+    url = "https://65.1.73.220:4000/echarts/compareByCycleTime?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -345,7 +345,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/forceAndDisplacement?{0}"
+    url = "https://65.1.73.220:4000/echarts/forceAndDisplacement?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -400,7 +400,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/testTempratures?{0}"
+    url = "https://65.1.73.220:4000/echarts/testTempratures?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -454,7 +454,7 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata():
-    url = "https://www.amplabs.ai/echarts/voltage?{0}"
+    url = "https://65.1.73.220:4000/echarts/voltage?{0}"
     httprequest = urllib.request.Request(
             url, method="GET"
         )
@@ -513,14 +513,14 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/timeseries"
+    url = "https://65.1.73.220:4000/echarts/timeseries"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -585,14 +585,14 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/stats"
+    url = "https://65.1.73.220:4000/echarts/stats"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -652,14 +652,14 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/capacityRetention"
+    url = "https://65.1.73.220:4000/echarts/capacityRetention"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -707,14 +707,14 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/coulombicEfficiency"
+    url = "https://65.1.73.220:4000/echarts/coulombicEfficiency"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -762,14 +762,14 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/galvanostaticPlot"
+    url = "https://65.1.73.220:4000/echarts/galvanostaticPlot"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -817,14 +817,14 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/voltageTime"
+    url = "https://65.1.73.220:4000/echarts/voltageTime"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -873,14 +873,14 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/currentTime"
+    url = "https://65.1.73.220:4000/echarts/currentTime"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -928,14 +928,14 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/energyDensity"
+    url = "https://65.1.73.220:4000/echarts/energyDensity"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)
@@ -984,14 +984,14 @@ import plotly.io as pio
 
 
 def get_amplabs_chartdata(req_data):
-    url = "https://www.amplabs.ai/echarts/differentialCapacity"
+    url = "https://65.1.73.220:4000/echarts/differentialCapacity"
     payload = json.dumps(req_data)
     headers = {
     'Authorization': 'Bearer __accesstoken__',
     'Content-Type': 'application/json'
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload, verify=False)
         return json.loads(response.text)
     except Exception as e:
         print(e)

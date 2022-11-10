@@ -14,6 +14,7 @@ paths:
       responses:
         "200":
           description: Successfull
+
   /cells/meta:
     post:
       security:
@@ -54,6 +55,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+
   /cells/{test}/meta:
     patch:
       security:
@@ -107,12 +109,12 @@ paths:
                 required:
                   - index
                   - cell_id
-
       responses:
         "200":
           description: Successfull
         "500":
           description: Something went wrong.
+
   /cells/{test}/metaWithId:
     get:
       security:
@@ -149,6 +151,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+
   /cells:
     delete:
       security:
@@ -175,6 +178,7 @@ paths:
           description: Successfull
         "500":
           description: Internal Server Error
+
   /cells/tests/{test}/meta:
     get:
       security:
@@ -259,6 +263,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+
   /cells/tests/{test}/metaWithId:
     get:
       security:
@@ -295,6 +300,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+
   /upload/cells/initialize:
     post:
       security:
@@ -302,9 +308,7 @@ paths:
       summary: Initialize upload file request (required to be sent before /upload/cells/{tester} request)
       description: |
         Data sent in this request will be used by the succeeding upload file request.
-
          **For uploading cycle test file following form fields are useed:**
-
          - Required
            - cell_id
            - file_count
@@ -397,6 +401,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /upload/cells/{tester}:
     post:
       security:
@@ -440,8 +445,6 @@ paths:
 
   /upload/cells/status:
     get:
-      # security:
-      #   - BearerAuth: []
       summary: Check upload status for the file sent via uplaod request.
       x-openapi-router-controller: app.controllers.status_check_controller
       operationId: get_status
@@ -464,6 +467,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /download/cells/cycle_timeseries:
     get:
       security:
@@ -491,6 +495,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+
   # /download/cells/abuse_timeseries:
   #   get:
   #     security:
@@ -518,6 +523,7 @@ paths:
   #         description: Successfull
   #       "500":
   #         description: Something went wrong
+
   /download/cells/cycle_data:
     get:
       security:
@@ -545,6 +551,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+
   /echarts/galvanostaticPlot:
     post:
       security:
@@ -560,6 +567,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /echarts/capacityRetention:
     post:
       security:
@@ -577,6 +585,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /echarts/capacity:
     post:
       security:
@@ -594,6 +603,25 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
+  /echarts/operatingPotential:
+    post:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Fetches cycle mean voltage vs cycle number results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_operating_potential
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+
   /echarts/coulombicEfficiency:
     post:
       security:
@@ -611,6 +639,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /echarts/voltageTime:
     post:
       security:
@@ -628,6 +657,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /echarts/currentTime:
     post:
       security:
@@ -645,6 +675,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /echarts/differentialCapacity:
     post:
       security:
@@ -662,6 +693,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
+
   /echarts/energyDensity:
     post:
       security:
@@ -692,7 +724,7 @@ paths:
           description: Successfull response
         "500":
           description: Something went wrong
-          
+
   /download/cells/cycle_data_json:
     get:
       security:
@@ -720,6 +752,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+
   /download/cells/cycle_timeseries_json:
     get:
       security:
@@ -747,6 +780,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+
   # /download/cells/abuse_timeseries_json:
   #   get:
   #     security:
@@ -774,6 +808,7 @@ paths:
   #         description: Successfull
   #       "500":
   #         description: Something went wrong
+
   /displayname/cycle:
     get:
       summary: Fetches the name of data schema of cycle.
@@ -786,6 +821,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+
   /displayname/timeseries:
     get:
       summary: Fetches the data of timeseries.
@@ -798,6 +834,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+
   /template:
     post:
       security:
@@ -849,6 +886,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
+
   /metadata:
     get:
       summary: Get all available metadata for different fields
@@ -861,6 +899,8 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
+
+
 tags:
   - name: Cell Meta
   - name: Test Meta
@@ -871,9 +911,11 @@ tags:
   - name: Healthcheck
   - name: Template
 
+
 servers:
   - url: https://www.amplabs.ai
     variables: {}
+
 
 components:
   requestBodies:  
@@ -908,7 +950,6 @@ components:
                       - filterValue
               required:
                 - cell_ids
-
   securitySchemes:
     BearerAuth:
       type: http

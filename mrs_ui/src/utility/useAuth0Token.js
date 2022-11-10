@@ -11,6 +11,7 @@ export const useAuth0Token = () => {
 				setToken(accessToken);
 			} catch (error) {
 				console.error(error);
+				setToken(undefined);
 			}
 		})();
 	}, []);

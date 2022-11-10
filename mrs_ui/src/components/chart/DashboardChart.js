@@ -148,7 +148,8 @@ const DashboardChart = (props) => {
 							if(chartOptions.toolbox[0].feature.myTool5.title === "Line Chart"){
 								chartOptions.series.forEach((element) => {
 									element.type = "line"
-									element.symbolSize = 5
+									element.symbolSize = 7
+									element.showSymbol = false
 								});
 								chartOptions.legend[0].icon = "path://M904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"
 								chartOptions.toolbox[0].feature.myTool5.title = "Scatter"
@@ -157,9 +158,10 @@ const DashboardChart = (props) => {
 							else{
 								
 								chartOptions.series.forEach((element) => {
-									element.type = "scatter"
-									element.symbolSize = 5
+									element.type = "line"
+									element.symbolSize = 7
 									element.symbol = "circle"
+									element.showSymbol = true
 								});
 								chartOptions.legend[0].icon = "pin"
 								chartOptions.toolbox[0].feature.myTool5.title = "Line Chart"

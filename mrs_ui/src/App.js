@@ -93,7 +93,7 @@ const App = () => {
 							</Route>
 							<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
 							<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
-							<Route path="/dashboard/:test/share/:id" element={<PrivateRoute component={SharedDashboard} />} />
+							<Route path="/dashboard/share/:id" element={<SharedDashboard/>} />
 							<Route path="/cloud/" element={<Cloud />} />
 							<Route path="/community/" element={<Community />} />
 							<Route path="/pricing/" element={<Pricing />} exact />

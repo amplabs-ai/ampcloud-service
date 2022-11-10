@@ -4,6 +4,7 @@ import logging
 from flask import g
 from app.utilities.with_authentication import with_authentication
 
+
 @with_authentication()
 def get_filter_data():
     try:

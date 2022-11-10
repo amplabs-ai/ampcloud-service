@@ -19,9 +19,11 @@ GA_API_HOST = ""
 # Stripe
 STRIPE_ENDPOINT_SECRET = os.getenv('STRIPE_PROD_ENDPOINT_SECRET') if ENV == "production" else os.getenv('STRIPE_DEV_ENDPOINT_SECRET') 
 STRIPE_API_KEY = os.getenv('STRIPE_PROD_API_KEY') if ENV == "production" else os.getenv('STRIPE_DEV_API_KEY') 
+
 # Amplabs DB
 AMPLABS_DB_URL = os.getenv('AMPLABS_PROD_DB_URL') if ENV == "production" \
                  else os.getenv('AMPLABS_DEV_DB_URL')
+
 # linkedin share constants
 LINKEDIN_CLIENT_ID = os.getenv('LINKEDIN_CLIENT_ID')
 LINKEDIN_CLIENT_SECRET = os.getenv('LINKEDIN_CLIENT_SECRET')
@@ -42,7 +44,6 @@ AWS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 DOMAIN_NAME = os.getenv('DOMAIN_NAME')
 
-
 #unit_conversion
 units = {
     "deci": 'COL_NAME = COL_NAME * 0.1',
@@ -57,6 +58,7 @@ units = {
     "minutes": 'COL_NAME = COL_NAME * 60',
     "seconds": 'COL_NAME = COL_NAME'
 }
+
 
 class TEST_TYPE(Enum):
     ABUSE = "abuse"
@@ -108,10 +110,8 @@ class ARCHIVE_COLS(Enum):
     AXIAL_F = "axial_f"
     I = "i"
     V = "v"
-
     temp_1 = "pos_terminal_temperature"
     temp_2 = "neg_terminal_temperature"
-
     temp_3 = "left_bottom_temperature"
     temp_4 = "right_bottom_temperature"
     temp_5 = "above_punch_temperature"
@@ -207,43 +207,31 @@ class LABEL(Enum):
     # Cycle Stats
     CYCLE_START_TS = "cycle_start_timestamp"
     CYCLE_END_TS = "cycle_end_timestamp"
-
     CYCLE_MAX_I = "cycle_max_current"
     CYCLE_MIN_I = "cycle_min_current"
-
     CYCLE_MAX_V = "cycle_max_voltage"
     CYCLE_MIN_V = "cycle_min_voltage"
-
     CYCLE_MEAN_V = "cycle_mean_voltage"
     CYCLE_MEAN_C_V = "cycle_mean_charge_voltage"
     CYCLE_MEAN_D_V = "cycle_mean_discharge_voltage"
-
     CYCLE_AH_C = "cycle_charge_capacity"
     CYCLE_AH_D = "cycle_discharge_capacity"
-
     CYCLE_E_C = "cycle_charge_energy"
     CYCLE_E_D = "cycle_discharge_energy"
-
     CYCLE_MAX_P = "cycle_max_power"
     CYCLE_MAX_C_P = "cycle_max_charge_power"
     CYCLE_MAX_D_P = "cycle_max_discharge_power"
-
     CYCLE_MIN_P = "cycle_min_power"
     CYCLE_MIN_C_P = "cycle_min_charge_power"
     CYCLE_MIN_D_P = "cycle_min_discharge_power"
-
     CYCLE_MEAN_P = "cycle_mean_power"
     CYCLE_MEAN_C_P = "cycle_mean_charge_power"
     CYCLE_MEAN_D_P = "cycle_mean_discharge_power"
-
     CYCLE_AH_EFF = "cycle_coulombic_efficiency"
     CYCLE_E_EFF = "cycle_energy_efficiency"
-
     DATAPOINT_COUNT = "datapoint_count"
-
     CYCLE_MAX_REST_V = "cycle_max_rest_voltage"
     CYCLE_MIN_REST_V = "cycle_min_rest_voltage"
-
     CYCLE_TOTAL_REST_TIME = "cycle_total_rest_time"
     STEP_COUNT = "step_count"
     CYCLE_DURATION = "cycle_duration"
@@ -278,6 +266,7 @@ class LABEL(Enum):
     FILENAME = "filename"
     FILE_TYPE = "file_type"
 
+
 display_names = {
     "cycle":{
     "Cycle Index":"cycle_index",
@@ -307,7 +296,6 @@ display_names = {
     "Cycle Total Rest Time (s)":"cycle_total_rest_time",
     "Step Count (#)":"step_count",
     "Datapoint Count (#)":"datapoint_count",
-
     "Rest Step Count (s)":"rest_step_count",
     "Charge Step Count (#)":"charge_step_count",
     "Discharge Step Count (#)":"discharge_step_count",
@@ -370,6 +358,7 @@ display_names = {
     "Test Net Capacity (Ah)":"test_net_capacity",
     "Test Net Energy (Wh)":"test_net_energy",}
 }
+
 
 RESPONSE_MESSAGE = {
     "RESERVED_PUBLIC_CELL_ID": "Cell id {} is reserved",
