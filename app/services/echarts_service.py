@@ -339,7 +339,7 @@ def get_energy_density_service(req_data, email, dashboard_id=None):
             filter_string = __generate_filter_string(req_data.get('filters'))
         records = []
         result_df = ao.get_all_data_from_EnergyDensity_query(req_data.get('cell_ids'), email, filter_string)
-        for cell_id in req_data.get('cell_ids'):
+        for cell_id in sorted(req_data.get('cell_ids')):
             charge_list = []
             discharge_list = []
             cell_id_df = result_df[result_df["cell_id"] == cell_id]

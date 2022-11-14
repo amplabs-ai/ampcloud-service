@@ -694,6 +694,11 @@ class ArchiveOperator:
     def get_rate_filter_query(self, email):
         result = self.session.execute(RATE_FILTER_QUERY.format(email=email))
         return result
+
+    def get_op_voltage_filter_query(self, email):
+        result = self.session.execute(VOLTAGE_FILTER_QUERY.format(email=email))
+        return result
+
     
     # DASHBOARD
     def get_shared_dashboard_by_id(self, dashboard_id):

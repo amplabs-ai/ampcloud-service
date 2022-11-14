@@ -185,7 +185,7 @@ const SideBar = (props) => {
     electrolyte: null,
     test: null,
     temperature: [null, null],
-    opening_voltage: null,
+    operating_voltage: [null, null],
     energy_density_of_pack: null,
     energy_density_of_active_material: null,
     crate_c:  [null, null],
@@ -214,7 +214,11 @@ const SideBar = (props) => {
   capacity:{
     min: null,
     max: null
-  }});
+  },
+operating_voltage:{
+  min: null,
+  max: null
+}});
 
 	const { state, action } = useDashboard();
 	const accessToken = useAuth0Token();
@@ -302,6 +306,20 @@ const SideBar = (props) => {
         },
         {
           column: key,
+          operation: '<=',
+          filterValue: value[1].toString()
+        })
+        appliedfiltercount+= 1;}
+       
+      }
+      else if(['operating_voltage'].includes(key)){
+        if(value.every(element => element !== null)) {reqBody.filters.push({
+          column: "v_min",
+          operation: '>=',
+          filterValue: value[0].toString()
+        },
+        {
+          column: "v_max",
           operation: '<=',
           filterValue: value[1].toString()
         })
@@ -449,316 +467,8 @@ const SideBar = (props) => {
             </Select>
             {/* </div> */}
           </Col>
-          <Col span={4} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Format Shape
-              </h7>
-            <Select
-              value={selectedFilters.form_factor}
-              allowClear={true}
-              onChange={(value) => {
-                onFilterChange("form_factor", value);
-              }}
-              // style={{
-              //   minWidth: 150,
-              // }}
-              className="filter-select"
-              placeholder="Format Shape"
-            >
-              <OptGroup label="Format Shape">
-                <Option value="">Any</Option>
-              </OptGroup>
-              {metadataSummary["format_shape"].map((item) => (
-                <Option value={item}>{item}</Option>
-              ))}
-            </Select>
-          </Col>
-          <Col span={4} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Format Dimension
-              </h7>
-            <Select
-              onChange={(value) => {
-                onFilterChange("format_dimension", value);
-              }}
-              value={selectedFilters.format_dimension}
-              allowClear={true}
-              // style={{
-              //   minWidth: 150,
-              // }}
-              className="filter-select"
-              placeholder="Format Dimension"
-            >
-              <OptGroup label="Format Dimension"> 
-                <Option value="">Any</Option>
-                <Option value="">21700</Option>
-                <Option value="">18650</Option>
-                <Option value="">26650</Option>
-                <Option value="">32650</Option>
-              </OptGroup>
-            </Select>
-          </Col>
-          <Col span={3} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Cathode
-              </h7>
-            <Select
-              value={selectedFilters.cathode}
-              allowClear={true}
-              onChange={(value) => {
-                onFilterChange("cathode", value);
-              }}
-              // style={{
-              //   minWidth: 150,
-              // }}
-              className="filter-select"
-              placeholder="Cathode"
-            >
-              <OptGroup label="Cathode">
-                <Option value="">Any</Option>
-                {metadataSummary["cathode"].map((item) => (
-                  <Option value={item}>{item}</Option>
-                ))}
-              </OptGroup>
-            </Select>
-          </Col>
-          <Col span={3} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Anode
-              </h7>
-            <Select
-              value={selectedFilters.anode}
-              allowClear={true}
-              onChange={(value) => {
-                onFilterChange("anode", value);
-              }}
-              // style={{
-              //   minWidth: 150,
-              // }}
-              className="filter-select"
-              placeholder="Anode"
-            >
-              <OptGroup label="Anode">
-                <Option value="">Any</Option>
-                {metadataSummary["anode"].map((item) => (
-                  <Option value={item}>{item}</Option>
-                ))}
-              </OptGroup>
-            </Select>
-          </Col>
-          <Col span={4} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Electrolyte
-              </h7>
-            <Select
-              value={selectedFilters.electrolyte}
-              onChange={(value) => {
-                onFilterChange("electrolyte", value);
-              }}
-              allowClear={true}
-              // style={{
-              //   minWidth: 150,
-              // }}
-              className="filter-select"
-              placeholder="Electrolyte"
-            >
-              <OptGroup label="Electrolyte">
-                <Option value="">Any</Option>
-              </OptGroup>
-            </Select>
-          </Col>
-        </Row>
-        <br></br>
-        <Row>
-        <Col span={4} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Type of Test
-              </h7>
-            <Select
-              value={selectedFilters.test}
-              allowClear={true}
-              onChange={(value) => {
-                onFilterChange("test", value);
-              }}
-              style={{
-                minWidth: 120,
-              }}
-              className="filter-select"
-              placeholder="Type of Test"
-              dropdownStyle={{ borderRadius: "5px" }}
-            >
-              <OptGroup label="Type of Test">
-                <Option value="">Any</Option>
-                <Option value="">Cell Thermal Performance</Option>
-                <Option value="">Thermal Runaway</Option>
-                <Option value="">Aging</Option>
-                {metadataSummary["test_type"].map((item) => (
-                  <Option value={item}>{item}</Option>
-                ))}
-              </OptGroup>
-            </Select>
-          </Col>
-          <Col span={5} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Opening Voltage
-              </h7>
-            <Select
-              value={selectedFilters.opening_voltage}
-              onChange={(value) => {
-                onFilterChange("opening_voltage", value);
-              }}
-              allowClear={true}
-              style={{
-                minWidth: 150,
-              }}
-              className="filter-select"
-              placeholder="Opening Voltage"
-            >
-              <OptGroup label="Opening Voltage">
-                <Option value="">Any</Option>
-                <Option value="">2</Option>
-                <Option value="">3</Option>
-                <Option value="">4</Option>
-                <Option value="">5</Option>
-              </OptGroup>
-            </Select>
-          </Col>
-          <Col span={6} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-                Energy Density of Pack
-              </h7>
-            <Select
-              value={selectedFilters.energy_density_of_pack}
-              onChange={(value) => {
-                onFilterChange("energy_density_of_pack", value);
-              }}
-              allowClear={true}
-              style={{
-                minWidth: 180,
-              }}
-              className="filter-select"
-              placeholder="Energy Density of Pack"
-            >
-              <OptGroup label="Energy Density of Pack">
-                <Option value="">Any</Option>
-              </OptGroup>
-            </Select>
-          </Col>
-          <Col span={6} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
-              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
-              Energy Density of Active Material
-              </h7>
-            <Select
-              value={selectedFilters.energy_density_of_active_material}
-              onChange={(value) => {
-                onFilterChange("energy_density_of_active_material", value);
-              }}
-              allowClear={true}
-              style={{
-                minWidth: 240,
-              }}
-              className="filter-select"
-              placeholder="Energy Density of Active Material"
-            >
-              <OptGroup label="Energy Density of Active Material">
-                <Option value="">Any</Option>
-              </OptGroup>
-            </Select>
-          </Col>
-        </Row>
-        <br></br>
-        <br></br>
-        <Row>
-          <Col span={6} style={{paddingRight:"20px"}}>
-            <h7 style={{ fontWeight: "700" }}>Charge C Rate</h7>
-            <Slider
-              // value = {selectedFilters.crate_c}
-              onAfterChange={(value) => {
-                onFilterChange("crate_c", value);
-              }}
-              className="filter-slider"
-              range
-              defaultValue={[
-                metadataSummary["charge_rate"]["min"],
-                metadataSummary["charge_rate"]["max"],
-              ]}
-              min={metadataSummary["charge_rate"]["min"]}
-              max={metadataSummary["charge_rate"]["max"]}
-              step="0.01"
-              marks={{
-      [metadataSummary['charge_rate']['min']]:metadataSummary['charge_rate']['min'],
-      [metadataSummary['charge_rate']['max']]:metadataSummary['charge_rate']['max'],
-
-    }}
-            />
-          </Col>
-          <Col span={6} style={{paddingRight:"20px"}}>
-            <h7 style={{ fontWeight: "700" }}>DischargeC  Rate</h7>
-            <Slider
-              // value = {selectedFilters.crate_c}
-              onAfterChange={(value) => {
-                onFilterChange("crate_d", value);
-              }}
-              className="filter-slider"
-              range
-              defaultValue={[
-                metadataSummary["discharge_rate"]["min"],
-                metadataSummary["discharge_rate"]["max"],
-              ]}
-              min={metadataSummary["discharge_rate"]["min"]}
-              max={metadataSummary["discharge_rate"]["max"]}
-              step="0.01"
-              marks={{
-      [metadataSummary['discharge_rate']['min']]:metadataSummary['discharge_rate']['min'],
-      [metadataSummary['discharge_rate']['max']]:metadataSummary['discharge_rate']['max'],
-
-    }}
-            />
-          </Col>
-          <Col span={6} style={{paddingRight:"20px"}}>
-            <h7 style={{ fontWeight: "700" }}>Temperature °C</h7>
-            <Slider
-              // value={selectedFilters.crate_d}
-              defaultValue={[metadataSummary['temperature']['min'],metadataSummary['temperature']['max']]}
-              onChange={(value) => {
-                onFilterChange("temperature", value);
-              }}
-              className="filter-slider"
-              range
-              min={metadataSummary["temperature"]["min"]}
-              max={metadataSummary["temperature"]["max"]}
-              step="0.01"
-              marks={{
-      [metadataSummary['temperature']['min']]:metadataSummary['temperature']['min'],
-      [metadataSummary['temperature']['max']]:metadataSummary['temperature']['max'],
-
-    }}
-            />
-          </Col>
-          <Col span={6} style={{paddingRight:"20px"}}>
-            <h7 style={{ fontWeight: "700" }}>Capacity Ah</h7>
-            <Slider
-              // value={selectedFilters.ah}
-              defaultValue={[metadataSummary['capacity']['min'],metadataSummary['capacity']['max']]}
-              onChange={(value) => {
-                onFilterChange("ah", value);
-              }}
-              className="filter-slider"
-              range
-              min={metadataSummary["capacity"]["min"]}
-              max={metadataSummary["capacity"]["max"]}
-              step="0.01"
-              marks={{
-      [metadataSummary['capacity']['min']]:metadataSummary['capacity']['min'],
-      [metadataSummary['capacity']['max']]:metadataSummary['capacity']['max'],
-    }}
-            />
-          </Col>
-        </Row>
-        <br></br>
-        <Row>
-          <Col span={12}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
+          <Col span={4}>
+            <div style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
               <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
                 Application
               </h7>
@@ -817,8 +527,177 @@ const SideBar = (props) => {
               </Radio.Group> */}
             </div>
           </Col>
-
-          <Col span={12}>
+          <Col span={4} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Format Shape
+              </h7>
+            <Select
+              value={selectedFilters.form_factor}
+              allowClear={true}
+              onChange={(value) => {
+                onFilterChange("form_factor", value);
+              }}
+              // style={{
+              //   minWidth: 150,
+              // }}
+              className="filter-select"
+              placeholder="Format Shape"
+            >
+              <OptGroup label="Format Shape">
+                <Option value="">Any</Option>
+              </OptGroup>
+              {metadataSummary["format_shape"].map((item) => (
+                <Option value={item}>{item}</Option>
+              ))}
+            </Select>
+          </Col>
+          <Col span={4} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Format Dimension
+              </h7>
+            <Select
+              // onChange={(value) => {
+              //   onFilterChange("format_dimension", value);
+              // }}
+              // value={selectedFilters.format_dimension}
+              allowClear={true}
+              // style={{
+              //   minWidth: 150,
+              // }}
+              className="filter-select"
+              placeholder="Format Dimension"
+            >
+              <OptGroup label="Format Dimension"> 
+                <Option value="">Any</Option>
+                <Option value="18650">18650</Option>
+                <Option value="21700">21700</Option>
+                <Option value="26650">26650</Option>
+                <Option value="32650">32650</Option>
+              </OptGroup>
+            </Select>
+          </Col>
+          <Col span={3} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Cathode
+              </h7>
+            <Select
+              value={selectedFilters.cathode}
+              allowClear={true}
+              onChange={(value) => {
+                onFilterChange("cathode", value);
+              }}
+              // style={{
+              //   minWidth: 150,
+              // }}
+              className="filter-select"
+              placeholder="Cathode"
+            >
+              <OptGroup label="Cathode">
+                <Option value="">Any</Option>
+                {metadataSummary["cathode"].map((item) => (
+                  <Option value={item}>{item}</Option>
+                ))}
+              </OptGroup>
+            </Select>
+          </Col>
+          <Col span={3} style={{ display: "flex", flexDirection: "column", margin: "5px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Anode
+              </h7>
+            <Select
+              value={selectedFilters.anode}
+              allowClear={true}
+              onChange={(value) => {
+                onFilterChange("anode", value);
+              }}
+              // style={{
+              //   minWidth: 150,
+              // }}
+              className="filter-select"
+              placeholder="Anode"
+            >
+              <OptGroup label="Anode">
+                <Option value="">Any</Option>
+                {metadataSummary["anode"].map((item) => (
+                  <Option value={item}>{item}</Option>
+                ))}
+              </OptGroup>
+            </Select>
+          </Col>
+        </Row>
+        <br></br>
+        <Row>
+        <Col span={4} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Electrolyte
+              </h7>
+            <Select
+              value={selectedFilters.electrolyte}
+              onChange={(value) => {
+                onFilterChange("electrolyte", value);
+              }}
+              allowClear={true}
+              // style={{
+              //   minWidth: 150,
+              // }}
+              className="filter-select"
+              placeholder="Electrolyte"
+            >
+              <OptGroup label="Electrolyte">
+                <Option value="">Any</Option>
+              </OptGroup>
+            </Select>
+          </Col>
+        <Col span={6} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Type of Test
+              </h7>
+            <Select
+              value={selectedFilters.test}
+              allowClear={true}
+              onChange={(value) => {
+                onFilterChange("test", value);
+              }}
+              style={{
+                minWidth: 120,
+              }}
+              className="filter-select"
+              placeholder="Type of Test"
+              dropdownStyle={{ borderRadius: "5px" }}
+            >
+              <OptGroup label="Type of Test">
+                <Option value="">Any</Option>
+                <Option value="Cell Thermal Performance">Cell Thermal Performance</Option>
+                <Option value="Thermal Runaway">Thermal Runaway</Option>
+                <Option value="Aging">Aging</Option>
+                {metadataSummary["test_type"].map((item) => (
+                  <Option value={item}>{item}</Option>
+                ))}
+              </OptGroup>
+            </Select>
+          </Col>
+          <Col span={6} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Energy Density of Pack
+              </h7>
+            <Select
+              value={selectedFilters.energy_density_of_pack}
+              onChange={(value) => {
+                onFilterChange("energy_density_of_pack", value);
+              }}
+              allowClear={true}
+              style={{
+                minWidth: 180,
+              }}
+              className="filter-select"
+              placeholder="Energy Density of Pack"
+            >
+              <OptGroup label="Energy Density of Pack">
+                <Option value="">Any</Option>
+              </OptGroup>
+            </Select>
+          </Col>
+          <Col span={6} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
               Cell Type
@@ -862,6 +741,141 @@ const SideBar = (props) => {
                 </Radio.Button>
               </Radio.Group> */}
             </div>
+          </Col>
+          {/* <Col span={6} style={{ display: "flex", flexDirection: "column", margin: "10px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+              Energy Density of Active Material
+              </h7>
+            <Select
+              value={selectedFilters.energy_density_of_active_material}
+              onChange={(value) => {
+                onFilterChange("energy_density_of_active_material", value);
+              }}
+              allowClear={true}
+              style={{
+                minWidth: 240,
+              }}
+              className="filter-select"
+              placeholder="Energy Density of Active Material"
+            >
+              <OptGroup label="Energy Density of Active Material">
+                <Option value="">Any</Option>
+              </OptGroup>
+            </Select>
+          </Col> */}
+        </Row>
+        <br></br>
+        <br></br>
+        <Row style={{justifyContent: "space-evenly" }}>
+          <Col span={4} style={{paddingRight:"20px"}}>
+            <h7 style={{ fontWeight: "700" }}>Charge C Rate</h7>
+            <Slider
+              // value = {selectedFilters.crate_c}
+              onAfterChange={(value) => {
+                onFilterChange("crate_c", value);
+              }}
+              className="filter-slider"
+              range
+              defaultValue={[
+                metadataSummary["charge_rate"]["min"],
+                metadataSummary["charge_rate"]["max"],
+              ]}
+              min={metadataSummary["charge_rate"]["min"]}
+              max={metadataSummary["charge_rate"]["max"]}
+              step="0.01"
+              marks={{
+      [metadataSummary['charge_rate']['min']]:metadataSummary['charge_rate']['min'],
+      [metadataSummary['charge_rate']['max']]:metadataSummary['charge_rate']['max'],
+
+    }}
+            />
+          </Col>
+          <Col span={4} style={{paddingRight:"20px"}}>
+            <h7 style={{ fontWeight: "700" }}>Discharge C Rate</h7>
+            <Slider
+              // value = {selectedFilters.crate_c}
+              onAfterChange={(value) => {
+                onFilterChange("crate_d", value);
+              }}
+              className="filter-slider"
+              range
+              defaultValue={[
+                metadataSummary["discharge_rate"]["min"],
+                metadataSummary["discharge_rate"]["max"],
+              ]}
+              min={metadataSummary["discharge_rate"]["min"]}
+              max={metadataSummary["discharge_rate"]["max"]}
+              step="0.01"
+              marks={{
+      [metadataSummary['discharge_rate']['min']]:metadataSummary['discharge_rate']['min'],
+      [metadataSummary['discharge_rate']['max']]:metadataSummary['discharge_rate']['max'],
+
+    }}
+            />
+          </Col>
+          <Col span={4} style={{paddingRight:"20px"}}>
+              <h7 style={{ fontWeight: "700", marginBottom: "5px" }}>
+                Operating Voltage
+              </h7>
+              <Slider
+              // value = {selectedFilters.crate_c}
+              onAfterChange={(value) => {
+                onFilterChange("operating_voltage", value);
+              }}
+              className="filter-slider"
+              range
+              defaultValue={[
+                metadataSummary["operating_voltage"]["min"],
+                metadataSummary["operating_voltage"]["max"],
+              ]}
+              min={metadataSummary["operating_voltage"]["min"]}
+              max={metadataSummary["operating_voltage"]["max"]}
+              step="0.01"
+              marks={{
+      [metadataSummary['operating_voltage']['min']]:metadataSummary['operating_voltage']['min'],
+      [metadataSummary['operating_voltage']['max']]:metadataSummary['operating_voltage']['max'],
+
+    }}
+            />
+          </Col>
+          <Col span={4} style={{paddingRight:"20px"}}>
+            <h7 style={{ fontWeight: "700" }}>Temperature °C</h7>
+            <Slider
+              // value={selectedFilters.crate_d}
+              defaultValue={[metadataSummary['temperature']['min'],metadataSummary['temperature']['max']]}
+              onChange={(value) => {
+                onFilterChange("temperature", value);
+              }}
+              className="filter-slider"
+              range
+              min={metadataSummary["temperature"]["min"]}
+              max={metadataSummary["temperature"]["max"]}
+              step="0.01"
+              marks={{
+      [metadataSummary['temperature']['min']]:metadataSummary['temperature']['min'],
+      [metadataSummary['temperature']['max']]:metadataSummary['temperature']['max'],
+
+    }}
+            />
+          </Col>
+          <Col span={4} style={{paddingRight:"20px"}}>
+            <h7 style={{ fontWeight: "700" }}>Capacity Ah</h7>
+            <Slider
+              // value={selectedFilters.ah}
+              defaultValue={[metadataSummary['capacity']['min'],metadataSummary['capacity']['max']]}
+              onChange={(value) => {
+                onFilterChange("ah", value);
+              }}
+              className="filter-slider"
+              range
+              min={metadataSummary["capacity"]["min"]}
+              max={metadataSummary["capacity"]["max"]}
+              step="0.01"
+              marks={{
+      [metadataSummary['capacity']['min']]:metadataSummary['capacity']['min'],
+      [metadataSummary['capacity']['max']]:metadataSummary['capacity']['max'],
+    }}
+            />
           </Col>
         </Row>
         <br></br>

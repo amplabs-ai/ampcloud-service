@@ -132,7 +132,7 @@ export const chartConfig = (chartName, data) => {
 				show: false
 			 },
 			type: "value",
-			min: chartId === "galvanostaticPlot" ? -0.0005 :0,
+			min: chartId === "galvanostaticPlot" ? -0.0005 :null,
 			name: xAxis.title,
 			nameLocation: "middle",
 			nameGap: 25,
@@ -167,7 +167,7 @@ export const chartConfig = (chartName, data) => {
 						type: "value",
 						name: yAxis.title,
 						nameLocation: "middle",
-						nameGap: 40,
+						nameGap: 45,
 						nameTextStyle: {
 							fontSize: window.screen.width < 600 ? 12 : 16,
 						},

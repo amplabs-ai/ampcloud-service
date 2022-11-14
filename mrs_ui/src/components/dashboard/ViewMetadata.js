@@ -52,7 +52,7 @@ const cellMetadataCol = [
 
 const testMetadataCol = [
 	{
-		title: "CellId",
+		title: "Cell ID",
 		dataIndex: "cell_id",
 		key: "cell_id",
 	},
@@ -69,7 +69,7 @@ const testMetadataCol = [
 	// 	editable: true,
 	// },
 	{
-		title: "Temprature",
+		title: "Temperature",
 		dataIndex: "temperature",
 		key: "temperature",
 		editable: true,
@@ -206,6 +206,7 @@ const ViewMetadata = (props) => {
 		let cellIdUpdated = [];
 		for (let i = 0; i < data.length; i++) {
 			const item = data[i];
+			console.log(item)
 			Object.keys(item).forEach(key => {
 				item[key] = key !== 'index' && item[key] !== null ? item[key].toString() : item[key]
 			})
@@ -218,7 +219,9 @@ const ViewMetadata = (props) => {
 				delete item.type;
 				newData.push(item);
 			}
+			console.log(item)
 		}
+		console.log(newData)
 		axios
 			.patch(endpoint, newData, {
 				headers: {

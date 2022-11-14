@@ -76,20 +76,39 @@ order by
 
 OPERATING_POTENTIAL_QUERY = """
 SELECT 
-  cell_id, 
-  cell_id as series, 
-  cycle_mean_voltage as value,
-  cycle_index
-FROM cycle_stats
-WHERE 
-  cell_id IN {cell_id} and 
-  (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
-  or 
-  email in (select distinct email 
-            from cell_metadata 
-            where is_public='true'
-            )
-  ) {filters}
+  r.cell_id, 
+  r.cell_id || ', ' || key as series, 
+  r.cycle_index,
+  value
+FROM (
+  SELECT 
+    cell_id,
+    trunc(cycle_index::numeric,0) as cycle_index,
+    json_build_object('charge', cycle_mean_charge_voltage, 
+                        'discharge', cycle_mean_discharge_voltage) AS line
+  FROM cycle_stats
+  WHERE 
+    cell_id IN {cell_id} and 
+    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+      or email in (select distinct email 
+                  from cell_metadata 
+                  where is_public='true'
+                )
+    ) {filters}
+) as r
+JOIN LATERAL 
+  json_each_text(r.line) 
+  ON 
+  (key ~ '[charge,discharge]')
+GROUP by 
+  r.cell_id, 
+  r.cycle_index, 
+  json_each_text.key, 
+  json_each_text.value
+order by 
+  r.cell_id,
+  r.cycle_index, 
+  key
 """
 
 
@@ -391,6 +410,7 @@ from (
 where
   foo.series is not null
 order by
+  foo.cell_id,
   foo.cycle_index,
   foo.test_time,
   foo.series
@@ -939,3 +959,11 @@ RATE_FILTER_QUERY = """
   where 
     email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
 """
+
+
+VOLTAGE_FILTER_QUERY = """
+  select MAX(v_max) as max_op_v,
+  MIN(v_min) as min_op_v
+  from cycle_metadata where email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
+"""
+

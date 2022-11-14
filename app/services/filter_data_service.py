@@ -65,6 +65,14 @@ def get_filter_data_service(email):
             capacity["max"] = row["max_capacity"]
         records["capacity"] = capacity
 
+        voltage = {}
+        voltage_cell = ao.get_op_voltage_filter_query(email)
+        for row in voltage_cell:
+            row = dict(row)
+            voltage["min"] = row["min_op_v"]
+            voltage["max"] = row["max_op_v"]
+        records["operating_voltage"] = voltage
+
         return 200,RESPONSE_MESSAGE['RECORDS_RETRIEVED'],records
 
     except Exception as err:
