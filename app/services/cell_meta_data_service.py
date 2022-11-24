@@ -20,7 +20,7 @@ def get_cellmeta_service(email,req_data, dashboard_id=None):
             # else:
             cell_id = dashboard_data.cell_id.split(',')
             email = dashboard_data.shared_by
-            archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, email, "cycle")
+            archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, "cycle", email)
             records = [cell.to_dict() for cell in archive_cells]
             return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []
@@ -30,7 +30,7 @@ def get_cellmeta_service(email,req_data, dashboard_id=None):
         # if filter_string:
         #     filter_string = 'where' + filter_string
         archive_cells = ao.get_all_shared_cell_meta_with_id(
-            ["Amplabs Sample"], email, "cycle")
+            ["Amplabs Sample"], "cycle")
         # archive_cells = ao.get_all_cell_meta_for_community(email)
         records = [add_type(cell.to_dict(), "type", "public/other")
                    for cell in archive_cells]

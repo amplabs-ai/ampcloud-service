@@ -2,6 +2,7 @@ from builtins import float, print
 import datetime
 import threading
 from app.amplabs_exception.amplabs_exception import AmplabsException
+from app.archive_constants import TRI_BUCKET_NAME
 from app.services.file_transfer_service import *
 from app.utilities.user_plan import set_user_plan
 from app.utilities.utils import status
@@ -11,7 +12,8 @@ from app.response import Response
 import logging
 from io import BytesIO
 import zipfile
-from flask import send_file
+from flask import send_file, Response
+from app.utilities.aws_connection import s3_client
 
 lock = threading.Lock()
 
@@ -110,6 +112,45 @@ def download_cycle_timeseries(cell_id):
     except Exception as err:
         logging.error(
             "User {email} Action DOWNLOAD_CYCLE_TIMESERIES error UNKNOWN".format(email=email))
+        logging.error(err)
+        return Response(500, "Failed").to_dict(), 500
+
+
+def download_tri_data():
+
+    def get_total_bytes(fileName):
+        result = s3_client.list_objects(Bucket=TRI_BUCKET_NAME)
+        for item in result['Contents']:
+            if item['Key'] == fileName:
+                return item['Size']
+
+    def get_object(fileName, total_bytes):
+        if total_bytes > 1000000:
+            return get_object_range(fileName, total_bytes)
+        return s3_client.get_object(Bucket=TRI_BUCKET_NAME, Key=fileName)['Body'].read()
+
+    def get_object_range(fileName, total_bytes):
+        offset = 0
+        while total_bytes > 0:
+            end = offset + 999999 if total_bytes > 1000000 else ""
+            total_bytes -= 1000000
+            byte_range = 'bytes={offset}-{end}'.format(offset=offset, end=end)
+            offset = end + 1 if not isinstance(end, str) else None
+            yield s3_client.get_object(Bucket=TRI_BUCKET_NAME, Key=fileName, Range=byte_range)['Body'].read()
+
+    try:
+        fileName = request.args.get("file")
+        total_bytes = get_total_bytes(fileName)
+
+        return Response(
+        get_object(fileName, total_bytes),
+        mimetype='application/zip',
+        headers={"Content-Disposition": "attachment;filename=test.txt"}
+    )
+
+    except Exception as err:
+        logging.error(
+            "User Action DOWNLOAD_CYCLE_TIMESERIES error UNKNOWN")
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 

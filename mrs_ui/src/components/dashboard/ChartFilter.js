@@ -1,6 +1,6 @@
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { InfoCircleOutlined } from "@ant-design/icons";
-import { Button, Select, Form, Space, Input, Modal } from "antd";
+import { Button, Select, Form, Space, Input, Modal, Spin } from "antd";
 import {
   MinusCircleOutlined,
   PlusOutlined,
@@ -20,7 +20,7 @@ const timeseries = [
 ];
 
 const ChartFilter = forwardRef((props, _ref) => {
-  const [axisOptions, setAxisOptions] = useState({});
+  const [displayNames, setDisplayNames] = useState({});
   const [loading, setLoading] = useState(false);
   const [filterValues, setFilterValues] = useState(initialChartFilters[props.chartName])
   const { state, action } = useDashboard();
@@ -30,32 +30,10 @@ const ChartFilter = forwardRef((props, _ref) => {
 
   useEffect(() => {
     
-    if (props.chartName) {
-      setLoading(true);
-      let endpoint =
-        timeseries.indexOf(props.chartName) !== -1
-          ? "/displayname/timeseries"
-          : "/displayname/cycle";
-      const controller = new AbortController();
-      axios
-        .get(endpoint, {
-          signal: controller.signal,
-        })
-        .then((res) => {
-          setAxisOptions(res.data?.records);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setLoading(false);
-        });
-
-      return () => {
-        controller.abort();
-      };
-    } else {
-      throw new Error("Type is not defined");
-    }
-  }, [props.chartName, props.fetchdata]);
+    if (props.displayNames) {
+      setDisplayNames(props.displayNames)
+    } 
+  }, [props.displayNames, props.fetchdata]);
 
   const onFinish = (values) => {
     let data = {
@@ -125,9 +103,10 @@ const ChartFilter = forwardRef((props, _ref) => {
                         size="small"
                         showSearch
                         dropdownMatchSelectWidth={false}
+                        notFoundContent={!displayNames.length ? <Spin size="small" /> : false}
                       >
-                        {Object.keys(axisOptions).map((c, i) => (
-                          <Option key={i} value={axisOptions[c]}>
+                        {Object.keys(displayNames).map((c, i) => (
+                          <Option key={i} value={displayNames[c]}>
                             {c}
                           </Option>
                         ))}
@@ -153,6 +132,7 @@ const ChartFilter = forwardRef((props, _ref) => {
                         size="small"
                         placeholder="Operation"
                         dropdownMatchSelectWidth={false}
+                        notFoundContent={!displayNames.length ? <Spin size="small" /> : false}
                       >
                         {FILTER_OPERATORS.map((c, i) => (
                           <Option key={i} value={c}>

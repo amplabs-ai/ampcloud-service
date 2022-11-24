@@ -210,8 +210,7 @@ from
 
 
 GALVANOSTATIC_QUERY = """
-with result as (
-  select
+select
     cell_id,
     series,
     v,
@@ -274,78 +273,6 @@ with result as (
     foo.cell_id,
     foo.cycle_index,
     foo.test_time
-)
-(select * from result) union all 
-(select
-  cell_id,
-  series,
-  v,
-  case 
-    when 
-      foo1.active_mass is null
-      or foo1.active_mass = 0 
-    then ah 
-    else 
-      (ah / foo1.active_mass) * 1000000 
-    end specific_capacity
-from
-  (
-    SELECT
-      cycle_timeseries_new.cell_id,
-      cycle_index,
-      test_time,
-      voltage as v,
-      active_mass,
-      case 
-        when current > 0 
-          then charge_capacity 
-        when current < 0 
-          then discharge_capacity 
-        end ah,
-      case 
-        when current > 0 
-          then cycle_timeseries_new.cell_id || ' c: ' || cycle_index 
-        when current < 0 
-          then cycle_timeseries_new.cell_id || ' d: ' || cycle_index end series
-    FROM (
-        select
-          email,
-          cell_id,
-          voltage,
-          charge_capacity,
-          discharge_capacity,
-          current,
-          cycle_index,
-          test_time
-        from
-          cycle_timeseries
-        where 
-          not EXISTS (TABLE result)  and 
-          (cycle_index = 1 or 
-            cycle_index in (select max(cycle_index)
-                            from cycle_stats 
-                            where cell_id in {cell_id} 
-                              and email in ('{email}','info@batteryarchive.org','data.matr.io@tri.global')
-                            )
-          ) and 
-          cell_id IN {cell_id}
-          and (
-                email in ('{email}','info@batteryarchive.org','data.matr.io@tri.global')  
-              )
-        ) cycle_timeseries_new
-    inner join 
-      cell_metadata 
-      on 
-      cycle_timeseries_new.cell_id = cell_metadata.cell_id
-        and cycle_timeseries_new.email = cell_metadata.email
-  ) as foo1
-  where
-    foo1.series is not null
-  order by
-    foo1.cell_id,
-    foo1.cycle_index,
-    foo1.test_time
-)
 """
 
 
@@ -457,7 +384,6 @@ ORDER BY
 
 
 DIFFERENTIAL_CAPACITY_QUERY="""
-with result as (
   SELECT
     cell_id,
     charge_capacity,
@@ -477,35 +403,6 @@ with result as (
   order by 
     cell_id, 
     test_datapoint_ordinal
-)
-(select * from result) 
-union all 
-(
-  SELECT
-    cell_id,
-    charge_capacity,
-    discharge_capacity,
-    current,
-    voltage,
-    cell_id || ' Cycle ' || cycle_index as series
-  FROM cycle_timeseries
-  where 
-    not exists (TABLE result) and 
-    (cycle_index =1 or 
-      cycle_index in (
-        select
-          max(cycle_index)
-        from cycle_stats 
-        where 
-          cell_id in {cell_id} and 
-              email in ('{email}','info@batteryarchive.org','data.matr.io@tri.global')
-        )
-      ) and cell_id IN {cell_id} and 
-      (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
-  order by 
-    cell_id, 
-    test_datapoint_ordinal
-)
 """
 
 
@@ -810,71 +707,25 @@ TOTAL_CYCLE_INDEX = """
   SELECT 
     COUNT(cycle_index)
   FROM CYCLE_STATS 
-  JOIN 
-    cell_metadata
-    ON 
-    CYCLE_STATS.cell_id = cell_metadata.cell_id 
   WHERE 
-    (cell_metadata.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
+    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
 """
 
 
 SIZE_CELL_METADATA = """
-  SELECT 
-    (table_size/total_records)*total_public_records AS size 
-  FROM 
-    (SELECT pg_relation_size('cell_metadata') as table_size) AS A,
-    ( 
-      select count(index) as total_records 
-      from cell_metadata
-    ) AS B, 
-    ( 
-      select count(index)as total_public_records 
-      from cell_metadata 
-      where 
-        (cell_metadata.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
-    )AS C
+      select pg_relation_size('cell_metadata') as size
 """
 
 
 SIZE_CYCLE_STATS = """
-  SELECT 
-    (table_size/total_records)*total_public_records AS size 
-  FROM 
-    (SELECT pg_relation_size('cycle_stats') as table_size) AS A,
-    (
-      select count(index) as total_records 
-      from cycle_stats
-    ) AS B, 
-    (
-      select count(cycle_stats.index)as total_public_records 
-      from cycle_stats 
-      join 
-        cell_metadata 
-        on 
-        cycle_stats.cell_id = cell_metadata.cell_id
-      where 
-        (cell_metadata.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
-    )AS C
+      SELECT 
+        pg_relation_size('cycle_stats') as size
 """
 
 
 SIZE_CYCLE_TIMESERIES = """
-  select 
-    (table_size/total_records)*c as size 
-  from (
       select 
-        pg_relation_size('cycle_timeseries') as table_size, 
-        count(index) as total_records, 
-        count(index) filter 
-        (
-          where cell_id in (select cell_id 
-                            from cell_metadata 
-                            where (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global'))
-                            )
-        ) as c 
-      from cycle_timeseries
-  ) as A;
+        pg_relation_size('cycle_timeseries') as size
 """
 
 

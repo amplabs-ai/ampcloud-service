@@ -42,6 +42,8 @@ def get_galvanostatic_plot_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -135,6 +137,8 @@ def get_coulombic_efficiency_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -198,6 +202,8 @@ def get_differential_capacity_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -259,6 +265,8 @@ def get_voltage_time_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -293,6 +301,8 @@ def get_current_time_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -327,6 +337,8 @@ def get_energy_density_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -478,6 +490,8 @@ def get_capacity_retention_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -512,6 +526,8 @@ def get_capacity_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
@@ -546,6 +562,8 @@ def get_operating_potential_service(req_data, email, dashboard_id=None):
     try:
         ao = ArchiveOperator()
         ao.set_session()
+        if len(req_data.get('cell_ids')) > 5:
+            return 400, "Not allowed, please add fewer cell ids"
         if dashboard_id:# and email != "public":
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \

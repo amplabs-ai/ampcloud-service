@@ -43,6 +43,7 @@ DATA_MATR_IO = "data.matr.io@tri.global"
 AWS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 DOMAIN_NAME = os.getenv('DOMAIN_NAME')
+TRI_BUCKET_NAME = os.getenv('TRI_BUCKET_NAME')
 
 #unit_conversion
 units = {

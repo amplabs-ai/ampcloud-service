@@ -2,10 +2,10 @@ const initialChartOptions = {
 	animation: false,
 	// animation: false,
 	grid: {
-		left: "10%",
+		left: "15%",
 		right: "10%",
-		bottom: "16%",
-		containLabel: true,
+		bottom: "18%",
+		// containLabel: true,
 	},
 	// grid: {
 	// 	left: window.screen.width < 600 ? "8%" : "5%",

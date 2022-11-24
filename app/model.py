@@ -418,7 +418,10 @@ class ArchiveOperator:
     def get_all_cell_meta_with_id(self, cell_id, email):
         return self.get_all_data_from_table_with_id(CellMeta, cell_id, email)
 
-    def get_all_shared_cell_meta_with_id(self, cell_id, email, test):
+    def get_all_shared_cell_meta_with_id(self, cell_id, test, email = None):
+        if email: 
+            return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id),
+                                                   CellMeta.test == test, CellMeta.email == email).all()
         return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id),
                                                    CellMeta.test == test).all()
 

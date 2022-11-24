@@ -219,6 +219,7 @@ const DashboardChart = (props) => {
         chartName={props.chartName}
         fetchData={props.fetchData}
 		accessToken={accessToken}
+		displayNames={props.displayNames}
       />
 		<FullScreen handle={screen} onChange={reportChange}>
 			<div className="card shadow" style={{ height: "100%", width: "100%" }}>

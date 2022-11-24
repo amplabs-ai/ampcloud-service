@@ -79,6 +79,7 @@ export const _createChartLegend = (data, chartId, yAxis = null) => {
 		orient: "horizontal",
 		// left: "right",
 		// top: window.screen.width < 600 ? "auto" : "15%",
+		padding: [10,0,0,0,0],
 		bottom: "0%",
 		// right: window.screen.width < 1200 ? "auto" : "0%",
 		// top: window.screen.width < 1200 ? "auto" : "16%",
@@ -152,7 +153,7 @@ export const chartConfig = (chartName, data) => {
 				? { scale: true,
 					axisLabel: {
 						formatter: function (value, index){
-							return parseFloat(value).toPrecision(3);
+							return parseFloat(value).toFixed(2);
 						}
 					  }, 
 					  splitLine: {
@@ -167,7 +168,7 @@ export const chartConfig = (chartName, data) => {
 						type: "value",
 						name: yAxis.title,
 						nameLocation: "middle",
-						nameGap: 45,
+						nameGap: 60,
 						nameTextStyle: {
 							fontSize: window.screen.width < 600 ? 12 : 16,
 						},

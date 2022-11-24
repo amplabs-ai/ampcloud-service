@@ -11,7 +11,6 @@ import { useAuth0Token } from "../../utility/useAuth0Token";
 import { useUserPlan } from "../../context/UserPlanContext";
 
 let CHART_API_ENDPOINTS = {
-	capacityRetention: "/echarts/capacityRetention",
 	coulombicEfficiency: "/echarts/coulombicEfficiency",
 	differentialCapacity: "/echarts/differentialCapacity",
 	galvanostaticPlot: "/echarts/galvanostaticPlot",
@@ -27,7 +26,6 @@ const instance = new WorkerBuilder(Worker);
 const ChartContainerType2 = () => {
 	const { state, action, dashboardRef } = useDashboard();
 	const [chartLoadSpiner, setChartLoadSpiner] = useState({
-		capacityRetention: false,
 		coulombicEfficiency: false,
 		differentialCapacity: false,
 		galvanostaticPlot: false,
@@ -38,7 +36,6 @@ const ChartContainerType2 = () => {
 		operatingPotential: false
 	});
 	const [chartLoadingError, setChartLoadingError] = useState({
-		capacityRetention: false,
 		coulombicEfficiency: false,
 		differentialCapacity: false,
 		galvanostaticPlot: false,
@@ -50,7 +47,6 @@ const ChartContainerType2 = () => {
 	});
 	const [chartData, setChartData] = useState({});
 	const [cancelReqToken, setCancelReqToken] = useState({
-		capacityRetention: axios.CancelToken.source(),
 		coulombicEfficiency: axios.CancelToken.source(),
 		differentialCapacity: axios.CancelToken.source(),
 		galvanostaticPlot: axios.CancelToken.source(),
@@ -62,7 +58,6 @@ const ChartContainerType2 = () => {
 	});
 	const [filteredData, setFilteredData] = useState({});
 	const [chartsLoaded, setChartsLoaded] = useState({
-		capacityRetention: false,
 		coulombicEfficiency: false,
 		differentialCapacity: false,
 		galvanostaticPlot: false,
@@ -75,6 +70,7 @@ const ChartContainerType2 = () => {
 	const [loading, setLoading] = useState(false);
 	const [modalVisible, setModalVisible] = useState(false);
 	const [codeContent, setCodeContent] = useState("");
+	const [displayNames, setDisplayNames] = useState({})
 	const accessToken = useAuth0Token();
 	const userPlan = useUserPlan();
 
@@ -82,7 +78,6 @@ const ChartContainerType2 = () => {
 		setChartLoadingError((prev) => {
 			return {
 				...prev,
-				capacityRetention: false,
 				coulombicEfficiency: false,
 				differentialCapacity: false,
 				galvanostaticPlot: false,
@@ -116,6 +111,7 @@ const ChartContainerType2 = () => {
 
 	useEffect(() => {
 		if (state.dashboardId || (accessToken && state.checkedCellIds?.length && userPlan)) {
+			getDisplayNames()
 			handleFilterChange(state.checkedCellIds, accessToken);
 		}
 	}, [state.selectedCellIds, accessToken, userPlan]);
@@ -124,6 +120,20 @@ const ChartContainerType2 = () => {
 		return cancelReqToken;
 	};
 
+	const getDisplayNames = () => {
+		const timeseries = axios.get("/displayname/timeseries")
+		const cycle = axios.get("/displayname/cycle")
+		axios.all([timeseries, cycle])
+        .then(axios.spread((...responses) => {
+          setDisplayNames({
+			timeseries: responses[0].data?.records,
+			cycle: responses[1].data?.records
+		  })
+        }))
+        .catch((err) => {
+			console.log("error fetching displaynames")
+        });
+	}
 	// runs when api call is needed / gets cellIds from filter bar
 	const handleFilterChange = (cellIds, accessToken) => {
 		let params = new URLSearchParams();
@@ -142,32 +152,32 @@ const ChartContainerType2 = () => {
 			},
 		};
 		request.data = data;
-		data.filters = initialChartFilters["differentialCapacity"];
-		_fetchData("differentialCapacity", request);
-		data.filters = initialChartFilters["galvanostaticPlot"];
-		_fetchData("galvanostaticPlot", request);
+		data.filters = [];
+		_fetchData("coulombicEfficiency", request);
+
+		_fetchData("capacity", request);
+		_fetchData("operatingPotential", request);
+
 		data.filters = initialChartFilters["voltageTime"];
 		_fetchData("voltageTime", request);
 		data.filters = initialChartFilters["currentTime"];
 		_fetchData("currentTime", request);
 
+		data.filters = initialChartFilters["galvanostaticPlot"];
+		_fetchData("galvanostaticPlot", request);
+		data.filters = initialChartFilters["differentialCapacity"];
+		_fetchData("differentialCapacity", request);
+		
 		data.filters = [];
-		_fetchData("coulombicEfficiency", request);
-		// _fetchData("capacityRetention", request);
 		_fetchData("energyDensity", request);
-		_fetchData("capacity", request);
-		_fetchData("operatingPotential", request);
+
+
 
 		return true;
 	};
 
 	const handleChartLoadingError = (apiType, show) => {
 		switch (apiType) {
-			case "capacityRetention":
-				setChartLoadingError((prev) => {
-					return { ...prev, capacityRetention: show };
-				});
-				break;
 			case "coulombicEfficiency":
 				setChartLoadingError((prev) => {
 					return { ...prev, coulombicEfficiency: show };
@@ -215,11 +225,6 @@ const ChartContainerType2 = () => {
 
 	const handleChartLoadSpinner = (apiType, show) => {
 		switch (apiType) {
-			case "capacityRetention":
-				setChartLoadSpiner((prev) => {
-					return { ...prev, capacityRetention: show };
-				});
-				break;
 			case "coulombicEfficiency":
 				setChartLoadSpiner((prev) => {
 					return { ...prev, coulombicEfficiency: show };
@@ -278,17 +283,6 @@ const ChartContainerType2 = () => {
 			.then((result) => {
 				result = typeof result.data == "string" ? JSON.parse(result.data.replace(/\bNaN\b/g, "null")) : result.data;
 				switch (apiType) {
-					case "capacityRetention":
-						setChartData((prev) => {
-							return { ...prev, capacityRetention: result.records[0] };
-						});
-						setFilteredData((prev) => {
-							return { ...prev, capacityRetention: result.records[0] };
-						});
-						setChartsLoaded((prev) => {
-							return { ...prev, capacityRetention: true };
-						});
-						break;
 					case "capacity":
 						setChartData((prev) => {
 							return { ...prev, capacity: result.records[0]};
@@ -396,7 +390,6 @@ const ChartContainerType2 = () => {
 		setChartLoadingError((prev) => {
 			return {
 				...prev,
-				capacityRetention: false,
 				coulombicEfficiency: false,
 				differentialCapacity: false,
 				galvanostaticPlot: false,
@@ -460,6 +453,8 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["galvanostaticPlot"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.timeseries}
+
 							/>
 						</div>
 						<div className="col-md-6 mt-2">
@@ -470,6 +465,7 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["energyDensity"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.cycle}
 							/>
 						</div>
 						<div className="col-md-6 mt-2">
@@ -480,6 +476,7 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["capacity"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.cycle}
 							/>
 						</div>
 						<div className="col-md-6 mt-2">
@@ -490,6 +487,7 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["operatingPotential"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.cycle}
 							/>
 						</div>
 						<div className="col-md-6 mt-2">
@@ -500,6 +498,7 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["coulombicEfficiency"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.cycle}
 							/>
 						</div>
 						<div className="col-md-6 mt-2">
@@ -510,6 +509,7 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["differentialCapacity"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.timeseries}
 							/>
 						</div>
 						{/* <div className="col-md-6 mt-2">
@@ -530,6 +530,7 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["voltageTime"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.timeseries}
 							/>
 						</div>
 						<div className="col-md-6 mt-2">
@@ -540,6 +541,7 @@ const ChartContainerType2 = () => {
 								formatCode={formatCode}
 								shallShowLoadSpinner={chartLoadSpiner["currentTime"]}
 								fetchData={_fetchData}
+								displayNames={displayNames.timeseries}
 							/>
 						</div>
 					</div>

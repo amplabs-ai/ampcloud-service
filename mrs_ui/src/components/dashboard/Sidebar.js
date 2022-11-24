@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Input, Tree, Layout, Spin, Result, Modal, Row, Col, Slider, Select, Radio } from "antd";
+import { Button, Input, Tree, Layout, Spin, Result, Modal, Row, Col, Slider, Select, Tooltip, message } from "antd";
 import axios from "axios";
 import SimpleBarReact from "simplebar-react";
 import "simplebar/src/simplebar.css";
@@ -9,162 +9,12 @@ import { useDashboard } from "../../context/DashboardContext";
 import { useUserPlan } from "../../context/UserPlanContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import InfoBatteryArchiveModal from "./InfoBatteryArchiveModal";
+import { FileZipOutlined, DownloadOutlined } from '@ant-design/icons';
 
 const { Option, OptGroup} = Select;
 const { Search } = Input;
 const { Sider } = Layout;
 
-const _generateTreeData = (data, userPlan) => {
-	let x = [
-		{
-			title: "Private",
-			key: "private",
-			children: [],
-			disabled: !userPlan?.includes("PRO"),
-		},
-		{
-			title: "Public",
-			key: "public",
-			children: [],
-		},
-		{
-			title: <InfoBatteryArchiveModal />,
-			key: "amplabs",
-			children: [],
-		},
-		{
-			title: "data.matr.io",
-			key: "datamatrio",
-			children: [
-				{
-					title: "Capacity Degradation",
-					key: "capacity_degradation",
-					children: [],
-				},
-				{
-					title: "Closed-loop optimization",
-					key: "closed-loop_optimization",
-					children: [],
-				},
-				{
-					title: "TRI competition",
-					key: "tri_competition",
-					children: [],
-				},
-			],
-		},
-	];
-	let amplabsDirInfo = {};
-	let dataMatrIoDirInfo = {
-		capacityDegrad: {},
-		closeLoopOpt: {},
-		triCompetition: {}
-	};
-	data.map((cellMeta) => {
-		let cellType = cellMeta.type + "_";
-		let cellId = cellMeta.cell_id;
-		let index = cellMeta.index;
-		switch (cellMeta.type) {
-			case "public/battery-archive":
-				let dirName = cellId.split("_", 1)[0];
-				if (amplabsDirInfo[dirName] === undefined) {
-					x[2].children.push({
-						title: dirName,
-						key: dirName,
-						children: [
-							{
-								title: cellId,
-								key: "cell_" + index + "_" + cellType + cellId,
-							},
-						],
-					});
-					amplabsDirInfo[dirName] = x[2].children.length - 1;
-				} else {
-					x[2].children[amplabsDirInfo[dirName]].children.push({
-						title: cellId,
-						key: "cell_" + index + "_" + cellType + cellId,
-					});
-				}
-				break;
-			case "public/data.matr.io":
-				let projectDirIndex;
-				let batchIndex;
-				if (cellId.includes("_oed_") || cellId.includes("_batch9_")) {
-					// project: close-loop optimization
-					projectDirIndex = 1;
-					let batchNameCloseloop;
-					if (cellId.includes("_oed_")) {
-						batchNameCloseloop = "Batch " + cellId.split("_")[1] + "_" + cellId.split("_")[2];
-					} else {
-						batchNameCloseloop = "Batch9 (validation batch)";
-					}
-					if (dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] === undefined) {
-						x[3].children[projectDirIndex].children.push({
-							title: batchNameCloseloop,
-							key: batchNameCloseloop,
-							children: [],
-						});
-						dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] = x[3].children[projectDirIndex].children.length - 1;
-						// batchIndex = 0;
-					} else {
-					}
-					batchIndex = dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop];
-				} else if (!cellId.includes("_")) {
-					x[3].children[2].children.push({
-					title: cellId,
-					key: "cell_" + index + "_" + cellType + cellId,
-				});
-				break;
-				} else {
-					// project: capacity degradation
-					projectDirIndex = 0;
-					let batchNameCapDeg = cellId.split("_", 1)[0];
-					if (dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] === undefined) {
-						x[3].children[projectDirIndex].children.push({
-							title: batchNameCapDeg,
-							key: batchNameCapDeg,
-							children: [],
-						});
-						dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] = x[3].children[projectDirIndex].children.length - 1;
-						// batchIndex = 0;
-					} else {
-					}
-					batchIndex = dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg];
-				}
-
-				x[3].children[projectDirIndex].children[batchIndex].children.push({
-					title: cellId,
-					key: "cell_" + index + "_" + cellType + cellId,
-				});
-				break;
-			case "public/user":
-				x[1].children.push({
-					title: cellId,
-					key: "cell_" + index + "_" + cellType + cellId,
-				});
-				break;
-			case "public/other":
-				x[1].children.push({
-					title: cellId,
-					key: "cell_" + index + "_" + cellType + cellId,
-				});
-				break;
-			case "private":
-				x[0].children.push({
-					title: cellId,
-					key: "cell_" + index + "_" + cellType + cellId,
-					disabled: !userPlan?.includes("PRO"),
-				});
-				break;
-			default:
-				break;
-		}
-	});
-	if (!x[1].children.length) {
-		x.splice(1, 3);
-	}
-	return x;
-};
 
 const SideBar = (props) => {
 	const [checkedKeys, setCheckedKeys] = useState([]);
@@ -219,6 +69,8 @@ operating_voltage:{
   min: null,
   max: null
 }});
+const [filterOptionsLoaded, setFilterOptionsLoaded] = useState(false);
+const [loading, setLoading] = useState(false);
 
 	const { state, action } = useDashboard();
 	const accessToken = useAuth0Token();
@@ -283,12 +135,241 @@ operating_voltage:{
 						Authorization: `Bearer ${accessToken}`,
 					},
 				})
-        .then((res) => {setMetadataSummary(res.data.records[0]);
+        .then((res) => {
+          setMetadataSummary(res.data.records[0])
+          setFilterOptionsLoaded(true)
         } 
         )
         .catch((err) => {})
 		}
 	}, [state.refreshSidebar, accessToken, userPlan]);
+
+  const downloadTRIdata = (fileName) => {
+    setLoading(true);
+    let params = new URLSearchParams();
+    params.append("file", fileName);
+    axios
+      .get(`/download/tri_data`, {
+        params: params,
+        responseType: "arraybuffer",
+      })
+      .then(({ data }) => {
+        var a = document.createElement("a");
+        var blob = new Blob([data], { type: "application/zip" });
+        a.href = window.URL.createObjectURL(blob);
+        a.download = fileName;
+        a.click();
+        setLoading(false);
+      })
+      .catch((err) => {
+        message.error("Error downloading data")
+        message.error("Error downloading data")
+        setLoading(false);
+      });
+  }
+  
+  const _generateTreeData = (data, userPlan) => {
+    let x = [
+      {
+        title: "Private",
+        key: "private",
+        children: [],
+        disabled: !userPlan?.includes("PRO"),
+      },
+      {
+        title: "Public",
+        key: "public",
+        children: [],
+      },
+      {
+        title: <>TRI competition 
+        <Tooltip placement="top" title="Download CSVs">
+        <Button className='ml-2 p-0' type='text' size='small' icon={<DownloadOutlined onClick={() => downloadTRIdata("tri_data.zip")}/>} />
+        </Tooltip>
+        </>,
+        key: "tri_competition",
+        children: [
+          {
+            title: <>Training Data
+            <Tooltip placement="top" title="Download JSON">
+            <Button className='ml-2 p-0' type='text' size='small' icon={<DownloadOutlined />} onClick={() => downloadTRIdata("training_data_json.zip")} />
+            </Tooltip>
+            <Tooltip placement="top" title="Download CSVs">
+            <Button className='ml-2 p-0' type='text' size='small' icon={<FileZipOutlined />} onClick={() => downloadTRIdata("training_data.zip")} />
+            </Tooltip></>,
+            key: "tri_training",
+            children: [],
+          },
+          {
+            title: <>Test Data
+            <Tooltip placement="top" title="Download JSON">
+            <Button className='ml-2 p-0' type='text' size='small' icon={<DownloadOutlined />} onClick={() => downloadTRIdata("test_data_json.zip")} />
+            </Tooltip>
+            <Tooltip placement="top" title="Download CSVs">
+            <Button className='ml-2 p-0' type='text' size='small' icon={<FileZipOutlined />} onClick={() => downloadTRIdata("test_data.zip")}/>
+            </Tooltip></>,
+            key: "tri_test",
+            children: [],
+          }
+        ],
+      },
+      {
+        title: <InfoBatteryArchiveModal />,
+        key: "amplabs",
+        children: [],
+      },
+      {
+        title: "data.matr.io",
+        key: "datamatrio",
+        children: [
+          {
+            title: "Capacity Degradation",
+            key: "capacity_degradation",
+            children: [],
+          },
+          {
+            title: "Closed-loop optimization",
+            key: "closed-loop_optimization",
+            children: [],
+          }
+        ],
+      },
+    ];
+    let amplabsDirInfo = {};
+    let dataMatrIoDirInfo = {
+      capacityDegrad: {},
+      closeLoopOpt: {},
+      triCompetition: {}
+    };
+    data.map((cellMeta) => {
+      let cellType = cellMeta.type + "_";
+      let cellId = cellMeta.cell_id;
+      let index = cellMeta.index;
+      switch (cellMeta.type) {
+        case "public/battery-archive":
+          let dirName = cellId.split("_", 1)[0];
+          if (amplabsDirInfo[dirName] === undefined) {
+            x[3].children.push({
+              title: dirName,
+              key: dirName,
+              children: [
+                {
+                  title: cellId,
+                  key: "cell_" + index + "_" + cellType + cellId,
+                },
+              ],
+            });
+            amplabsDirInfo[dirName] = x[3].children.length - 1;
+          } else {
+            x[3].children[amplabsDirInfo[dirName]].children.push({
+              title: cellId,
+              key: "cell_" + index + "_" + cellType + cellId,
+            });
+          }
+          break;
+        case "public/data.matr.io":
+          let projectDirIndex;
+          let batchIndex;
+          if (cellId.includes("_oed_") || cellId.includes("_batch9_")) {
+            // project: close-loop optimization
+            projectDirIndex = 1;
+            let batchNameCloseloop;
+            if (cellId.includes("_oed_")) {
+              batchNameCloseloop = "Batch " + cellId.split("_")[1] + "_" + cellId.split("_")[2];
+            } else {
+              batchNameCloseloop = "Batch9 (validation batch)";
+            }
+            if (dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] === undefined) {
+              x[4].children[projectDirIndex].children.push({
+                title: batchNameCloseloop,
+                key: batchNameCloseloop,
+                children: [],
+              });
+              dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop] = x[4].children[projectDirIndex].children.length - 1;
+              // batchIndex = 0;
+            } else {
+            }
+            batchIndex = dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop];
+          } else if (cellId.includes("training")) {
+            // if (dataMatrIoDirInfo.triCompetition["Training Data"] === undefined)
+            // {
+            // 	x[3].children[2].children.push({
+            // 		title: "Training Data",
+            // 		key: "tri_training_data",
+            // 		children: [],
+            // 	});
+            //   dataMatrIoDirInfo.triCompetition["Training Data"] = x[3].children[2].children.length - 1;
+            // }
+            x[2].children[0].children.push({
+            title: cellId,
+            key: "cell_" + index + "_" + cellType + cellId,
+          });
+          break;
+          }else if (cellId.includes("test")) {
+            // if (dataMatrIoDirInfo.triCompetition["Test Data"] === undefined)
+            // {
+            // 	x[3].children[2].children.push({
+            // 		title: "Test Data",
+            // 		key: "tri_test_data",
+            // 		children: [],
+            // 	});
+            //   dataMatrIoDirInfo.triCompetition["Test Data"] = x[3].children[2].children.length - 1
+            // }
+            x[2].children[1].children.push({
+            title: cellId,
+            key: "cell_" + index + "_" + cellType + cellId,
+          });
+          break;
+          } else {
+            // project: capacity degradation
+            projectDirIndex = 0;
+            let batchNameCapDeg = cellId.split("_", 1)[0];
+            if (dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] === undefined) {
+              x[4].children[projectDirIndex].children.push({
+                title: batchNameCapDeg,
+                key: batchNameCapDeg,
+                children: [],
+              });
+              dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg] = x[4].children[projectDirIndex].children.length - 1;
+              // batchIndex = 0;
+            } else {
+            }
+            batchIndex = dataMatrIoDirInfo.capacityDegrad[batchNameCapDeg];
+          }
+  
+          x[4].children[projectDirIndex].children[batchIndex].children.push({
+            title: cellId,
+            key: "cell_" + index + "_" + cellType + cellId,
+          });
+          break;
+        case "public/user":
+          x[1].children.push({
+            title: cellId,
+            key: "cell_" + index + "_" + cellType + cellId,
+          });
+          break;
+        case "public/other":
+          x[1].children.push({
+            title: cellId,
+            key: "cell_" + index + "_" + cellType + cellId,
+          });
+          break;
+        case "private":
+          x[0].children.push({
+            title: cellId,
+            key: "cell_" + index + "_" + cellType + cellId,
+            disabled: !userPlan?.includes("PRO"),
+          });
+          break;
+        default:
+          break;
+      }
+    });
+    if (!x[1].children.length) {
+      x.splice(1, 3);
+    }
+    return x;
+  };
 
   const getReqBody = () => {
     let appliedfiltercount = 0
@@ -342,8 +423,8 @@ operating_voltage:{
 
   const setSideBarData = (filteredTreeData) => {
     let sideBarData = [];
-    let createDataMatrNode = true;
     filteredTreeData.forEach((element) => {
+      let createDataMatrNode = true;
       if (
         element.key === "private" ||
         element.key === "public" ||
@@ -394,6 +475,11 @@ operating_voltage:{
 	};
 
 	const onCheck = (checkedKeysValue) => {
+    if(checkedKeysValue.filter(item => item.split("_", 1)[0] === "cell").length > 5){
+      message.info("Only 5 cell IDs can be loaded")
+      message.info("Only 5 cell IDs can be loaded")
+      return
+    }
 		setCheckedKeys(checkedKeysValue);
 		let x = [];
 		checkedKeysValue.map((k) => {
@@ -435,6 +521,9 @@ operating_voltage:{
 
 	return (
     <>
+      <Modal centered width="auto" visible={loading} closable={false} footer={null} maskClosable={false}>
+				<Spin size="large" />
+			</Modal>
       <Modal
         visible={searchFilterOpen}
         onCancel={() => setSearchFilterOpen(false)}
@@ -447,6 +536,7 @@ operating_voltage:{
                 Manufacturer
               </h7>
             <Select
+              loading={!filterOptionsLoaded}
               allowClear={true}
               // style={{
               //   minWidth: 150,
@@ -473,6 +563,7 @@ operating_voltage:{
                 Application
               </h7>
               <Select
+              loading={!filterOptionsLoaded}
               allowClear={true}
               style={{
                 maxWidth: 300,
@@ -532,6 +623,7 @@ operating_voltage:{
                 Format Shape
               </h7>
             <Select
+            loading={!filterOptionsLoaded}
               value={selectedFilters.form_factor}
               allowClear={true}
               onChange={(value) => {
@@ -556,6 +648,7 @@ operating_voltage:{
                 Format Dimension
               </h7>
             <Select
+            loading={!filterOptionsLoaded}
               // onChange={(value) => {
               //   onFilterChange("format_dimension", value);
               // }}
@@ -581,6 +674,7 @@ operating_voltage:{
                 Cathode
               </h7>
             <Select
+            loading={!filterOptionsLoaded}
               value={selectedFilters.cathode}
               allowClear={true}
               onChange={(value) => {
@@ -605,6 +699,7 @@ operating_voltage:{
                 Anode
               </h7>
             <Select
+            loading={!filterOptionsLoaded}
               value={selectedFilters.anode}
               allowClear={true}
               onChange={(value) => {
@@ -636,6 +731,7 @@ operating_voltage:{
               onChange={(value) => {
                 onFilterChange("electrolyte", value);
               }}
+            loading={!filterOptionsLoaded}
               allowClear={true}
               // style={{
               //   minWidth: 150,
@@ -653,6 +749,7 @@ operating_voltage:{
                 Type of Test
               </h7>
             <Select
+            loading={!filterOptionsLoaded}
               value={selectedFilters.test}
               allowClear={true}
               onChange={(value) => {
@@ -681,6 +778,7 @@ operating_voltage:{
                 Energy Density of Pack
               </h7>
             <Select
+            loading={!filterOptionsLoaded}
               value={selectedFilters.energy_density_of_pack}
               onChange={(value) => {
                 onFilterChange("energy_density_of_pack", value);
@@ -703,6 +801,7 @@ operating_voltage:{
               Cell Type
               </h7>
               <Select
+              loading={!filterOptionsLoaded}
               allowClear={true}
               style={{
                 maxWidth: 300,
