@@ -7,6 +7,7 @@ from sqlalchemy.exc import DataError
 from skimage.measure import block_reduce
 from app.utilities.utils import __generate_filter_string
 import traceback
+import multiprocessing
 
 
 def get_cycle_quantities_by_step_service(cell_id, step, email, mod_step, dashboard_id=None):
@@ -197,9 +198,53 @@ def get_compare_by_cycle_time_service(cell_id, email, dashboard_id=None):
     finally:
         ao.release_session()
 
+def charge_computation(series_list,result_df,reduction_factor):
+    rec = []
+    for series in series_list:
+        try:
+            charge_Q = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['charge_capacity'].to_numpy()
+            charge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['voltage'].to_numpy()
+            charge_Q_reduced = block_reduce(charge_Q, block_size=(reduction_factor,), func=np.mean, cval=charge_Q[-1])
+            charge_voltage_reduced = block_reduce(charge_voltage, block_size=(reduction_factor,), func=np.mean, cval=charge_voltage[-1])
+            dQdV_charge = np.diff(charge_Q_reduced) / np.diff(charge_voltage_reduced)
+            df_charge = pd.DataFrame()
+            df_charge['dq_dv'] = pd.Series(dQdV_charge)
+            df_charge['voltage'] = pd.Series(charge_voltage_reduced[:-1])
+            df_charge['series'] = series+ " c"
+            df_charge = df_charge.sort_values(by = ['voltage'])
+            df_charge = df_charge.replace([np.inf, -np.inf], np.NaN)
+            rec.append({"id": f"{series}, charge", "cell_id": series.split(' ')[0], "source": df_charge.to_dict('records')})
+        except Exception as e:
+            print(e)
+            pass
+    return rec
+
+
+def discharge_computation(series_list,result_df,reduction_factor):
+    rec = []
+    for series in series_list:
+        try:
+            discharge_Q = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['discharge_capacity'].to_numpy()
+            discharge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['voltage'].to_numpy()
+            discharge_Q_reduced = block_reduce(discharge_Q, block_size=(reduction_factor,), func=np.mean, cval=discharge_Q[-1])
+            discharge_voltage_reduced = block_reduce(discharge_voltage, block_size=(reduction_factor,), func=np.mean, cval=discharge_voltage[-1])
+            dQdV_discharge = np.diff(discharge_Q_reduced) / np.diff(discharge_voltage_reduced)
+            df_discharge = pd.DataFrame()
+            df_discharge['dq_dv'] = pd.Series(dQdV_discharge)
+            df_discharge['voltage'] = pd.Series(discharge_voltage_reduced[:-1]) 
+            df_discharge['series'] = series+ " d"
+            df_discharge = df_discharge.sort_values(by = ['voltage'])
+            df_discharge = df_discharge.replace([np.inf, -np.inf], np.NaN)
+            rec.append({"id": f"{series}, discharge", "cell_id": series.split(' ')[0], "source": df_discharge.to_dict('records')})
+        except Exception as e:
+            print(e)
+            pass
+    return rec
+
 
 def get_differential_capacity_service(req_data, email, dashboard_id=None):
     try:
+        mp = multiprocessing.get_context('spawn')
         ao = ArchiveOperator()
         ao.set_session()
         if len(req_data.get('cell_ids')) > 5:
@@ -218,39 +263,12 @@ def get_differential_capacity_service(req_data, email, dashboard_id=None):
         result_df = ao.get_all_data_from_DiffCapacity_query(req_data.get('cell_ids'), email, filter_string)
         records = []
         series_list= result_df['series'].dropna().unique()
-        for series in series_list:
-            try:
-                charge_Q = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['charge_capacity'].to_numpy()
-                charge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['voltage'].to_numpy()
-                charge_Q_reduced = block_reduce(charge_Q, block_size=(reduction_factor,), func=np.mean, cval=charge_Q[-1])
-                charge_voltage_reduced = block_reduce(charge_voltage, block_size=(reduction_factor,), func=np.mean, cval=charge_voltage[-1])
-                dQdV_charge = np.diff(charge_Q_reduced) / np.diff(charge_voltage_reduced)
-                df_charge = pd.DataFrame()
-                df_charge['dq_dv'] = pd.Series(dQdV_charge)
-                df_charge['voltage'] = pd.Series(charge_voltage_reduced[:-1])
-                df_charge['series'] = series+ " c"
-                df_charge = df_charge.sort_values(by = ['voltage'])
-                df_charge = df_charge.replace([np.inf, -np.inf], np.NaN)
-                records.append({"id": f"{series}, charge", "cell_id": series.split(' ')[0], "source": df_charge.to_dict('records')})
-            except Exception as e:
-                print(e)
-                pass
-            try:
-                discharge_Q = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['discharge_capacity'].to_numpy()
-                discharge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['voltage'].to_numpy()
-                discharge_Q_reduced = block_reduce(discharge_Q, block_size=(reduction_factor,), func=np.mean, cval=discharge_Q[-1])
-                discharge_voltage_reduced = block_reduce(discharge_voltage, block_size=(reduction_factor,), func=np.mean, cval=discharge_voltage[-1])
-                dQdV_discharge = np.diff(discharge_Q_reduced) / np.diff(discharge_voltage_reduced)
-                df_discharge = pd.DataFrame()
-                df_discharge['dq_dv'] = pd.Series(dQdV_discharge)
-                df_discharge['voltage'] = pd.Series(discharge_voltage_reduced[:-1]) 
-                df_discharge['series'] = series+ " d"
-                df_discharge = df_discharge.sort_values(by = ['voltage'])
-                df_discharge = df_discharge.replace([np.inf, -np.inf], np.NaN)
-                records.append({"id": f"{series}, discharge", "cell_id": series.split(' ')[0], "source": df_discharge.to_dict('records')})
-            except Exception as e:
-                print(e)
-                pass
+        with mp.Pool(4) as pool:
+            p1 = pool.apply_async(charge_computation,(series_list[:(len(series_list)//2)],result_df,reduction_factor,))
+            p2 = pool.apply_async(charge_computation,(series_list[(len(series_list)//2):],result_df,reduction_factor,))
+            p3 = pool.apply_async(discharge_computation,(series_list[:(len(series_list)//2)],result_df,reduction_factor,))
+            p4 = pool.apply_async(discharge_computation,(series_list[(len(series_list)//2):],result_df,reduction_factor,))
+            records = p1.get() + p2.get() + p3.get() + p4.get()
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except DataError as err:
         return 400, str(err.__dict__['orig']).split('\n')[0]
@@ -259,6 +277,73 @@ def get_differential_capacity_service(req_data, email, dashboard_id=None):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
+
+
+# def get_differential_capacity_service(req_data, email, dashboard_id=None):
+#     try:
+#         ao = ArchiveOperator()
+#         ao.set_session()
+#         if len(req_data.get('cell_ids')) > 5:
+#             return 400, "Not allowed, please add fewer cell ids"
+#         if dashboard_id:# and email != "public":
+#             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
+#             # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to) or \
+#             if not(set(req_data.get('cell_ids')).issubset(set(dashboard_data.cell_id.split(',')))):
+#                 return 401, "Unauthorised Access"
+#             else:
+#                 email = dashboard_data['shared_by']
+#         reduction_factor = 1
+#         filter_string = ""
+#         if req_data.get('filters'):
+#             filter_string, reduction_factor = __generate_filter_string(req_data.get('filters'), rf = True)
+#         start = time.time()
+#         result_df = ao.get_all_data_from_DiffCapacity_query(req_data.get('cell_ids'), email, filter_string)
+#         print("Fetch for diff ",time.time()-start)
+#         records = []
+#         start = time.time()
+#         series_list= result_df['series'].dropna().unique()
+#         for series in series_list:
+#             try:
+#                 charge_Q = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['charge_capacity'].to_numpy()
+#                 charge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] >0)]['voltage'].to_numpy()
+#                 charge_Q_reduced = block_reduce(charge_Q, block_size=(reduction_factor,), func=np.mean, cval=charge_Q[-1])
+#                 charge_voltage_reduced = block_reduce(charge_voltage, block_size=(reduction_factor,), func=np.mean, cval=charge_voltage[-1])
+#                 dQdV_charge = np.diff(charge_Q_reduced) / np.diff(charge_voltage_reduced)
+#                 df_charge = pd.DataFrame()
+#                 df_charge['dq_dv'] = pd.Series(dQdV_charge)
+#                 df_charge['voltage'] = pd.Series(charge_voltage_reduced[:-1])
+#                 df_charge['series'] = series+ " c"
+#                 df_charge = df_charge.sort_values(by = ['voltage'])
+#                 df_charge = df_charge.replace([np.inf, -np.inf], np.NaN)
+#                 records.append({"id": f"{series}, charge", "cell_id": series.split(' ')[0], "source": df_charge.to_dict('records')})
+#             except Exception as e:
+#                 print(e)
+#                 pass
+#             try:
+#                 discharge_Q = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['discharge_capacity'].to_numpy()
+#                 discharge_voltage = result_df[(result_df['series'] == series) & (result_df['current'] <0)]['voltage'].to_numpy()
+#                 discharge_Q_reduced = block_reduce(discharge_Q, block_size=(reduction_factor,), func=np.mean, cval=discharge_Q[-1])
+#                 discharge_voltage_reduced = block_reduce(discharge_voltage, block_size=(reduction_factor,), func=np.mean, cval=discharge_voltage[-1])
+#                 dQdV_discharge = np.diff(discharge_Q_reduced) / np.diff(discharge_voltage_reduced)
+#                 df_discharge = pd.DataFrame()
+#                 df_discharge['dq_dv'] = pd.Series(dQdV_discharge)
+#                 df_discharge['voltage'] = pd.Series(discharge_voltage_reduced[:-1]) 
+#                 df_discharge['series'] = series+ " d"
+#                 df_discharge = df_discharge.sort_values(by = ['voltage'])
+#                 df_discharge = df_discharge.replace([np.inf, -np.inf], np.NaN)
+#                 records.append({"id": f"{series}, discharge", "cell_id": series.split(' ')[0], "source": df_discharge.to_dict('records')})
+#             except Exception as e:
+#                 print(e)
+#                 pass
+#         print("Process for diff ",time.time()-start)
+#         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
+#     except DataError as err:
+#         return 400, str(err.__dict__['orig']).split('\n')[0]
+#     except Exception as err:
+#         logging.error(err)
+#         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
+#     finally:
+#         ao.release_session()
 
 
 def get_voltage_time_service(req_data, email, dashboard_id=None):
@@ -350,45 +435,16 @@ def get_energy_density_service(req_data, email, dashboard_id=None):
         if req_data.get('filters'):
             filter_string = __generate_filter_string(req_data.get('filters'))
         records = []
-        result_df = ao.get_all_data_from_EnergyDensity_query(req_data.get('cell_ids'), email, filter_string)
-        for cell_id in sorted(req_data.get('cell_ids')):
-            charge_list = []
-            discharge_list = []
-            cell_id_df = result_df[result_df["cell_id"] == cell_id]
-            cycle_indices = cell_id_df["cycle_index"].unique()
-            for cycle_index in cycle_indices:
-                charge_cell_id_df = cell_id_df[cell_id_df['series'] == f"{cell_id} c: {cycle_index}"]
-                if not charge_cell_id_df.empty:
-                    charge_energy_density = np.trapz(charge_cell_id_df['v'].to_numpy(), charge_cell_id_df['specific_capacity'].to_numpy(), dx = 0.01)
-                    charge_energy_density_reult_obj = {
-                        "energy_density": float(charge_energy_density),
-                        "cycle_index": int(cycle_index),
-                        "series": f"{cell_id}, charge",
-                    }
-                    charge_list.append(charge_energy_density_reult_obj)
-                discharge_cell_id_df = cell_id_df[cell_id_df['series'] == f"{cell_id} d: {cycle_index}"]
-                if not discharge_cell_id_df.empty:
-                    discharge_energy_density = np.trapz(discharge_cell_id_df['v'].to_numpy(), discharge_cell_id_df['specific_capacity'].to_numpy(), dx = 0.01)
-                    discharge_energy_density_reult_obj = {
-                        "energy_density": float(discharge_energy_density),
-                        "cycle_index": int(cycle_index),
-                        "series": f"{cell_id}, discharge",
-                    }
-                    discharge_list.append(discharge_energy_density_reult_obj)
-            if charge_list:
-                charge_result_obj = {
-                    "id": f"{cell_id}, charge",
-                    "cell_id": cell_id,
-                    "source": charge_list
-                }
-                records.append(charge_result_obj)
-            if discharge_list:
-                discharge_result_obj = {
-                    "id": f"{cell_id}, discharge",
-                    "cell_id": cell_id,
-                    "source": discharge_list
-                }
-                records.append(discharge_result_obj)
+        archive_cells = ao.get_all_data_from_EnergyDensity_query(req_data.get('cell_ids'), email, filter_string)
+        records = []
+        series = {}
+        for row in archive_cells:
+            row = dict(row)
+            if not series.get(f"{row['series']}||{row['cell_id']}"):
+                series[f"{row['series']}||{row['cell_id']}"] = []
+            series[f"{row['series']}||{row['cell_id']}"].append(row)
+        for key, value in series.items():
+            records.append({"id": key.split('||')[0], "cell_id": key.split('||')[1], "source": value})
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
     except DataError as err:
         return 400, str(err.__dict__['orig']).split('\n')[0]

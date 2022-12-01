@@ -40,7 +40,7 @@ const TutorialStep2 = () => {
 							var a = document.createElement("a");
 							var blob = new Blob([csvData], { type: "text/csv" });
 							a.href = window.URL.createObjectURL(blob);
-							a.download = "Amplabs_Sample.csv";
+							a.download = "Amplabs_Sample_Data.csv";
 							a.click();
 						}}
 					>

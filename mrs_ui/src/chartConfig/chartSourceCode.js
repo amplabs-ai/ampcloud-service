@@ -1075,6 +1075,61 @@ if response:
     #Plot the chart
     if not df.empty:
         plot_chart(df)
+`,
+operatingPotential: `
+# Download python packages to your system using pip install
+import sys
+!{sys.executable} -m pip install pandas plotly kaleido requests
+
+#suppressing warnings in Jupyter Notebooks
+import warnings
+warnings.filterwarnings('ignore')
+
+# Useful for fetching data from the web
+import json
+import requests
+
+# PyData Libraries
+import pandas as pd
+import plotly.express as px
+import plotly.io as pio
+
+
+def get_amplabs_chartdata(req_data):
+    url = "https://www.amplabs.ai/echarts/operatingPotential"
+    payload = json.dumps(req_data)
+    headers = {
+    'Authorization': 'Bearer __accesstoken__',
+    'Content-Type': 'application/json'
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return json.loads(response.text)
+    except Exception as e:
+        print(e)
+        return None
+
+def plot_chart(df):
+    fig = px.line(df,x="specific_capacity" ,y="v",color="series",labels={"specific_capacity":"Specific Capacity", "v":"Voltage"}, title = "Specific Capacity VS Voltage")
+    fig.update_traces(mode="markers", hovertemplate=None)
+    fig.update_layout(hovermode="x")
+    pio.write_image(fig, file='./galvanostaticPlot.png', format="png", scale=1, width=1200, height=800)
+
+
+#Fetch Data from Amplabs API
+req_data = __req_data__
+response = get_amplabs_chartdata(req_data)
+
+
+if response:
+    #Convert JSON Records to Dataframe
+    df = pd.DataFrame()
+    for item in response['records'][0]:
+            df = df.append(pd.DataFrame.from_records(item['source']))
+
+    #Plot the chart
+    if not df.empty:
+        plot_chart(df)
 `
 };
 

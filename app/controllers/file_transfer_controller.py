@@ -12,7 +12,7 @@ from app.response import Response
 import logging
 from io import BytesIO
 import zipfile
-from flask import send_file, Response
+from flask import send_file, Response as res
 from app.utilities.aws_connection import s3_client
 
 lock = threading.Lock()
@@ -116,6 +116,7 @@ def download_cycle_timeseries(cell_id):
         return Response(500, "Failed").to_dict(), 500
 
 
+@with_authentication(allow_public=True)
 def download_tri_data():
 
     def get_total_bytes(fileName):
@@ -139,10 +140,11 @@ def download_tri_data():
             yield s3_client.get_object(Bucket=TRI_BUCKET_NAME, Key=fileName, Range=byte_range)['Body'].read()
 
     try:
+        email = g.user
         fileName = request.args.get("file")
         total_bytes = get_total_bytes(fileName)
-
-        return Response(
+        logging.info("User {email} Action DOWNLOAD_TRI_DATA: {fileName}".format(email=email, fileName=fileName))
+        return res(
         get_object(fileName, total_bytes),
         mimetype='application/zip',
         headers={"Content-Disposition": "attachment;filename=test.txt"}
@@ -150,7 +152,7 @@ def download_tri_data():
 
     except Exception as err:
         logging.error(
-            "User Action DOWNLOAD_CYCLE_TIMESERIES error UNKNOWN")
+           "User {email} Action DOWNLOAD_TRI_DATA: {fileName}".format(email=email, fileName=fileName))
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 

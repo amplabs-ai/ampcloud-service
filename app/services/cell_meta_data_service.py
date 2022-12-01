@@ -2,7 +2,7 @@ import logging
 from app.archive_constants import RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO, TEST_TYPE
 from app.model import AbuseMeta, AbuseTimeSeries, ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries
 from flask import g
-from app.utilities.utils import __generate_filter_string
+from app.utilities.utils import __generate_filter_string, calc_energy_density
 
 
 def get_cellmeta_service(email,req_data, dashboard_id=None):
@@ -35,6 +35,7 @@ def get_cellmeta_service(email,req_data, dashboard_id=None):
         records = [add_type(cell.to_dict(), "type", "public/other")
                    for cell in archive_cells]
         archive_cells = ao.get_all_cell_meta_for_community_filter(email,filter_string)
+        # records.extend([dict(cell)
         records.extend([add_type(dict(cell), "type", "public/user")
                    for cell in archive_cells])
         archive_cells_ba = ao.get_all_cell_meta_filter(BATTERY_ARCHIVE,filter_string)
@@ -92,7 +93,7 @@ def update_cell_metadata_service(email, test, request_data):
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        query = "select index, cell_id from cell_metadata where test = '{}' and email = '{}'".format(
+        query = "select index, cell_id,active_mass from cell_metadata where test = '{}' and email = '{}'".format(
             test, email)
         private_cell_ids = ao.session.execute(query)
         private_cell_ids_dict = dict()
@@ -106,10 +107,14 @@ def update_cell_metadata_service(email, test, request_data):
             except KeyError:
                 edited_cell_ids[item['cell_id']] = True
         for item in request_data:
-            cell_id = ao.session.query(CellMeta).filter(
-                CellMeta.index == item['index']).first().cell_id
+            cell = ao.session.query(CellMeta).filter(
+                CellMeta.index == item['index']).first()
+            cell_id = cell.cell_id
+            active_mass = cell.active_mass
             if not cell_id:
                 continue
+            if item.get('active_mass') == "":
+                item['active_mass'] = None
             ao.update_table_with_index(CellMeta, item['index'], item)
             if test == TEST_TYPE.CYCLE.value:
                 if edited_cell_ids.get(item['cell_id']):
@@ -119,12 +124,15 @@ def update_cell_metadata_service(email, test, request_data):
                                                        'cell_id': item['cell_id']})
                     ao.update_table_with_cell_id_email(CycleMeta, cell_id, email, {
                                                        'cell_id': item['cell_id']})
+                if active_mass != item.get('active_mass'):
+                    __update_with_active_mass(item,email,ao)
             else:
                 if edited_cell_ids.get(item['cell_id']):
                     ao.update_table_with_cell_id_email(AbuseTimeSeries, cell_id, email, {
                                                        'cell_id': item['cell_id']})
                     ao.update_table_with_cell_id_email(AbuseMeta, cell_id, email, {
                                                        'cell_id': item['cell_id']})
+            # __update_with_active_mass(item,email,ao)
         return 200, RESPONSE_MESSAGE['METADATA_UPDATED']
     except Exception as err:
         print(err)
@@ -156,3 +164,12 @@ def delete_cell_service(cell_id, email):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
+
+def __update_with_active_mass(item,email,ao):
+    # print(item.get('email'),item.get('cell_id'))
+    # df_tt = ao.get_data_as_dataframe(item.get('email'),item.get('cell_id'),type='timeseries')
+    df_tt = ao.get_data_as_dataframe(email,item.get('cell_id'),type='timeseries')
+    # df_cc = ao.get_data_as_dataframe(item.get('email'),item.get('cell_id'),type='cycle')
+    df_cc = ao.get_data_as_dataframe(email,item.get('cell_id'),type='cycle')
+    calc_energy_density(df_cc,df_tt,item.get('active_mass'))
+    ao.update_for_energy_density(df_cc)

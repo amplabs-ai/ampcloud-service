@@ -99,7 +99,7 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
     no_cycles = int(df_t[LABEL.CYCLE_INDEX.value].max())
     # Initialize the cycle_data time frame
     df_c = init_stats_df(no_cycles)
-    step = 60 / len(df_c.index)
+    step = 50 / len(df_c.index)
     initial_cycle = True
     reset_test_time_by = 0
     for c_ind in df_c.index:
@@ -304,9 +304,30 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
         df_cc[LABEL.CYCLE_R_START_D.value] = df_tt_d[LABEL.I.value].iloc[0] * df_tt_d[LABEL.V.value].iloc[0]
         df_cc[LABEL.CYCLE_R_END_D.value] = df_tt_d[LABEL.I.value].iloc[-1] * df_tt_d[LABEL.V.value].iloc[-1]
 
+    status[f"{email}|{cell_id}"]['progress']['percentage'] = 65
+    calc_energy_density(df_cc,df_tt)
+
     if not cycle_index_was_present:
         return None, df_tt
     return df_cc, df_tt
+
+def calc_energy_density(df_cc,df_tt,active_mass = None):
+    df_cc[LABEL.CYCLE_ED_C.value] = None
+    df_cc[LABEL.CYCLE_ED_D.value] = None
+    cycle_indices = df_tt[LABEL.CYCLE_INDEX.value].unique()
+    for cycle_index in cycle_indices:
+        charge_df = df_tt[(df_tt[LABEL.CYCLE_INDEX.value] == cycle_index) & (df_tt[LABEL.I.value] > 0)]
+        discharge_df = df_tt[(df_tt[LABEL.CYCLE_INDEX.value] == cycle_index) & (df_tt[LABEL.I.value] < 0)]
+        if active_mass:
+            active_mass = float(active_mass)
+            charge_df[LABEL.AH_C.value] = (charge_df[LABEL.AH_C.value]/active_mass) * 1000000
+            discharge_df[LABEL.AH_D.value] = (discharge_df[LABEL.AH_D.value]/active_mass) * 1000000
+        charge_energy_density = np.trapz(charge_df[LABEL.V.value].to_numpy(), charge_df[LABEL.AH_C.value].to_numpy(), dx = 0.01) 
+        df_cc.loc[df_cc.cycle_index == cycle_index,
+                        LABEL.CYCLE_ED_C.value] = charge_energy_density
+        discharge_energy_density = np.trapz(discharge_df[LABEL.V.value].to_numpy(), discharge_df[LABEL.AH_D.value].to_numpy(), dx = 0.01) 
+        df_cc.loc[df_cc.cycle_index == cycle_index,
+                        LABEL.CYCLE_ED_D.value] = discharge_energy_density
 
 
 def calc_abuse_stats(df_t, df_test_md, cell_id=None, email=None):
@@ -562,7 +583,7 @@ def __generate_filter_string(filters, rf = None):
         if filter['operation'] == '%':
             filter_str = f"MOD({filter['column']},{filter['filterValue']})=0"
         else:
-            filter_str = f"CAST({filter['column']} as varchar) {filter['operation']}'{filter['filterValue']}'"
+            filter_str = f"{filter['column']} {filter['operation']}'{filter['filterValue']}'"
         filter_string = filter_string+f"and {filter_str}"
     if rf:
         return filter_string, reduction_factor

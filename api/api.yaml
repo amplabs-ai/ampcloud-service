@@ -393,7 +393,7 @@ paths:
                 required:
                   - cell_id
                   - test_type
-                  - template
+                  # - template
       tags:
         - Upload
       responses:

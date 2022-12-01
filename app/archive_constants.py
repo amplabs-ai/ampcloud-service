@@ -185,6 +185,8 @@ class LABEL(Enum):
     CYCLE_CUM_E_D = "cycle_discharge_energy"
     CUM_E_D = "cumulative_discharge_energy"
     NET_E = "net_energy"
+    CYCLE_ED_C = "cycle_charge_energy_density"
+    CYCLE_ED_D = "cycle_discharge_energy_density"
     POWER = "power"
     STEP_INDEX = "step_index"
     STEP_TYPE = "step_type"

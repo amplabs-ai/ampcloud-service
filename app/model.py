@@ -9,13 +9,14 @@ from sqlalchemy import (
     Float,
     or_,
     select,
+    bindparam,
+    create_engine
 )
 from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
 from sqlalchemy.sql.sqltypes import TIMESTAMP, FLOAT, BOOLEAN
 from app.archive_constants import (AMPLABS_DB_URL,
                                    ARCHIVE_TABLE, BATTERY_ARCHIVE, DATA_MATR_IO, LABEL)
-from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from app.queries import *
 import numpy as np
@@ -199,6 +200,10 @@ class CycleStats(Model):
     # Energy
     cycle_charge_energy = Column(Float, nullable=True)
     cycle_discharge_energy = Column(Float, nullable=True)
+
+    # Energy density
+    cycle_charge_energy_density = Column(Float, nullable=True)
+    cycle_discharge_energy_density = Column(Float, nullable=True)
 
     # Power
     cycle_max_power = Column(Float, nullable=True)
@@ -411,6 +416,7 @@ class ArchiveOperator:
 
 
     def get_all_cell_meta_filter(self,email,filter_string):
+        # result = self.session.execute(FILTER_DASHBOARD)
         result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = True,filters = filter_string))
         return result 
 
@@ -445,6 +451,7 @@ class ArchiveOperator:
 
     def get_all_cell_meta_for_community_filter(self,email,filter_string):
         result = self.session.execute(FILTER_DASHBOARD.format(email=email,filters=filter_string,is_public=True))
+        # result = self.session.execute(FILTER_DASHBOARD)
         return result
 
 
@@ -455,6 +462,7 @@ class ArchiveOperator:
 
 
     def get_all_private_cell_meta_filter(self, email, filter_string):
+        # result = self.session.execute(FILTER_DASHBOARD)
         result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = False,filters = filter_string))
         return result
         
@@ -604,11 +612,11 @@ class ArchiveOperator:
 
     def get_all_data_from_EnergyDensity_query(self, cell_id, email, filter_string):
         if len(cell_id) > 1:
-            return pd.read_sql(
-                ENERGY_DENSITY_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string), self.session.bind)
+            return self.session.execute(
+                ENERGY_DENSITY_QUERY.format(cell_id=tuple(cell_id), email=email, filters=filter_string))
         else:
-            return pd.read_sql(
-                ENERGY_DENSITY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string), self.session.bind)
+            return self.session.execute(
+                ENERGY_DENSITY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
 
 
     #SUMMARY 
@@ -848,3 +856,20 @@ class ArchiveOperator:
 
     def select_table_with_email(self, table, email):
         return self.session.query(table).filter(table.email == email)
+
+    def get_data_as_dataframe(self, email, cell_id, type):
+        if type == "timeseries":
+            sql = self.session.query(CycleTimeSeries.current,CycleTimeSeries.voltage,CycleTimeSeries.cycle_index,
+                                    CycleTimeSeries.charge_capacity,CycleTimeSeries.discharge_capacity).filter(
+            CycleTimeSeries.cell_id == cell_id,
+            or_(CycleTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]))).order_by('test_datapoint_ordinal').statement
+        else:
+            sql = self.session.query(CycleStats.cycle_index,CycleStats.index,
+                                    CycleStats.cycle_charge_energy_density,CycleStats.cycle_discharge_energy_density).filter(
+            CycleStats.cell_id == cell_id,
+            or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]))).statement
+        return pd.read_sql(sql, self.session.bind)
+
+    def update_for_energy_density(self, df):
+        df.rename(columns = {'index':'_id','cycle_discharge_energy_density':'_ed_d','cycle_charge_energy_density':'_ed_c'}, inplace = True)
+        self.session.execute(CycleStats.__table__.update().where(CycleStats.__table__.c.index == bindparam('_id')).values(cycle_charge_energy_density = bindparam('_ed_c'),cycle_discharge_energy_density = bindparam('_ed_d')),params=df.to_dict('records'))

@@ -38,13 +38,14 @@ const TutorialNav = (props) => {
 							// upload api call with file and metadata
 							props.onUploadFile();
 						} else if (props.currentStep === 4) {
-							// window.location.reload(
-
-							// );
-							// navigate("/dashboard", {
-							// 	state: { cellId: props.cellId ? [props.cellId] : ["Amplabs Sample"] },
+							// window.location.reload("/dashboard", {
+							// 	state: { cellIds: props.cellId ? [props.cellId] : ["Amplabs Sample"] },
 							// });
-							action.refreshSidebar(null, null, null, "dashboardType2");
+							navigate("/dashboard", {
+								state: { cellIds: props.cellId ? [props.cellId] : ["Amplabs Sample"] },
+							});
+							window.location.reload();
+							// action.refreshSidebar(null, null, null, "dashboardType2");
 							props.onCancelTutorial();
 						} else {
 							props.onStaticFile();

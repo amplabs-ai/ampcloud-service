@@ -18,6 +18,11 @@ JOIN
 WHERE 
   cell_metadata.email IN ('{email}') AND 
   is_public IS {is_public} {filters}
+ORDER BY
+  CASE
+    WHEN cell_metadata.cell_id LIKE 'training_cell_%' then CAST(substring(cell_metadata.cell_id,15) AS int)
+    ELSE cell_metadata.index
+  end
 """
 
 
@@ -277,70 +282,40 @@ select
 
 
 ENERGY_DENSITY_QUERY = """
-select
-  cell_id,
-  cycle_index,
-  series,
-  v,
-  case 
-    when foo.active_mass is null
-      or foo.active_mass = 0 
-    then ah 
-    else (ah / foo.active_mass) * 1000000 
-    end specific_capacity
-from (
-    SELECT
-      cycle_timeseries_new.cell_id,
-      cycle_index,
-      test_time,
-      voltage as v,
-      active_mass,
-      case 
-        when current > 0 
-          then charge_capacity 
-        when current < 0 
-          then discharge_capacity 
-        end ah,
-      case 
-        when current > 0 
-          then cycle_timeseries_new.cell_id || ' c: ' || cycle_index 
-        when current < 0 
-          then cycle_timeseries_new.cell_id || ' d: ' || cycle_index 
-        end series
-    FROM (
-        select
-          email,
-          cell_id,
-          voltage,
-          charge_capacity,
-          discharge_capacity,
-          current,
-          cycle_index,
-          test_time
-        from
-          cycle_timeseries
-        where
-          cell_id IN {cell_id} and 
-          ( email in ('{email}','info@batteryarchive.org','data.matr.io@tri.global')
-            or email in (select distinct email
-                          from cell_metadata
-                          where is_public = 'true'
-                        )
-          ) {filters}
-      ) cycle_timeseries_new
-      inner join 
-        cell_metadata 
-        on 
-        cycle_timeseries_new.cell_id = cell_metadata.cell_id and 
-          cycle_timeseries_new.email = cell_metadata.email
-  ) as foo
-where
-  foo.series is not null
-order by
-  foo.cell_id,
-  foo.cycle_index,
-  foo.test_time,
-  foo.series
+SELECT 
+  r.cell_id, 
+  r.cell_id || ', ' || key as series, 
+  r.cycle_index,
+  value
+FROM (
+  SELECT 
+    cell_id,
+    trunc(cycle_index::numeric,0) as cycle_index,
+    json_build_object('charge', cycle_charge_energy_density, 
+                        'discharge', cycle_discharge_energy_density) AS line
+  FROM cycle_stats
+  WHERE 
+    cell_id IN {cell_id} and 
+    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+      or email in (select distinct email 
+                  from cell_metadata 
+                  where is_public='true'
+                )
+    ) {filters}
+) as r
+JOIN LATERAL 
+  json_each_text(r.line) 
+  ON 
+  (key ~ '[charge,discharge]')
+GROUP by 
+  r.cell_id, 
+  r.cycle_index, 
+  json_each_text.key, 
+  json_each_text.value
+order by 
+  r.cell_id,
+  r.cycle_index, 
+  key
 """
 
 

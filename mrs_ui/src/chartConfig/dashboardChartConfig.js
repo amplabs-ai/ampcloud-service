@@ -6,8 +6,6 @@ import { scatterPlotChartId } from "./initialConfigs";
 const colorTransitions = [
 	['#e98d6b', '#e3685c', '#d14a61', '#b13c6c', '#8f3371', '#6c2b6d'],
 	['#7dba91', '#59a590', '#40908e', '#287a8c', '#1c6488', '#254b7f'],
-	["#ecaf80","#4a2262"],
-	["#a4cc90", "#2c3071"],
 	["#1f77b4", "#2193b0", "#6dd5ed"],
 	["#ff7f0e", "#ff9966", "#ff5e62"],
 	["#2ca02c", "#56ab2f", "#a8e063"],
@@ -403,7 +401,7 @@ export const getChartMetadata = (chartName) => {
 					title: "Cycle Index",
 				},
 				yAxis: {
-					mapToId: "energy_density",
+					mapToId: "value",
 					title: "Energy Density (Wh/Kg)",
 				},
 				chartTitle: "Energy Density vs Cyle Index",
@@ -440,7 +438,7 @@ export const getChartMetadata = (chartName) => {
 				},
 				chartTitle: "Operating Potential vs Cycle Index",
 				chartId: "operatingPotential",
-				code: sourceCode.operatingPotentialChart,
+				code: sourceCode.operatingPotential,
 			};
 			break;
 		default:

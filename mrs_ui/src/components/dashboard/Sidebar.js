@@ -152,6 +152,9 @@ const [loading, setLoading] = useState(false);
       .get(`/download/tri_data`, {
         params: params,
         responseType: "arraybuffer",
+        headers: {
+					Authorization: `Bearer ${accessToken}`,
+				},
       })
       .then(({ data }) => {
         var a = document.createElement("a");
@@ -182,7 +185,7 @@ const [loading, setLoading] = useState(false);
         children: [],
       },
       {
-        title: <>TRI competition 
+        title: <>MRS Competition (11/2022)
         <Tooltip placement="top" title="Download CSVs">
         <Button className='ml-2 p-0' type='text' size='small' icon={<DownloadOutlined onClick={() => downloadTRIdata("tri_data.zip")}/>} />
         </Tooltip>
@@ -291,30 +294,12 @@ const [loading, setLoading] = useState(false);
             }
             batchIndex = dataMatrIoDirInfo.closeLoopOpt[batchNameCloseloop];
           } else if (cellId.includes("training")) {
-            // if (dataMatrIoDirInfo.triCompetition["Training Data"] === undefined)
-            // {
-            // 	x[3].children[2].children.push({
-            // 		title: "Training Data",
-            // 		key: "tri_training_data",
-            // 		children: [],
-            // 	});
-            //   dataMatrIoDirInfo.triCompetition["Training Data"] = x[3].children[2].children.length - 1;
-            // }
             x[2].children[0].children.push({
             title: cellId,
             key: "cell_" + index + "_" + cellType + cellId,
           });
           break;
           }else if (cellId.includes("test")) {
-            // if (dataMatrIoDirInfo.triCompetition["Test Data"] === undefined)
-            // {
-            // 	x[3].children[2].children.push({
-            // 		title: "Test Data",
-            // 		key: "tri_test_data",
-            // 		children: [],
-            // 	});
-            //   dataMatrIoDirInfo.triCompetition["Test Data"] = x[3].children[2].children.length - 1
-            // }
             x[2].children[1].children.push({
             title: cellId,
             key: "cell_" + index + "_" + cellType + cellId,

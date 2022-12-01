@@ -6,7 +6,7 @@ import ProcessUpload from "../upload/ProcessUpload";
 import axios from "axios";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import { response } from "./sampleTestData"; // remove later
-import { _createChartDataSeries, _createChartLegend } from "../../chartConfig/dashboardChartConfig";
+import { _createChartDataSeries, _createChartLegend, _createChartColors } from "../../chartConfig/dashboardChartConfig";
 
 const TutorialStep4 = (props) => {
 	const chartRef = useRef();
@@ -28,10 +28,10 @@ const TutorialStep4 = (props) => {
 		chartRef.current.getEchartsInstance().setOption({
 			animation: false,
 			dataset: response.records[0],
-			series: _createChartDataSeries(response.records[0], 'voltage', ['cycle_discharge_capacity'], { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" }, 'plotter'),
+			series: _createChartDataSeries(response.records[0], 'specific_capacity', 'v', { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" }, "galvanostaticPlot"),
 			xAxis: {
 				type: "value",
-				name: "Voltage (V)",
+				name: "Capacity",
 				nameLocation: "middle",
 				nameGap: 25,
 				nameTextStyle: {
@@ -39,35 +39,38 @@ const TutorialStep4 = (props) => {
 					padding: [5, 0],
 				},
 				scale: true,
+				splitLine: {
+					show: false
+				 },
+				 axisLine: {
+					lineStyle: {
+					  color: "black"
+					}
+				  }
 			},
 			yAxis: {
-				name: 'Cycle Discharge Capacity (Ah)',
+				name: 'Voltage',
 				scale: true,
+				splitLine: {
+					show: false
+				 },
+				 axisLine: {
+					lineStyle: {
+					  color: "black"
+					}
+				  }
 			},
-			legend: _createChartLegend(response.records[0], "plotter", { mapToId: ["cycle_discharge_capacity"], displayColMapping: { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" } }),
-			color: [
-				"#1f77b4", // muted blue
-				"#ff7f0e", // safety orange
-				"#2ca02c", // cooked asparagus green
-				"#d62728", // brick red
-				"#9467bd", // muted purple
-				"#8c564b", // chestnut brown
-				"#e377c2", // raspberry yogurt pink
-				"#7f7f7f", // middle gray
-				"#bcbd22", // curry yellow-green
-				"#17becf", // blue-teal
-			],
+			legend: _createChartLegend(response.records[0], "galvanostaticPlot", { mapToId: ["cycle_discharge_capacity"], displayColMapping: { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" } }),
+			color: _createChartColors(response.records[0])
 		});
 	}
 	const getChartData = (cellId) => {
 		let data = {
 			cell_ids: [cellId],
-			columns: ["voltage", "cycle_discharge_capacity"],
-			filters: [],
 		};
 		axios({
 			method: "post",
-			url: "/echarts/timeseries",
+			url: "echarts/galvanostaticPlot",
 			headers: {
 				Authorization: "Bearer " + accessToken,
 				"Content-Type": "application/json",
@@ -77,10 +80,10 @@ const TutorialStep4 = (props) => {
 			.then(function (response) {
 				chartRef.current.getEchartsInstance().setOption({
 					dataset: response.data.records[0],
-					series: _createChartDataSeries(response.data.records[0], 'voltage', ['cycle_discharge_capacity'], { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" }, 'plotter'),
+					series: _createChartDataSeries(response.data.records[0], 'specific_capacity', 'v', { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" }, 'galvanostaticPlot'),
 					xAxis: {
 						type: "value",
-						name: "Voltage (V)",
+						name: "Capacity",
 						nameLocation: "middle",
 						nameGap: 25,
 						nameTextStyle: {
@@ -88,24 +91,29 @@ const TutorialStep4 = (props) => {
 							padding: [5, 0],
 						},
 						scale: true,
+						splitLine: {
+							show: false
+						 },
+						 axisLine: {
+							lineStyle: {
+							  color: "black"
+							}
+						  }
 					},
 					yAxis: {
-						name: 'Cycle Discharge Capacity (Ah)',
+						name: 'Voltage',
 						scale: true,
+						splitLine: {
+							show: false
+						 },
+						 axisLine: {
+							lineStyle: {
+							  color: "black"
+							}
+						  }
 					},
-					legend: _createChartLegend(response.data.records[0], "plotter", { mapToId: ["cycle_discharge_capacity"], displayColMapping: { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" } }),
-					color: [
-						"#1f77b4", // muted blue
-						"#ff7f0e", // safety orange
-						"#2ca02c", // cooked asparagus green
-						"#d62728", // brick red
-						"#9467bd", // muted purple
-						"#8c564b", // chestnut brown
-						"#e377c2", // raspberry yogurt pink
-						"#7f7f7f", // middle gray
-						"#bcbd22", // curry yellow-green
-						"#17becf", // blue-teal
-					],
+					legend: _createChartLegend(response.data.records[0], "galvanostaticPlot", { mapToId: ["cycle_discharge_capacity"], displayColMapping: { cycle_discharge_capacity: "Cycle Discharge Capacity (Ah)" } }),
+					color: _createChartColors(response.data.records[0])
 				});
 			})
 			.catch(function (error) {
