@@ -295,7 +295,7 @@ class CycleTimeSeries(Model):
 
     net_energy = Column(Float, nullable=True)
     energy_throughput = Column(Float, nullable=True)
-    test_net_enerygy = Column(Float, nullable=True)
+    test_net_energy = Column(Float, nullable=True)
 
     environment_temperature = Column(Float, nullable=True)
     cell_temperature = Column(Float, nullable=True)

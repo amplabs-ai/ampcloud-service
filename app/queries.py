@@ -20,9 +20,8 @@ WHERE
   is_public IS {is_public} {filters}
 ORDER BY
   CASE
-    WHEN cell_metadata.cell_id LIKE 'training_cell_%' then CAST(substring(cell_metadata.cell_id,15) AS int)
-    ELSE cell_metadata.index
-  end
+    WHEN cell_metadata.cell_id LIKE 'training_cell_%' then CAST(substring(cell_metadata.cell_id,15) AS int) end,
+  CASE WHEN cell_metadata.email LIKE 'info%' THEN cell_metadata.index end DESC
 """
 
 

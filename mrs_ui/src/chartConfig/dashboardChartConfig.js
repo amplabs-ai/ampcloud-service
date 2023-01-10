@@ -101,6 +101,13 @@ export const chartConfig = (chartName, data) => {
 	return {
 		tooltip: [
 			{
+				position: function (pos, params, dom, rect, size) {
+					// tooltip will be fixed on the right if mouse hovering on the left,
+					// and on the left if hovering on the right.
+					var obj = {top: 60};
+					obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 5;
+					return obj;
+				},
 				trigger: "axis",
 				axisPointer: { type: "cross" },
 				triggerOn: "click",

@@ -73,7 +73,7 @@ def upload_file(tester):
             status[f"{email}|{data['cell_id']}"]['progress']['message'] = err.args[0]
         logging.error(
             "User {email} Action UPLOAD_FILE error KEY_ERROR".format(email=email))
-        return Response(500, "INTERNAL SERVER ERROR").to_dict(), 500
+        return Response(400, err.args[0]).to_dict(), 500
     except Exception as err:
         status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
         status[f"{email}|{data['cell_id']}"]['progress']['message'] = "READ FILE FAILED"
@@ -144,6 +144,8 @@ def download_tri_data():
         fileName = request.args.get("file")
         total_bytes = get_total_bytes(fileName)
         logging.info("User {email} Action DOWNLOAD_TRI_DATA: {fileName}".format(email=email, fileName=fileName))
+        if "test_data" in fileName:
+            return send_file(f"tri_files/{fileName}", attachment_filename=fileName, as_attachment=True)
         return res(
         get_object(fileName, total_bytes),
         mimetype='application/zip',

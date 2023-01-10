@@ -271,6 +271,9 @@ const ChartContainerType2 = () => {
 	};
 
 	const _fetchData = (apiType, request) => {
+		setChartData((prev) => {
+			return { ...prev, [apiType]: null};
+		});
 		handleChartLoadingError(apiType, false);
 		handleChartLoadSpinner(apiType, true);
 		action.setDisableSelection(true);
