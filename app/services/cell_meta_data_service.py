@@ -1,50 +1,41 @@
 import logging
 from app.archive_constants import RESPONSE_MESSAGE, BATTERY_ARCHIVE, DATA_MATR_IO, TEST_TYPE
-from app.model import AbuseMeta, AbuseTimeSeries, ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries
-from flask import g
+from app.model import ArchiveOperator, CellMeta, CycleMeta, CycleStats, CycleTimeSeries, AbuseMeta, AbuseTimeSeries
 from app.utilities.utils import __generate_filter_string, calc_energy_density
 
 
-def get_cellmeta_service(email,req_data, dashboard_id=None):
+def get_cellmeta_service(email,req_data, test, dashboard_id=None):
     def add_type(row, key, value):
         row[key] = value
         return row
     try:
         ao = ArchiveOperator()
         ao.set_session()
-        if dashboard_id:# and email != "public":
+        if dashboard_id:
             dashboard_data = ao.get_shared_dashboard_by_id(dashboard_id)
-            print(dashboard_data)
-            # if not dashboard_data or not (dashboard_data.is_public or email in dashboard_data.shared_to):
-            #     return 401, "Unauthorised Access"
-            # else:
             cell_id = dashboard_data.cell_id.split(',')
             email = dashboard_data.shared_by
-            archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, "cycle", email)
+            archive_cells = ao.get_all_shared_cell_meta_with_id(cell_id, test, email)
             records = [cell.to_dict() for cell in archive_cells]
             return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
         records = []
         filter_string = ""
         if req_data.get('filters'):
             filter_string = __generate_filter_string(req_data.get('filters'))
-        # if filter_string:
-        #     filter_string = 'where' + filter_string
         archive_cells = ao.get_all_shared_cell_meta_with_id(
-            ["Amplabs Sample"], "cycle")
-        # archive_cells = ao.get_all_cell_meta_for_community(email)
+            ["Amplabs Sample"], test)
         records = [add_type(cell.to_dict(), "type", "public/other")
                    for cell in archive_cells]
-        archive_cells = ao.get_all_cell_meta_for_community_filter(email,filter_string)
-        # records.extend([dict(cell)
+        archive_cells = ao.get_all_cell_meta_for_community_filter(email,filter_string,test)
         records.extend([add_type(dict(cell), "type", "public/user")
                    for cell in archive_cells])
-        archive_cells_ba = ao.get_all_cell_meta_filter(BATTERY_ARCHIVE,filter_string)
+        archive_cells_ba = ao.get_all_cell_meta_filter(BATTERY_ARCHIVE,filter_string, test)
         records.extend([add_type(dict(cell), "type",
                        "public/battery-archive") for cell in archive_cells_ba])
-        archive_cells_dm = ao.get_all_cell_meta_filter(DATA_MATR_IO,filter_string)
+        archive_cells_dm = ao.get_all_cell_meta_filter(DATA_MATR_IO,filter_string, test)
         records.extend([add_type(dict(cell), "type",
                        "public/data.matr.io") for cell in archive_cells_dm])
-        archive_cells = ao.get_all_private_cell_meta_filter(email,filter_string)
+        archive_cells = ao.get_all_private_cell_meta_filter(email,filter_string,test)
         records.extend([add_type(dict(cell), "type", "private")
                         for cell in archive_cells])
         return 200, RESPONSE_MESSAGE['RECORDS_RETRIEVED'], records
@@ -132,7 +123,6 @@ def update_cell_metadata_service(email, test, request_data):
                                                        'cell_id': item['cell_id']})
                     ao.update_table_with_cell_id_email(AbuseMeta, cell_id, email, {
                                                        'cell_id': item['cell_id']})
-            # __update_with_active_mass(item,email,ao)
         return 200, RESPONSE_MESSAGE['METADATA_UPDATED']
     except Exception as err:
         print(err)
@@ -153,7 +143,6 @@ def delete_cell_service(cell_id, email):
                 "User {email} action DELETE cell_id {cell_id} do not exixts")
             return 400, RESPONSE_MESSAGE['CELL_ID_NOT_EXISTS'].format(cell_id)
         ao.remove_cell_from_archive(cell_id, email)
-        # ao.commit()
         logging.info("User {email} action DELETE cell_id {cell_id}".format(
             email=email, cell_id=cell_id))
         return 200, RESPONSE_MESSAGE['CELL_METADATA_DELETED'].format(cell_id)
@@ -166,10 +155,7 @@ def delete_cell_service(cell_id, email):
         ao.release_session()
 
 def __update_with_active_mass(item,email,ao):
-    # print(item.get('email'),item.get('cell_id'))
-    # df_tt = ao.get_data_as_dataframe(item.get('email'),item.get('cell_id'),type='timeseries')
     df_tt = ao.get_data_as_dataframe(email,item.get('cell_id'),type='timeseries')
-    # df_cc = ao.get_data_as_dataframe(item.get('email'),item.get('cell_id'),type='cycle')
     df_cc = ao.get_data_as_dataframe(email,item.get('cell_id'),type='cycle')
     calc_energy_density(df_cc,df_tt,item.get('active_mass'))
     ao.update_for_energy_density(df_cc)

@@ -11,206 +11,137 @@ SELECT
   tester
 FROM cell_metadata 
 JOIN 
-  cycle_metadata 
+  {table}
   ON 
-  cell_metadata.cell_id = cycle_metadata.cell_id AND 
-    cell_metadata.email = cycle_metadata.email
+    cell_metadata.cell_id = {table}.cell_id AND 
+    cell_metadata.email = {table}.email
 WHERE 
   cell_metadata.email IN ('{email}') AND 
-  is_public IS {is_public} {filters}
+  is_public IS {is_public} AND
+  test = '{test}' {filters}
 ORDER BY
   CASE
-    WHEN cell_metadata.cell_id LIKE 'training_cell_%' then CAST(substring(cell_metadata.cell_id,15) AS int)
-    ELSE cell_metadata.index
-  end
+    WHEN cell_metadata.cell_id LIKE 'training_cell_%' 
+    then CAST(substring(cell_metadata.cell_id,15) AS int) 
+  end,
+  CASE 
+    WHEN cell_metadata.email LIKE 'info%' 
+    THEN cell_metadata.index 
+  end DESC
 """
 
 
 CAPACITY_QUERY = """
-SELECT
+with temp as 
+  (SELECT
     r.cell_id,
-    r.cell_id || ', ' || key as series,
     r.cycle_index,
     case 
       when r.active_mass is null
         or r.active_mass = 0 
     then 
-      CAST(value as double precision) * 1000000 
-    else (CAST(value as double precision) / r.active_mass) * 1000000 
-    end value
-FROM (
-        SELECT 
-          cycle_stats.cell_id, 
-          active_mass,
-          trunc(cycle_index,0) as cycle_index, 
-          json_build_object('charge', cycle_charge_capacity, 
-                            'discharge', cycle_discharge_capacity) AS line
-        FROM cycle_stats
-        JOIN 
-          cell_metadata 
-          ON 
-          cycle_stats.cell_id = cell_metadata.cell_id AND 
-            cycle_stats.email = cell_metadata.email
-          WHERE 
-            cycle_stats.cell_id IN {cell_id} and 
-            (cycle_stats.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
-            or 
-            cycle_stats.email in (select distinct email 
-                                  from cell_metadata 
-                                  where is_public='true'
-                                  )
+      CAST(cycle_charge_capacity as double precision) * 1000000 
+    else 
+      (CAST(cycle_charge_capacity as double precision) / r.active_mass) * 1000000 
+    end 
+      cycle_charge_capacity,
+    case 
+      when r.active_mass is null
+        or r.active_mass = 0 
+    then 
+      CAST(cycle_discharge_capacity as double precision) * 1000000 
+    else 
+      (CAST(cycle_discharge_capacity as double precision) / r.active_mass) * 1000000 
+    end 
+      cycle_discharge_capacity
+  FROM (
+    SELECT 
+      cycle_stats.cell_id, 
+      active_mass,
+      trunc(cycle_index,0) as cycle_index, 
+      cycle_charge_capacity, 
+      cycle_discharge_capacity
+    FROM 
+      cycle_stats
+    JOIN 
+      cell_metadata 
+    ON 
+      cycle_stats.cell_id = cell_metadata.cell_id AND 
+      cycle_stats.email = cell_metadata.email
+    WHERE 
+      cycle_stats.cell_id IN {cell_id} and 
+      (cycle_stats.email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+        or 
+        cycle_stats.email in (select distinct email 
+                                from cell_metadata 
+                                where is_public='true'
+                              )
       )
     {filters}
   ) as r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (key ~ '[charge,discharge]')
-GROUP by 
-  r.cell_id, 
-  r.cycle_index, 
-  r.active_mass,
-  json_each_text.key, 
-  json_each_text.value
+)
+(select 
+  cell_id,
+  cell_id || ', ' || 'charge' as series,
+  cycle_index, 
+  cycle_charge_capacity as value from temp
+union
+select 
+  cell_id,
+  cell_id || ', ' || 'discharge' as series,
+  cycle_index, 
+  cycle_discharge_capacity as value from temp
+)
 order by 
-  r.cell_id,
-  r.cycle_index, 
-  key
+  cell_id, 
+  cycle_index, 
+  series;
 """
 
 
 OPERATING_POTENTIAL_QUERY = """
-SELECT 
-  r.cell_id, 
-  r.cell_id || ', ' || key as series, 
-  r.cycle_index,
-  value
-FROM (
-  SELECT 
-    cell_id,
-    trunc(cycle_index::numeric,0) as cycle_index,
-    json_build_object('charge', cycle_mean_charge_voltage, 
-                        'discharge', cycle_mean_discharge_voltage) AS line
-  FROM cycle_stats
-  WHERE 
-    cell_id IN {cell_id} and 
-    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
-      or email in (select distinct email 
-                  from cell_metadata 
-                  where is_public='true'
-                )
-    ) {filters}
-) as r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (key ~ '[charge,discharge]')
-GROUP by 
-  r.cell_id, 
-  r.cycle_index, 
-  json_each_text.key, 
-  json_each_text.value
-order by 
-  r.cell_id,
-  r.cycle_index, 
-  key
-"""
-
-
-ENERGY_AND_CAPACITY_DECAY_QUERY = """
-SELECT
-  r.cell_id,
-  key || ': ' || r.cell_id as series,
-  r.cycle_index,
-  r.test_time,
-  value
-FROM (
+with temp as
+  (
+    SELECT 
+      r.cell_id, 
+      r.cycle_index,
+      cycle_mean_charge_voltage,
+      cycle_mean_discharge_voltage
+    FROM (
       SELECT 
-        cell_id, 
-        trunc(cycle_index::numeric,0) as cycle_index, 
-        test_time, 
-        json_build_object('e_d', TRUNC(cycle_discharge_energy::numeric,3), 
-                          'ah_d', TRUNC(cycle_discharge_capacity::numeric,3) 
-                        ) AS line
-      FROM cycle_stats
+        cell_id,
+        trunc(cycle_index::numeric,0) as cycle_index,
+        cycle_mean_charge_voltage,
+        cycle_mean_discharge_voltage
+      FROM
+        cycle_stats
       WHERE 
-        MOD(index, {mod_step}) = 0 and 
         cell_id IN {cell_id} and 
-        cycle_coulombic_efficiency<1.1 and 
-        (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
-        email in (select distinct email 
-                  from cell_metadata 
-                  where is_public = 'true'
-                  )
-        )
-      ) as r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (key ~ '[e,ah]_[d]')
-GROUP by 
-  r.cell_id, 
-  r.cycle_index,  
-  r.test_time, 
-  json_each_text.key, 
-  json_each_text.value
+        (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+          or email in (select distinct email 
+                      from cell_metadata 
+                      where is_public='true'
+                    )
+        ) {filters}
+    ) as r
+  )
+(
+  select 
+    cell_id,
+    cell_id || ', ' || 'charge' as series,
+    cycle_index,
+    cycle_mean_charge_voltage as value from temp
+  union
+  select 
+    cell_id,
+    cell_id || ', ' || 'discharge' as series,
+    cycle_index,
+    cycle_mean_discharge_voltage as value from temp
+)
 order by 
-  r.cell_id,
-  r.cycle_index, 
-  key
-"""
-
-
-CYCLE_QUANTITIES_BY_STEP_QUERY = """
-select * 
-from
-    (SELECT
-      cell_id,
-      cycle_time,
-      voltage as v,
-      cycle_index,
-      case
-        when current>0 then
-          charge_capacity
-        when current<0 then
-          discharge_capacity
-        end ah,
-      case
-        when current>0 then
-          cell_id || ' c: ' || cycle_index
-        when current<0 then
-          cell_id || ' d: ' || cycle_index
-        end series
-    FROM cycle_timeseries
-    where
-      MOD(index, {mod_step}) = 0 and
-      cell_id IN {cell_id} and
-      (MOD(cycle_index,{step}) = 0 or 
-        cycle_index = 1 or 
-        cycle_index = ( SELECT MAX(cycle_index) 
-                        FROM cycle_stats 
-                        WHERE 
-                          cell_id IN {cell_id} and 
-                          (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
-                          email in (select distinct email 
-                                    from cell_metadata 
-                                    where is_public='true'
-                                    )
-                          )
-                        )
-        ) and
-      (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
-        email in (select distinct email 
-                  from cell_metadata 
-                  where is_public='true'
-                )
-      )
-    order by 
-      cell_id, 
-      cycle_index, 
-      test_time, 
-      series
-    ) as foo where series is not null
+  cell_id, 
+  cycle_index, 
+  series;
 """
 
 
@@ -282,79 +213,48 @@ select
 
 
 ENERGY_DENSITY_QUERY = """
-SELECT 
-  r.cell_id, 
-  r.cell_id || ', ' || key as series, 
-  r.cycle_index,
-  value
-FROM (
+with temp as
+(
   SELECT 
-    cell_id,
-    trunc(cycle_index::numeric,0) as cycle_index,
-    json_build_object('charge', cycle_charge_energy_density, 
-                        'discharge', cycle_discharge_energy_density) AS line
-  FROM cycle_stats
-  WHERE 
-    cell_id IN {cell_id} and 
-    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
-      or email in (select distinct email 
-                  from cell_metadata 
-                  where is_public='true'
-                )
-    ) {filters}
-) as r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (key ~ '[charge,discharge]')
-GROUP by 
-  r.cell_id, 
-  r.cycle_index, 
-  json_each_text.key, 
-  json_each_text.value
-order by 
-  r.cell_id,
-  r.cycle_index, 
-  key
-"""
-
-
-COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY = """
-SELECT 
-  KEY || ': ' || r.cell_id AS series_1,
-  KEY || ' ' || cycle_index || ': ' || r.cell_id AS series_2,
-  r.cycle_index,
-  r.test_time,
-  r.cycle_time,
-  r.cell_id,
-  value
-FROM (
-  SELECT 
-    cycle_timeseries.cell_id,
-    cycle_index,
-    test_time,
-    cycle_time,
-    json_build_object('V', voltage, 'C', current) AS line
-  FROM cycle_timeseries
-  WHERE 
-    cell_id IN {cell_id} and 
-    ( email in 
-      ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
-        email in (select distinct email 
-                  from cell_metadata 
-                  where is_public='true'
+    r.cell_id, 
+    r.cycle_index,
+    cycle_charge_energy_density,
+    cycle_discharge_energy_density
+  FROM (
+    SELECT 
+      cell_id,
+      trunc(cycle_index::numeric,0) as cycle_index,
+      cycle_charge_energy_density,
+      cycle_discharge_energy_density
+    FROM 
+      cycle_stats
+    WHERE 
+      cell_id IN {cell_id} and 
+      (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+        or email in (select distinct email 
+                    from cell_metadata 
+                    where is_public='true'
                   )
-      ))
-     ) AS r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (KEY ~ '[V,C]')
-ORDER BY 
-  r.cell_id,
-  r.test_time,
-  r.cycle_time,
-  KEY
+      ) {filters}
+  ) as r
+)
+(
+  select
+    cell_id,
+    cell_id || ', ' || 'charge' as series,
+    cycle_index,
+    cycle_charge_energy_density as value from temp
+  union
+  select
+    cell_id,
+    cell_id || ', ' || 'discharge' as series,
+    cycle_index,
+    cycle_discharge_energy_density as energy_density from temp
+)
+order by 
+  cell_id, 
+  cycle_index, 
+  series;
 """
 
 
@@ -421,185 +321,191 @@ order by
 """
 
 
-ABUSE_TEST_TEMPRATURES="""
-SELECT 
-  KEY || ': ' || r.cell_id AS series_1,
-  KEY || ': ' || r.cell_id AS series_2,
-  r.test_time,
-  r.cell_id,
-  value
-FROM ( 
-  SELECT 
-    abuse_timeseries.cell_id,
-    test_time,
-    json_build_object(
-      'Tbp',below_punch_temperature,
-      'Tap', above_punch_temperature,
-      'Tlb', left_bottom_temperature,
-      'Trb', right_bottom_temperature,
-      'Tpt', pos_terminal_temperature,
-      'Tnp', neg_terminal_temperature
-    ) AS line
-  FROM 
-    abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
-  WHERE 
-    cell_id IN {cell_id} and 
-    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
-    email in (select distinct email 
-              from cell_metadata 
-              where is_public='true'
-            )
-    )
-  )
-) AS r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (KEY ~ '[Tbp,Tap,Tlb,Trb,Tpt,Tnp]')
-where 
-  value <> '0'
-ORDER BY 
-  r.cell_id,
-  r.test_time,
-  KEY
-"""
-
-
-ABUSE_FORCE_AND_DISPLACEMENT="""
-SELECT 
-  KEY || ': ' || r.cell_id AS series,
-  r.cell_id,
-  r.test_time,
-  value
-FROM (
-  SELECT abuse_timeseries.cell_id,
-    test_time,
-    json_build_object(
-      'F', axial_f,
-      'D', axial_d
-    ) AS line
-  FROM 
-    abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
-  WHERE 
-    cell_id IN {cell_id}  and 
-    email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')
-  ) AS r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (KEY ~ '[F,D]')
-where 
-  value <> '0'
-ORDER BY 
-  r.cell_id,
-  r.test_time,
-  KEY
-"""
-
-
-ABUSE_VOLTAGE="""
-SELECT 
-  KEY || ': ' || r.cell_id AS series,
-  r.cell_id,
-  r.test_time,
-  value
-FROM (
-  SELECT 
-    abuse_timeseries.cell_id,
-    test_time,
-    json_build_object(
-      'v',v
-    ) AS line
-  FROM 
-    abuse_timeseries TABLESAMPLE BERNOULLI ({sample})
-  WHERE 
-    cell_id IN {cell_id} and 
-    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
-    email in (select distinct email 
-              from cell_metadata 
-              where is_public='true'
-              )
-    )
-  )
-) AS r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (KEY ~ '[v]')
-where 
-  value <> '0'
-ORDER BY 
-  r.cell_id,
-  r.test_time,
-  KEY
-"""
-
-
-CAPACITY_RETENTION="""
-select
-  r.cell_id,
-  r.cycle_index,
-  (r.cycle_discharge_capacity / NULLIF(r.initial_discharge_capacity,0))*100 as capacity_retention
-from (
-  select
-    cell_id,
-    cycle_index,
-    cycle_discharge_capacity,
-    FIRST_VALUE(cycle_discharge_capacity) OVER(
-      PARTITION BY cell_id, email
-      ORDER BY
-        cycle_index 
-      RANGE BETWEEN UNBOUNDED PRECEDING
-        AND UNBOUNDED FOLLOWING
-    ) initial_discharge_capacity
-  from
-    cycle_stats
-  where
-    cell_id IN {cell_id}
-    and (
-      email in ('{email}','info@batteryarchive.org','data.matr.io@tri.global')
-      or email in (select distinct email
-                    from cell_metadata
-                    where is_public = 'true'
-                  )
-      ) {filters}
-  ) as r
-"""
-
-
 COULOMBIC_EFFICIENCY_QUERY = """
-SELECT
-  r.cell_id,
-  r.cycle_index,
-  value
-FROM (
-  SELECT 
+SELECT 
     cell_id, 
     trunc(cycle_index,0) as cycle_index, 
-    json_build_object('ah_eff', TRUNC(cycle_coulombic_efficiency::numeric,3)
-      ) AS line
-  FROM cycle_stats
-  where 
+    cycle_coulombic_efficiency as value
+  FROM 
+    cycle_stats
+  WHERE 
     cell_id IN {cell_id} and 
     (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
       email in (select distinct email 
                 from cell_metadata 
                 where is_public='true'
                 )
-    ) {filters}) as r
-JOIN LATERAL 
-  json_each_text(r.line) 
-  ON 
-  (key ~ 'ah_eff')
-GROUP by 
-  r.cell_id, 
-  r.cycle_index, 
-  json_each_text.key, 
-  json_each_text.value
-order by 
-  r.cell_id,
-  r.cycle_index, 
-  key
+    ) {filters}
+order by
+  cell_id,
+  cycle_index
+"""
+
+ABUSE_TEST_TEMPRATURES="""
+with temp as
+(
+  SELECT 
+    r.cell_id,
+    r.test_time,
+    below_punch_temperature,
+    above_punch_temperature,
+    left_bottom_temperature,
+    right_bottom_temperature,
+    pos_terminal_temperature,
+    neg_terminal_temperature
+  FROM (
+    SELECT 
+      cell_id,
+      test_time,
+      below_punch_temperature,
+      above_punch_temperature,
+      left_bottom_temperature,
+      right_bottom_temperature,
+      pos_terminal_temperature,
+      neg_terminal_temperature
+    FROM
+      abuse_timeseries
+    WHERE 
+        cell_id IN {cell_id} and 
+        (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+          or email in (select distinct email 
+                      from cell_metadata 
+                      where is_public='true'
+                    )
+        ) {filters}
+    ) as r
+)
+(
+  SELECT
+    cell_id,
+    cell_id || ', ' || 'BPT' as series_1,
+    test_time,
+    below_punch_temperature AS value
+  FROM temp
+  WHERE value <> '0'
+  UNION
+  SELECT
+    cell_id,
+    cell_id || ', ' || 'APT' as series_1,
+    test_time,
+    above_punch_temperature AS value
+  FROM temp
+  WHERE value <> '0'
+  UNION
+  SELECT
+    cell_id,
+    cell_id || ', ' || 'LBT' as series_1,
+    test_time,
+    left_bottom_temperature AS value
+  FROM temp
+  WHERE value <> '0'
+  UNION
+  SELECT
+    cell_id,
+    cell_id || ', ' || 'RBT' as series_1,
+    test_time,
+    right_bottom_temperature AS value
+  FROM temp
+  WHERE value <> '0'
+  UNION
+  SELECT
+    cell_id,
+    cell_id || ', ' || 'PTT' as series_1,
+    test_time,
+    pos_terminal_temperature AS value
+  FROM temp
+  WHERE value <> '0'
+  UNION
+  SELECT
+    cell_id,
+    cell_id || ', ' || 'NTT' as series_1,
+    test_time,
+    neg_terminal_temperature AS value
+  FROM temp
+  WHERE value <> '0'
+)
+ORDER BY 
+  cell_id,
+  test_time,
+  series_1;
+"""
+
+
+ABUSE_FORCE_AND_DISPLACEMENT="""
+with temp as
+(
+  SELECT 
+    r.cell_id,
+    r.test_time,
+    axial_f,
+    axial_d
+  FROM (
+    SELECT 
+      abuse_timeseries.cell_id,
+      test_time,
+      axial_f,
+      axial_d
+    FROM
+      abuse_timeseries 
+    WHERE 
+      cell_id IN {cell_id}  and 
+      (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+        or email in (select distinct email 
+                    from cell_metadata 
+                    where is_public='true'
+                  )
+      ){filters}
+  ) AS r
+)
+(
+  SELECT 
+    cell_id, 
+    cell_id || ',' || 'F' as series,
+    test_time,
+    axial_f as value 
+  FROM 
+    temp
+  WHERE
+    value <> '0'
+  UNION
+  SELECT 
+    cell_id, 
+    cell_id || ',' || 'D' as series,
+    test_time,
+    axial_d as value 
+  FROM 
+    temp
+  WHERE
+    value <> '0'
+)
+ORDER BY 
+  cell_id,
+  test_time,
+  series;
+"""
+
+
+ABUSE_VOLTAGE="""
+SELECT 
+  cell_id,
+  cell_id || ', ' || 'v' as series,
+  test_time,
+  v as value
+  FROM 
+    abuse_timeseries
+  WHERE 
+    cell_id IN {cell_id}  and 
+    (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
+      or email in (select distinct email 
+                  from cell_metadata 
+                  where is_public='true'
+                )
+    ) and
+    value <> '0' {filters} 
+ORDER BY 
+  cell_id,
+  test_time,
+  series;
 """
 
 
@@ -608,19 +514,14 @@ SELECT
   {columns}, 
   cell_id
 FROM
-  cycle_timeseries
+  {table}
 WHERE 
   cell_id IN ({cell_ids}) and 
   MOD(index, 5)=0 and 
-  (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') or 
-  email in (select distinct email 
-            from cell_metadata 
-            where is_public='true'
-            )
+  (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global') 
   ) {filters} 
 order by 
-  cell_id, 
-  test_datapoint_ordinal
+  {order}
 """
 
 
@@ -651,7 +552,8 @@ COUNT_CATHODE_FILES = """
   FROM cell_metadata 
   WHERE 
     (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) and 
-    cathode is NOT NULL
+    cathode is NOT NULL and
+    cathode != ''
   GROUP BY 
     cathode
 """
@@ -663,7 +565,8 @@ COUNT_FORM_FACTOR = """
     FROM cell_metadata
     WHERE 
       (email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global')) and 
-      form_factor is NOT NULL
+      form_factor is NOT NULL and
+      form_factor != ''
     GROUP BY 
       form_factor
 """
@@ -688,20 +591,34 @@ TOTAL_CYCLE_INDEX = """
 
 
 SIZE_CELL_METADATA = """
-      select pg_relation_size('cell_metadata') as size
+  select size from SVV_TABLE_INFO where "table" = 'cell_metadata'
 """
 
 
 SIZE_CYCLE_STATS = """
-      SELECT 
-        pg_relation_size('cycle_stats') as size
+  select size from SVV_TABLE_INFO where "table" = 'cycle_stats'
 """
 
 
 SIZE_CYCLE_TIMESERIES = """
-      select 
-        pg_relation_size('cycle_timeseries') as size
+  select size from SVV_TABLE_INFO where "table" = 'cycle_timeseries'
 """
+
+# SIZE_CELL_METADATA = """
+#       select pg_relation_size('cell_metadata') as size
+# """
+
+
+# SIZE_CYCLE_STATS = """
+#       SELECT 
+#         pg_relation_size('cycle_stats') as size
+# """
+
+
+# SIZE_CYCLE_TIMESERIES = """
+#       select 
+#         pg_relation_size('cycle_timeseries') as size
+# """
 
 
 ANODE_FILTER_QUERY = """
@@ -793,3 +710,6 @@ VOLTAGE_FILTER_QUERY = """
   from cycle_metadata where email in ('{email}', 'info@batteryarchive.org', 'data.matr.io@tri.global');
 """
 
+COPY_S3_TO_REDSHIFT = """
+COPY {database}.{schema}.{table}({columns}) FROM 's3://{bucket}/{file_path}' IAM_ROLE '{iam_role}' FORMAT AS CSV DELIMITER ',' QUOTE '"' IGNOREHEADER 1 BLANKSASNULL EMPTYASNULL IGNOREBLANKLINES REGION AS '{region}';commit;
+"""

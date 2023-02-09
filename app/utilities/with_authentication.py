@@ -1,7 +1,7 @@
 
-import datetime
+from datetime import datetime, timedelta
 from functools import wraps
-import json
+from json import loads
 from app.archive_constants import AUTH0_ALGORITHMS, AUTH0_AUDIENCE, AUTH0_DOMAIN
 from flask import request, g, abort
 import urllib.request
@@ -14,11 +14,11 @@ _last_result_value = None
 def get_keys():
     global _last_result_time
     global _last_result_value
-    now = datetime.datetime.now()
-    if not _last_result_time or now - _last_result_time > datetime.timedelta(seconds=300):
+    now = datetime.now()
+    if not _last_result_time or now - _last_result_time > timedelta(seconds=300):
         httprequest = urllib.request.Request("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json", method="GET")
         with urllib.request.urlopen(httprequest) as httpresponse:
-            response = json.loads(httpresponse.read())
+            response = loads(httpresponse.read())
         _last_result_value = response
         _last_result_time = now
     return _last_result_value

@@ -1,9 +1,9 @@
 from decimal import Decimal
 import logging
-import time
 import numpy as np
-import pandas as pd
+from pandas import DataFrame, to_numeric, unique
 from app.archive_constants import LABEL
+from app.utilities.file_status import _get_from_simple_db, _set_status
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -16,13 +16,9 @@ def default(obj):
     raise TypeError("Object of type '%s' is not JSON serializable" % type(obj).__name__)
 
 
-def clear_status(email):
-    time.sleep(2)
-    status.pop(email, None)
 
 
 def sort_timeseries(df_tmerge):
-    # print(df_tmerge)
     """
     Sort cycle timeseries data
     :param df_tmerge: dataframe returned after reading cycle timeseries data
@@ -69,12 +65,12 @@ def sort_timeseries(df_tmerge):
                 past_index = x[0]
                 max_cycle = x[0]
                 x[1] = x[0]
-        df_tmp = pd.DataFrame(data=cycles[:, [1]],
+        df_tmp = DataFrame(data=cycles[:, [1]],
                               columns=[LABEL.CYCLE_INDEX.value])
         df_t[LABEL.CYCLE_INDEX.value] = df_tmp[LABEL.CYCLE_INDEX.value]
-        df_tmp = pd.DataFrame(data=cycles[:, [3]],
+        df_tmp = DataFrame(data=cycles[:, [3]],
                               columns=[LABEL.TEST_TIME.value])
-        df_t[LABEL.TEST_TIME.value] = pd.to_numeric(
+        df_t[LABEL.TEST_TIME.value] = to_numeric(
             df_tmp[LABEL.TEST_TIME.value])
         df_ts = df_t.sort_values(by=[LABEL.TEST_TIME.value])
         # Remove quantities only needed to tag files
@@ -102,9 +98,11 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
     step = 50 / len(df_c.index)
     initial_cycle = True
     reset_test_time_by = 0
+    percentage = 25
     for c_ind in df_c.index:
         if email and cell_id:
-            status[f"{email}|{cell_id}"]['progress']['percentage'] += step
+            percentage += step
+            _set_status(email,cell_id,percentage=percentage)
         x = c_ind + 1
         df_f = df_t[df_t[LABEL.CYCLE_INDEX.value] == x]
         if not email:
@@ -176,13 +174,13 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
                     # df_t.loc[df_t.cycle_index == x,
                     #          LABEL.STEP_DATAPOINT_ORDINAL.value] = df_f[LABEL.STEP_DATAPOINT_ORDINAL.value]
                     df_c.loc[df_c.cycle_index == x,
-                             LABEL.STEP_COUNT.value] = len(pd.unique(df_f[LABEL.STEP_INDEX.value]))
+                             LABEL.STEP_COUNT.value] = len(unique(df_f[LABEL.STEP_INDEX.value]))
                     df_c.loc[df_c.cycle_index == x,
-                             LABEL.CHARGE_STEP_COUNT.value] = len(pd.unique(df_f_c[LABEL.STEP_INDEX.value]))
+                             LABEL.CHARGE_STEP_COUNT.value] = len(unique(df_f_c[LABEL.STEP_INDEX.value]))
                     df_c.loc[df_c.cycle_index == x,
-                             LABEL.DISCHARGE_STEP_COUNT.value] = len(pd.unique(df_f_d[LABEL.STEP_INDEX.value]))
+                             LABEL.DISCHARGE_STEP_COUNT.value] = len(unique(df_f_d[LABEL.STEP_INDEX.value]))
                     df_c.loc[df_c.cycle_index == x,
-                             LABEL.REST_STEP_COUNT.value] = len(pd.unique(df_f_r[LABEL.STEP_INDEX.value]))
+                             LABEL.REST_STEP_COUNT.value] = len(unique(df_f_r[LABEL.STEP_INDEX.value]))
                     df_t.loc[df_t.cycle_index == x, LABEL.STEP_DATAPOINT_ORDINAL.value] = df_f.groupby([LABEL.STEP_INDEX.value]).cumcount()+1
                 df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_START_TS.value)] = df_f[LABEL.DATE_TIME.value].iloc[0]
                 df_c.iloc[c_ind, df_c.columns.get_loc(LABEL.CYCLE_END_TS.value)] = df_f[LABEL.DATE_TIME.value].iloc[-1]
@@ -304,7 +302,8 @@ def calc_cycle_stats(df_t, cell_id=None, email=None):
         df_cc[LABEL.CYCLE_R_START_D.value] = df_tt_d[LABEL.I.value].iloc[0] * df_tt_d[LABEL.V.value].iloc[0]
         df_cc[LABEL.CYCLE_R_END_D.value] = df_tt_d[LABEL.I.value].iloc[-1] * df_tt_d[LABEL.V.value].iloc[-1]
 
-    status[f"{email}|{cell_id}"]['progress']['percentage'] = 65
+    # status[f"{email}|{cell_id}"]['progress']['percentage'] = 65
+    _set_status(email,cell_id,percentage=65)
     calc_energy_density(df_cc,df_tt)
 
     if not cycle_index_was_present:
@@ -331,16 +330,22 @@ def calc_energy_density(df_cc,df_tt,active_mass = None):
 
 
 def calc_abuse_stats(df_t, df_test_md, cell_id=None, email=None):
-    step = 60 / len(df_t.index)
-    for _ in df_t.index:
-        if email and cell_id:
-            status[f"{email}|{cell_id}"]['progress']['percentage'] += step
-        df_t[LABEL.NORM_D.value] = df_t.iloc[
-                                   0:, df_t.columns.get_loc(LABEL.AXIAL_D.value)] - df_t[
-                                       LABEL.AXIAL_D.value][0]
-        df_t[LABEL.STRAIN.value] = df_t.iloc[
-                                   0:, df_t.columns.get_loc(LABEL.NORM_D.value)] / df_test_md[
-                                       LABEL.THICKNESS.value]
+    if "axial_d" in (list(df_t.columns)):
+        df_t[LABEL.NORM_D.value] = df_t[LABEL.AXIAL_D.value] - df_t[LABEL.AXIAL_D.value][0]
+        _set_status(email,cell_id,percentage=35)
+        df_t[LABEL.STRAIN.value] = df_t[LABEL.NORM_D.value] / df_test_md[LABEL.THICKNESS.value]
+        _set_status(email,cell_id,percentage=40)
+    dt = df_t[LABEL.TEST_TIME.value].diff()
+    _set_status(email,cell_id,percentage=45)
+    df_t[LABEL.HR_01.value] = df_t[LABEL.temp_1.value].diff() / dt
+    df_t[LABEL.HR_02.value] = df_t[LABEL.temp_2.value].diff() / dt
+    _set_status(email,cell_id,percentage=50)
+    df_t[LABEL.HR_03.value] = df_t[LABEL.temp_3.value].diff() / dt
+    df_t[LABEL.HR_04.value] = df_t[LABEL.temp_4.value].diff() / dt
+    _set_status(email,cell_id,percentage=55)
+    df_t[LABEL.HR_05.value] = df_t[LABEL.temp_5.value].diff() / dt
+    df_t[LABEL.HR_06.value] = df_t[LABEL.temp_6.value].diff() / dt
+    _set_status(email,cell_id,percentage=60)
     return df_t
 
 
@@ -452,36 +457,36 @@ def calc_cycle_quantities(df):
         last_time = x[0]
 
     if calc_charge_capacity:
-        df_tmp = pd.DataFrame(data=tmp_arr[:, [3]], columns=[LABEL.AH_C.value])
+        df_tmp = DataFrame(data=tmp_arr[:, [3]], columns=[LABEL.AH_C.value])
         df_tmp.index += df.index[0]
         df[LABEL.AH_C.value] = df_tmp[LABEL.AH_C.value] / 3600.0
 
     if calc_charge_energy:
-        df_tmp = pd.DataFrame(data=tmp_arr[:, [4]], columns=[LABEL.E_C.value])
+        df_tmp = DataFrame(data=tmp_arr[:, [4]], columns=[LABEL.E_C.value])
         df_tmp.index += df.index[0]
         df[LABEL.E_C.value] = df_tmp[LABEL.E_C.value] / 3600.0
 
     if calc_discharge_capacity:
-        df_tmp = pd.DataFrame(data=tmp_arr[:, [5]], columns=[LABEL.AH_D.value])
+        df_tmp = DataFrame(data=tmp_arr[:, [5]], columns=[LABEL.AH_D.value])
         df_tmp.index += df.index[0]
         df[LABEL.AH_D.value] = -df_tmp[LABEL.AH_D.value] / 3600.0
 
     if calc_discharge_energy:
-        df_tmp = pd.DataFrame(data=tmp_arr[:, [6]], columns=[LABEL.E_D.value])
+        df_tmp = DataFrame(data=tmp_arr[:, [6]], columns=[LABEL.E_D.value])
         df_tmp.index += df.index[0]
         df[LABEL.E_D.value] = -df_tmp[LABEL.E_D.value] / 3600.0
 
     if step_index_present:
-        df_tmp = pd.DataFrame(data=tmp_arr[:, [10]], columns=[LABEL.STEP_TIME.value])
+        df_tmp = DataFrame(data=tmp_arr[:, [10]], columns=[LABEL.STEP_TIME.value])
         df_tmp.index += df.index[0]
         df[LABEL.STEP_TIME.value] = df_tmp[LABEL.STEP_TIME.value]
-        # df_tmp = pd.DataFrame(data=tmp_arr[:, [11]], columns=[LABEL.STEP_DATAPOINT_ORDINAL.value])
+        # df_tmp = DataFrame(data=tmp_arr[:, [11]], columns=[LABEL.STEP_DATAPOINT_ORDINAL.value])
         # df_tmp.index += df.index[0]
 
-    df_tmp = pd.DataFrame(data=tmp_arr[:, [8]], columns=[LABEL.STEP_TYPE.value])
+    df_tmp = DataFrame(data=tmp_arr[:, [8]], columns=[LABEL.STEP_TYPE.value])
     df_tmp.index += df.index[0]
     df[LABEL.STEP_TYPE.value] = df_tmp[LABEL.STEP_TYPE.value]
-    df_tmp = pd.DataFrame(data=tmp_arr[:, [7]],
+    df_tmp = DataFrame(data=tmp_arr[:, [7]],
                           columns=[LABEL.CYCLE_TIME.value])
     df_tmp.index += df.index[0]
     df[LABEL.CYCLE_TIME.value] = df_tmp[LABEL.CYCLE_TIME.value]
@@ -496,7 +501,7 @@ def calc_cycle_quantities(df):
 def split_cycle_metadata(df_c_md):
     df_cell_md = extract_cell_metdata(df_c_md)
     # Build test metadata
-    df_test_md = pd.DataFrame()
+    df_test_md = DataFrame()
     df_test_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
     df_test_md[LABEL.CRATE_C.value] = [df_c_md[LABEL.CRATE_C.value]]
     df_test_md[LABEL.CRATE_D.value] = [df_c_md[LABEL.CRATE_D.value]]
@@ -509,7 +514,7 @@ def split_cycle_metadata(df_c_md):
 def split_abuse_metadata(df_c_md):
     df_cell_md = extract_cell_metdata(df_c_md)
     # Build test metadata
-    df_test_md = pd.DataFrame()
+    df_test_md = DataFrame()
     df_test_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
     df_test_md[LABEL.THICKNESS.value] = [df_c_md[LABEL.THICKNESS.value]]
     df_test_md[LABEL.V_INIT.value] = [df_c_md[LABEL.V_INIT.value]]
@@ -521,7 +526,7 @@ def split_abuse_metadata(df_c_md):
 
 def extract_cell_metdata(df_c_md):
     """ Build cell metadata """
-    df_cell_md = pd.DataFrame()
+    df_cell_md = DataFrame()
     df_cell_md[LABEL.CELL_ID.value] = [df_c_md[LABEL.CELL_ID.value]]
     df_cell_md[LABEL.ANODE.value] = [df_c_md[LABEL.ANODE.value]]
     df_cell_md[LABEL.CATHODE.value] = [df_c_md[LABEL.CATHODE.value]]
@@ -536,7 +541,7 @@ def extract_cell_metdata(df_c_md):
 
 def init_stats_df(no_cycles):
     a = [0 for _ in range(no_cycles+1)]  # using loops
-    df_c = pd.DataFrame(data=a, columns=[LABEL.CYCLE_INDEX.value])
+    df_c = DataFrame(data=a, columns=[LABEL.CYCLE_INDEX.value])
     df_c[LABEL.CYCLE_INDEX.value] = 0
     df_c[LABEL.CYCLE_MAX_V.value] = 0
     df_c[LABEL.CYCLE_MAX_I.value] = 0

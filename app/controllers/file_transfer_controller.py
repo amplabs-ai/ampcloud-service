@@ -1,21 +1,20 @@
 from builtins import float, print
-import datetime
-import threading
+from time import time
+import traceback
 from app.amplabs_exception.amplabs_exception import AmplabsException
-from app.archive_constants import TRI_BUCKET_NAME
+from app.archive_constants import S3_DATA_BUCKET
 from app.services.file_transfer_service import *
+from app.utilities.s3_file_upload import add_df_to_s3, add_response_to_s3
 from app.utilities.user_plan import set_user_plan
-from app.utilities.utils import status
 from app.utilities.with_authentication import with_authentication
-from flask import make_response, request, g
+from flask import  request, g
 from app.response import Response
 import logging
 from io import BytesIO
-import zipfile
-from flask import send_file, Response as res
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+from flask import send_file
 from app.utilities.aws_connection import s3_client
-
-lock = threading.Lock()
+from app.utilities.file_status import _get_from_simple_db, _set_status
 
 
 @with_authentication()
@@ -24,8 +23,8 @@ def init_file_upload():
     try:
         email = g.user
         data = request.get_json()
-        status, detail = init_file_upload_service(email, data)
-        return Response(status, detail).to_dict(), status
+        status, detail, s3_url = init_file_upload_service(email, data)
+        return Response(status, detail, url=s3_url).to_dict(), status
     except Exception as err:
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
@@ -39,44 +38,37 @@ def upload_file(tester):
     email = g.user
     data = request.form.to_dict()
     try:
-        start_time = datetime.datetime.now()
-        file = request.files['file']
-        template = status[f"{email}|{data['cell_id']}"]['template']
-        df = file_data_read_service(tester, file, template, email)
-        end_time = datetime.datetime.now()
-        read_time = (end_time - start_time).total_seconds()*1000
-        with lock:
-            status[f"{email}|{data['cell_id']}"]['dataframes'].append(df)
-            status[f"{email}|{data['cell_id']}"]['file_count'] -= 1
-        if not status[f"{email}|{data['cell_id']}"]['file_count']:
-            status[f"{email}|{data['cell_id']}"]['progress']['steps']['READ FILE'] = True
-            threading.Thread(target=file_data_process_service,
-                            args=(data['cell_id'], email)).start()
-        end_time = datetime.datetime.now()
-        processing_time = (end_time - start_time).total_seconds()*1000
+        start_time = time()
+        template = _get_from_simple_db(email,data['cell_id'],key="template")['template']
+        df = file_data_read_service(tester, template, email,data['cell_id'])
+        end_time = time()
+        read_time = end_time-start_time
+        _set_status(email,data['cell_id'],percentage = 5)
+        _set_status(email,data['cell_id'],step_key='READ FILE')
+        file_data_process_service(data['cell_id'], email, df,tester)
+        end_time = time()
+        processing_time = end_time-start_time
         upload_time = processing_time + read_time
         size = float((df.memory_usage(index=True).sum())/1000)
         logging.info("User {email} Action UPLOAD_FILE file {file_name} size {size} read_time {read_time} processing_time {proc_time} upload_time {upload_time}".format
-                    (email=email, file_name=file.filename, size=size, read_time=read_time, 
+                    (email=email, file_name=f"{email}|{data['cell_id']}", size=size, read_time=read_time, 
                         proc_time=processing_time, upload_time=upload_time))
         return Response(200, "SUCCESS").to_dict(), 200
     except AmplabsException as err:
-        status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
-        status[f"{email}|{data['cell_id']}"]['progress']['message'] = err.message
+        _set_status(email,data['cell_id'],percentage = -1, message = err.message)
         logging.error(
             "User {email} Action UPLOAD_FILE error PARSING_ERROR".format(email=email))
         return Response(400, "BAD REQUEST").to_dict(), 400
     except KeyError as err:
         print(err)
         if 'not present' in err.args[0]:
-            status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
-            status[f"{email}|{data['cell_id']}"]['progress']['message'] = err.args[0]
+            _set_status(email,data['cell_id'],percentage = -1, message = err.args[0])
         logging.error(
             "User {email} Action UPLOAD_FILE error KEY_ERROR".format(email=email))
-        return Response(500, "INTERNAL SERVER ERROR").to_dict(), 500
+        return Response(400, err.args[0]).to_dict(), 500
     except Exception as err:
-        status[f"{email}|{data['cell_id']}"]['progress']['percentage'] = -1
-        status[f"{email}|{data['cell_id']}"]['progress']['message'] = "READ FILE FAILED"
+        traceback.print_exc()
+        _set_status(email,data['cell_id'],percentage = -1, message = "READ FILE FAILED")
         logging.error(
             "User {email} Action UPLOAD_FILE error UNKNOWN".format(email=email))
         logging.error(err)
@@ -89,23 +81,25 @@ def download_cycle_timeseries(cell_id):
     try:
         memory_file = BytesIO()
         dashboard_id = request.args.to_dict().get('dashboard_id')
-        start_time = datetime.datetime.now()
+        start_time = time()
         status, detail, * \
             resp = download_cycle_timeseries_service(
                 cell_id[0], email, dashboard_id)
         if resp:
-            with zipfile.ZipFile(memory_file, 'w') as zf:
-                zip_info = zipfile.ZipInfo(
+            response_url = add_df_to_s3(email, resp[0], cell_id[0], 'timeseries')
+            return Response(status, detail, url = response_url).to_dict(), status
+            with ZipFile(memory_file, 'w') as zf:
+                zip_info = ZipInfo(
                     f"{cell_id[0]}_cycle_timeseries.csv")
-                zip_info.compress_type = zipfile.ZIP_DEFLATED
+                zip_info.compress_type = ZIP_DEFLATED
                 zf.writestr(zip_info, resp[0].to_csv(
                     None, encoding='utf-8', index=False))
             memory_file.seek(0)
             size = float(len(memory_file.getvalue())/1000)
-            end_time = datetime.datetime.now()
+            end_time = time()
             logging.info("User {email} Action DOWNLOAD_CYCLE_TIMESERIES file {filename} size {size} type CYCLE_TIMESERIES download_time {time}".format(
                 email=email, filename=f"{cell_id[0]}_cycle_timeseries.csv", 
-                    size=size, time=(end_time-start_time).total_seconds()*1000))
+                    size=size, time=end_time-start_time))
             return send_file(memory_file, attachment_filename=f"{cell_id[0]}_cycle_timeseries.zip", as_attachment=True)
         else:
             return Response(status, detail).to_dict(), status
@@ -118,38 +112,13 @@ def download_cycle_timeseries(cell_id):
 
 @with_authentication(allow_public=True)
 def download_tri_data():
-
-    def get_total_bytes(fileName):
-        result = s3_client.list_objects(Bucket=TRI_BUCKET_NAME)
-        for item in result['Contents']:
-            if item['Key'] == fileName:
-                return item['Size']
-
-    def get_object(fileName, total_bytes):
-        if total_bytes > 1000000:
-            return get_object_range(fileName, total_bytes)
-        return s3_client.get_object(Bucket=TRI_BUCKET_NAME, Key=fileName)['Body'].read()
-
-    def get_object_range(fileName, total_bytes):
-        offset = 0
-        while total_bytes > 0:
-            end = offset + 999999 if total_bytes > 1000000 else ""
-            total_bytes -= 1000000
-            byte_range = 'bytes={offset}-{end}'.format(offset=offset, end=end)
-            offset = end + 1 if not isinstance(end, str) else None
-            yield s3_client.get_object(Bucket=TRI_BUCKET_NAME, Key=fileName, Range=byte_range)['Body'].read()
-
     try:
         email = g.user
         fileName = request.args.get("file")
-        total_bytes = get_total_bytes(fileName)
+        _uri = s3_client.generate_presigned_url('get_object', 
+                                        Params = {'Bucket': S3_DATA_BUCKET, 'Key': f"tri/{fileName}"},ExpiresIn = 300)
         logging.info("User {email} Action DOWNLOAD_TRI_DATA: {fileName}".format(email=email, fileName=fileName))
-        return res(
-        get_object(fileName, total_bytes),
-        mimetype='application/zip',
-        headers={"Content-Disposition": "attachment;filename=test.txt"}
-    )
-
+        return Response(200,"Success",url=_uri).to_dict(),200
     except Exception as err:
         logging.error(
            "User {email} Action DOWNLOAD_TRI_DATA: {fileName}".format(email=email, fileName=fileName))
@@ -163,20 +132,22 @@ def download_cycle_data(cell_id):
     try:
         memory_file = BytesIO()
         dashboard_id = request.args.to_dict().get('dashboard_id')
-        start_time = datetime.datetime.now()
+        start_time = time()
         status, detail, * \
             resp = download_cycle_data_service(cell_id[0], email, dashboard_id)
         if resp:
-            with zipfile.ZipFile(memory_file, 'w') as zf:
-                zip_info = zipfile.ZipInfo(f"{cell_id[0]}_cycle.csv")
-                zip_info.compress_type = zipfile.ZIP_DEFLATED
+            response_url = add_df_to_s3(email, resp[0], cell_id[0], 'cycle')
+            return Response(status, detail, url = response_url).to_dict(), status
+            with ZipFile(memory_file, 'w') as zf:
+                zip_info = ZipInfo(f"{cell_id[0]}_cycle.csv")
+                zip_info.compress_type = ZIP_DEFLATED
                 zf.writestr(zip_info, resp[0].to_csv(
                     None, encoding='utf-8', index=False))
             memory_file.seek(0)
             size = float(len(memory_file.getvalue())/1000)
-            end_time = datetime.datetime.now()
+            end_time = time()
             logging.info("User {email} Action DOWNLOAD_CYCLE_DATA file {filename} size {size} type CYCLE_DATA download_time {time}".format(
-                email=email, filename=f"{cell_id[0]}_cycle.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
+                email=email, filename=f"{cell_id[0]}_cycle.csv", size=size, time=end_time-start_time))
             return send_file(memory_file, attachment_filename=f"{cell_id[0]}_cycle.zip", as_attachment=True)
         else:
             return Response(status, detail).to_dict(), status
@@ -196,6 +167,11 @@ def get_cycle_data_json(cell_id):
             resp = download_cycle_data_service(cell_id[0], email, dashboard_id)
         if resp:
             resp[0] = resp[0].to_dict('records')
+        # if ENV == "production":
+        if status == 200:
+            result_response = Response(status, detail, records = resp).to_json()
+            s3_url = add_response_to_s3(email,result_response)
+            return Response(status, detail, url=s3_url).to_dict(), status
         return Response(status, detail, resp).to_dict(), status
     except Exception as err:
         logging.error(err)
@@ -212,8 +188,73 @@ def get_cycle_timeseries_json(cell_id):
                 cell_id[0], email, dashboard_id)
         if resp:
             resp[0] = resp[0].to_dict('records')
+        # if ENV == "production":
+        if status == 200:
+            result_response = Response(status, detail, records = resp).to_json()
+            s3_url = add_response_to_s3(email,result_response)
+            return Response(status, detail, url=s3_url).to_dict(), status
         return Response(status, detail, resp).to_dict(), status
     except Exception as err:
+        logging.error(err)
+        return Response(500, "Failed").to_dict(), 500
+
+
+@with_authentication()
+def download_timeseries_plot_data():
+    email = g.user
+    try:
+        data = request.json
+        memory_file = BytesIO()
+        start_time = time()
+        status, detail, * \
+            resp = download_timeseries_plot_data_service(data, email)
+        if resp:
+            with ZipFile(memory_file, 'w') as zf:
+                zip_info = ZipInfo("timeseries_plot.csv")
+                zip_info.compress_type = ZIP_DEFLATED
+                zf.writestr(zip_info, resp[0].to_csv(
+                    None, encoding='utf-8', index=False))
+            memory_file.seek(0)
+            size = float(len(memory_file.getvalue())/1000)
+            end_time = time()
+            logging.info("User {email} Action DOWNLOAD_TIMESERIES_PLOT_DATA file {filename} size {size} type TIMESERIES_DATA download_time {time}".format(
+                email=g.user, filename="timeseries_plot.csv", size=size, 
+                    time=end_time-start_time))
+            return send_file(memory_file, attachment_filename="timeseries_plot.zip", as_attachment=True)
+        else:
+            return Response(status, detail).to_dict(), status
+    except Exception as err:
+        logging.error(
+            "User {email} Action DOWNLOAD_TIMESERIES_PLOT_DATA error UNKNOWN".format(email=g.user))
+        logging.error(err)
+        return Response(500, "Failed").to_dict(), 500
+
+
+@with_authentication()
+def download_stats_plot_data():
+    email = g.user
+    try:
+        data = request.json
+        memory_file = BytesIO()
+        start_time = time()
+        status, detail, *resp = download_stats_plot_data_service(data, email)
+        if resp:
+            with ZipFile(memory_file, 'w') as zf:
+                zip_info = ZipInfo("stats_plot.csv")
+                zip_info.compress_type = ZIP_DEFLATED
+                zf.writestr(zip_info, resp[0].to_csv(
+                    None, encoding='utf-8', index=False))
+            memory_file.seek(0)
+            size = float(len(memory_file.getvalue())/1000)
+            end_time = time()
+            logging.info("User {email} Action DOWNLOAD_STATS_PLOT_DATA file {filename} size {size} type CYCLE_DATA download_time {time}".format(
+                email=g.user, filename="stats_plot.csv", size=size, time=end_time-start_time))
+            return send_file(memory_file, attachment_filename="stats_plot.zip", as_attachment=True)
+        else:
+            return Response(status, detail).to_dict(), status
+    except Exception as err:
+        logging.error(
+            "User {email} Action DOWNLOAD_STATS_PLOT_DATA error UNKNOWN".format(email=email))
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500
 
@@ -222,22 +263,26 @@ def get_cycle_timeseries_json(cell_id):
 def download_abuse_timeseries(cell_id):
     email = g.user
     try:
+        memory_file = BytesIO()
         dashboard_id = request.args.to_dict().get('dashboard_id')
-        start_time = datetime.datetime.now()
+        start_time = time()
         status, detail, * \
             resp = download_abuse_timeseries_service(
                 cell_id[0], email, dashboard_id)
         if resp:
+            response_url = add_df_to_s3(email, resp[0], cell_id[0], 'timeseries')
+            return Response(status, detail, url = response_url).to_dict(), status
             resp = make_response(resp[0].to_csv(index=False))
             resp.headers["Content-Disposition"] = "attachment; filename={}".format(
                 f"{cell_id[0]}_abuse_timeseries.csv")
             resp.headers["Content-Type"] = "text/csv"
-            end_time = datetime.datetime.now()
+            end_time = time()
             size = float(resp.content_length/1000)
             logging.info("User {email} Action DOWNLOAD_ABUSE_TIMESERIES file {filename} size {size} type ABUSE_TIMESERIES download_time {time}".format(
                 email=email, filename=f"{cell_id[0]}_abuse_timeseries.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
             return resp
-        return Response(status, detail).to_dict(), status
+        else:
+            return Response(status, detail).to_dict(), status
     except Exception as err:
         logging.error(
             "User {email} Action DOWNLOAD_ABUSE_TIMESERIES error UNKNOWN".format(email=email))
@@ -255,67 +300,12 @@ def get_abuse_timeseries_json(cell_id):
                 cell_id[0], email, dashboard_id)
         if resp:
             resp[0] = resp[0].to_dict('records')
+        # if ENV == "production":
+        if status == 200:
+            result_response = Response(status, detail, records = resp).to_json()
+            s3_url = add_response_to_s3(email,result_response)
+            return Response(status, detail, url=s3_url).to_dict(), status
         return Response(status, detail, resp).to_dict(), status
     except Exception as err:
-        logging.error(err)
-        return Response(500, "Failed").to_dict(), 500
-
-
-@with_authentication()
-def download_timeseries_plot_data():
-    email = g.user
-    try:
-        data = request.json
-        memory_file = BytesIO()
-        start_time = datetime.datetime.now()
-        status, detail, * \
-            resp = download_timeseries_plot_data_service(data, email)
-        if resp:
-            with zipfile.ZipFile(memory_file, 'w') as zf:
-                zip_info = zipfile.ZipInfo("timeseries_plot.csv")
-                zip_info.compress_type = zipfile.ZIP_DEFLATED
-                zf.writestr(zip_info, resp[0].to_csv(
-                    None, encoding='utf-8', index=False))
-            memory_file.seek(0)
-            size = float(len(memory_file.getvalue())/1000)
-            end_time = datetime.datetime.now()
-            logging.info("User {email} Action DOWNLOAD_TIMESERIES_PLOT_DATA file {filename} size {size} type TIMESERIES_DATA download_time {time}".format(
-                email=g.user, filename="timeseries_plot.csv", size=size, 
-                    time=(end_time-start_time).total_seconds()*1000))
-            return send_file(memory_file, attachment_filename="timeseries_plot.zip", as_attachment=True)
-        else:
-            return Response(status, detail).to_dict(), status
-    except Exception as err:
-        logging.error(
-            "User {email} Action DOWNLOAD_TIMESERIES_PLOT_DATA error UNKNOWN".format(email=g.user))
-        logging.error(err)
-        return Response(500, "Failed").to_dict(), 500
-
-
-@with_authentication()
-def download_stats_plot_data():
-    email = g.user
-    try:
-        data = request.json
-        memory_file = BytesIO()
-        start_time = datetime.datetime.now()
-        status, detail, *resp = download_stats_plot_data_service(data, email)
-        if resp:
-            with zipfile.ZipFile(memory_file, 'w') as zf:
-                zip_info = zipfile.ZipInfo("stats_plot.csv")
-                zip_info.compress_type = zipfile.ZIP_DEFLATED
-                zf.writestr(zip_info, resp[0].to_csv(
-                    None, encoding='utf-8', index=False))
-            memory_file.seek(0)
-            size = float(len(memory_file.getvalue())/1000)
-            end_time = datetime.datetime.now()
-            logging.info("User {email} Action DOWNLOAD_STATS_PLOT_DATA file {filename} size {size} type CYCLE_DATA download_time {time}".format(
-                email=g.user, filename="stats_plot.csv", size=size, time=(end_time-start_time).total_seconds()*1000))
-            return send_file(memory_file, attachment_filename="stats_plot.zip", as_attachment=True)
-        else:
-            return Response(status, detail).to_dict(), status
-    except Exception as err:
-        logging.error(
-            "User {email} Action DOWNLOAD_STATS_PLOT_DATA error UNKNOWN".format(email=email))
         logging.error(err)
         return Response(500, "Failed").to_dict(), 500

@@ -7,7 +7,7 @@ paths:
   /healthcheck:
     get:
       summary: Health check
-      x-openapi-router-controller: app.controllers.auth_controller
+      x-openapi-router-controller: app.controllers.healthcheck_controller
       operationId: health_check
       tags:
         - Healthcheck
@@ -15,7 +15,7 @@ paths:
         "200":
           description: Successfull
 
-  /cells/meta:
+  /cells/{test}/meta:
     post:
       security:
         - {}
@@ -25,6 +25,16 @@ paths:
       operationId: get_cells
       tags: 
         - Cell Meta
+      parameters:
+        - name: test
+          in: path
+          description: test type
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle,abuse]
       requestBody:
         required: false
         content:
@@ -55,8 +65,7 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong.
-
-  /cells/{test}/meta:
+    
     patch:
       security:
         - BearerAuth: []
@@ -74,7 +83,7 @@ paths:
           explode: false
           schema:
             type: string
-            enum: [cycle]
+            enum: [cycle,abuse]
       requestBody:
         required: true
         content:
@@ -145,7 +154,7 @@ paths:
           explode: false
           schema:
             type: string
-            enum: [cycle]
+            enum: [cycle, abuse]
       responses:
         "200":
           description: Successfull
@@ -198,7 +207,7 @@ paths:
           explode: false
           schema:
             type: string
-            enum: [cycle]
+            enum: [cycle, abuse]
       responses:
         "200":
           description: Successfull
@@ -221,7 +230,7 @@ paths:
           explode: false
           schema:
             type: string
-            enum: [cycle]
+            enum: [cycle, abuse]
       requestBody:
         required: true
         content:
@@ -294,7 +303,7 @@ paths:
           explode: false
           schema:
             type: string
-            enum: [cycle]
+            enum: [cycle, abuse]
       responses:
         "200":
           description: Successfull
@@ -344,7 +353,7 @@ paths:
                     example: SNL_18650_NMC_35C_0-100_0.5-1C_a
                   test_type:
                     type: string
-                    enum: [cycle]
+                    enum: [cycle,abuse]
                   anode:
                     type: string
                     nullable: true
@@ -419,7 +428,7 @@ paths:
           explode: false
           schema:
             type: string
-            enum: ["generic", "ornl", "snl"]
+            enum: ["generic", "abuse"]
       requestBody:
         content:
           multipart/form-data:
@@ -430,11 +439,8 @@ paths:
                   description: similar to the cell_id sent in upload initialize request.
                   type: string
                   example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-                file:
-                  type: string
               required:
                 - cell_id
-                - file
       tags:
         - Upload
       responses:
@@ -468,6 +474,35 @@ paths:
         "500":
           description: Something went wrong
 
+  /download/tri_data:
+      get:
+        security:
+          - {}
+          - BearerAuth: []
+        summary: Download tri data file.
+        x-openapi-router-controller: app.controllers.file_transfer_controller
+        operationId: download_tri_data
+        parameters:
+          - name: file
+            in: query
+            description: Cell ID of the resource to get
+            explode: true
+            required: true
+            style: form
+            schema:
+              type: array
+              items:
+                type: string
+                enum: ['test_data_json.zip', 'test_data.zip', 'tri_data.zip', 'training_data_json.zip', 'training_data.zip']
+                example: test_data_json.zip
+        tags:
+          - Download
+        responses:
+          "200":
+            description: Successfull
+          "500":
+            description: Something went wrong
+  
   /download/cells/cycle_timeseries:
     get:
       security:
@@ -495,63 +530,6 @@ paths:
           description: Successfull
         "500":
           description: Something went wrong
-    
-  /download/tri_data:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Download tri data file.
-      x-openapi-router-controller: app.controllers.file_transfer_controller
-      operationId: download_tri_data
-      parameters:
-        - name: file
-          in: query
-          description: Cell ID of the resource to get
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              enum: ['test_data_json.zip', 'test_data.zip', 'tri_data.zip', 'training_data_json.zip', 'training_data.zip']
-              example: test_data_json.zip
-      tags:
-        - Download
-      responses:
-        "200":
-          description: Successfull
-        "500":
-          description: Something went wrong
-
-  # /download/cells/abuse_timeseries:
-  #   get:
-  #     security:
-  #       - {}
-  #       - BearerAuth: []
-  #     summary: Download Abuse timeseries csv file for a cell id.
-  #     x-openapi-router-controller: app.controllers.file_transfer_controller
-  #     operationId: download_abuse_timeseries
-  #     parameters:
-  #       - name: cell_id
-  #         in: query
-  #         description: Cell ID of the resource to get
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: array
-  #           items:
-  #             type: string
-  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-  #     tags:
-  #       - Download
-  #     responses:
-  #       "200":
-  #         description: Successfull
-  #       "500":
-  #         description: Something went wrong
 
   /download/cells/cycle_data:
     get:
@@ -561,6 +539,118 @@ paths:
       summary: Download Cycle csv file for a cell id.
       x-openapi-router-controller: app.controllers.file_transfer_controller
       operationId: download_cycle_data
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+
+  /download/cells/cycle_data_json:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Get cycle data in json format for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_cycle_data_json
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+
+  /download/cells/cycle_timeseries_json:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Get cycle timeseries data in json format for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_cycle_timeseries_json
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+
+  /download/cells/abuse_timeseries:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Download Abuse timeseries csv file for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: download_abuse_timeseries
+      parameters:
+        - name: cell_id
+          in: query
+          description: Cell ID of the resource to get
+          explode: true
+          required: true
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+      tags:
+        - Download
+      responses:
+        "200":
+          description: Successfull
+        "500":
+          description: Something went wrong
+
+  /download/cells/abuse_timeseries_json:
+    get:
+      security:
+        - {}
+        - BearerAuth: []
+      summary: Get abuse timeseries data in json format for a cell id.
+      x-openapi-router-controller: app.controllers.file_transfer_controller
+      operationId: get_abuse_timeseries_json
       parameters:
         - name: cell_id
           in: query
@@ -591,24 +681,6 @@ paths:
       operationId: get_galvanostatic_plot
       tags:
         - Echart - Get json data required for plotting
-      responses:
-        "200":
-          description: Successfull response
-        "500":
-          description: Something went wrong
-
-  /echarts/capacityRetention:
-    post:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Fetches capacity rentention vs cycle number results
-      x-openapi-router-controller: app.controllers.echarts_controller
-      operationId: get_capacity_retention
-      tags:
-        - Echart - Get json data required for plotting
-      requestBody:
-        $ref: "#/components/requestBodies/Echart"
       responses:
         "200":
           description: Successfull response
@@ -741,6 +813,51 @@ paths:
         "500":
           description: Something went wrong
 
+  /echarts/forceDisplacement:
+    post:
+      summary: Fetches force and displacement query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_force_and_displacement
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  
+  /echarts/testTemperature:
+    post:
+      summary: Fetches test tempratures query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_test_tempratures
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+  
+  /echarts/testVoltage:
+    post:
+      summary: Fetches voltage query results
+      x-openapi-router-controller: app.controllers.echarts_controller
+      operationId: get_voltage
+      tags:
+        - Echart - Get json data required for plotting
+      requestBody:
+        $ref: "#/components/requestBodies/Echart"
+      responses:
+        "200":
+          description: Successfull response
+        "500":
+          description: Something went wrong
+
   /echarts/metadataSummary:
     get:
       security:
@@ -748,95 +865,13 @@ paths:
       summary: Returns public metadata summary
       x-openapi-router-controller: app.controllers.echarts_controller
       operationId: get_metadata_summary
+      tags:
+        - Echart - Get json data required for plotting metadata summary
       responses:
         "200":
           description: Successfull response
         "500":
           description: Something went wrong
-
-  /download/cells/cycle_data_json:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Get cycle data in json format for a cell id.
-      x-openapi-router-controller: app.controllers.file_transfer_controller
-      operationId: get_cycle_data_json
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID of the resource to get
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-      tags:
-        - Download
-      responses:
-        "200":
-          description: Successfull
-        "500":
-          description: Something went wrong
-
-  /download/cells/cycle_timeseries_json:
-    get:
-      security:
-        - {}
-        - BearerAuth: []
-      summary: Get cycle timeseries data in json format for a cell id.
-      x-openapi-router-controller: app.controllers.file_transfer_controller
-      operationId: get_cycle_timeseries_json
-      parameters:
-        - name: cell_id
-          in: query
-          description: Cell ID of the resource to get
-          explode: true
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-              example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-      tags:
-        - Download
-      responses:
-        "200":
-          description: Successfull
-        "500":
-          description: Something went wrong
-
-  # /download/cells/abuse_timeseries_json:
-  #   get:
-  #     security:
-  #       - {}
-  #       - BearerAuth: []
-  #     summary: Get abuse timeseries data in json format for a cell id.
-  #     x-openapi-router-controller: app.controllers.file_transfer_controller
-  #     operationId: get_abuse_timeseries_json
-  #     parameters:
-  #       - name: cell_id
-  #         in: query
-  #         description: Cell ID of the resource to get
-  #         explode: true
-  #         required: true
-  #         style: form
-  #         schema:
-  #           type: array
-  #           items:
-  #             type: string
-  #             example: SNL_18650_NMC_35C_0-100_0.5-1C_a
-  #     tags:
-  #       - Download
-  #     responses:
-  #       "200":
-  #         description: Successfull
-  #       "500":
-  #         description: Something went wrong
 
   /displayname/cycle:
     get:
@@ -851,13 +886,23 @@ paths:
         "500":
           description: Something went wrong.
 
-  /displayname/timeseries:
+  /displayname/{test}/timeseries:
     get:
       summary: Fetches the data of timeseries.
       x-openapi-router-controller: app.controllers.display_name_controller
       operationId: get_display_timeseries
       tags:
         - Display Name
+      parameters:
+        - name: test
+          in: path
+          description: Test Name of the resource to get
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            enum: [cycle, abuse]
       responses:
         "200":
           description: Successfull

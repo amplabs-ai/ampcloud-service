@@ -1,6 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import wait
-import os
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -8,7 +7,6 @@ from sqlalchemy import (
     TEXT,
     Float,
     or_,
-    select,
     bindparam,
     create_engine
 )
@@ -16,28 +14,13 @@ from sqlalchemy.ext.declarative import declarative_base
 import pandas as pd
 from sqlalchemy.sql.sqltypes import TIMESTAMP, FLOAT, BOOLEAN
 from app.archive_constants import (AMPLABS_DB_URL,
-                                   ARCHIVE_TABLE, BATTERY_ARCHIVE, DATA_MATR_IO, LABEL)
+                                    ARCHIVE_TABLE, BATTERY_ARCHIVE, DATA_MATR_IO, LABEL)
 from sqlalchemy.orm import scoped_session, sessionmaker
 from app.queries import *
-import numpy as np
+from numpy import array_split
+import traceback
 
 Model = declarative_base()
-
-
-class UserPlan(Model):
-    __tablename__ = ARCHIVE_TABLE.USER_PLAN.value
-    email = Column(TEXT, primary_key=True)
-    stripe_customer_id = Column(TEXT, nullable=True)
-    stripe_subscription_id = Column(TEXT, nullable=True)
-    plan_type = Column(TEXT, nullable=False)
-
-    def to_dict(self):
-        data_dict = {}
-        for column in self.__table__.columns:
-            data_dict[column.name] = getattr(self, column.name)
-        data_dict.pop(LABEL.EMAIL.value, None)
-        return data_dict
-
 
 class AbuseMeta(Model):
     __tablename__ = ARCHIVE_TABLE.ABUSE_META.value
@@ -79,6 +62,12 @@ class AbuseTimeSeries(Model):
     test_time = Column(Float, nullable=True)
     cell_id = Column(TEXT, nullable=False)
     email = Column(TEXT, nullable=False)
+    heating_rate_01 = Column(Float, nullable=True)
+    heating_rate_02 = Column(Float, nullable=True)
+    heating_rate_03 = Column(Float, nullable=True)
+    heating_rate_04 = Column(Float, nullable=True)
+    heating_rate_05 = Column(Float, nullable=True)
+    heating_rate_06 = Column(Float, nullable=True)
 
     def to_dict(self):
         return {
@@ -96,6 +85,21 @@ class AbuseTimeSeries(Model):
             "test_time": self.test_time,
             "cell_id": self.cell_id
         }
+
+
+class UserPlan(Model):
+    __tablename__ = ARCHIVE_TABLE.USER_PLAN.value
+    email = Column(TEXT, primary_key=True)
+    stripe_customer_id = Column(TEXT, nullable=True)
+    stripe_subscription_id = Column(TEXT, nullable=True)
+    plan_type = Column(TEXT, nullable=False)
+
+    def to_dict(self):
+        data_dict = {}
+        for column in self.__table__.columns:
+            data_dict[column.name] = getattr(self, column.name)
+        data_dict.pop(LABEL.EMAIL.value, None)
+        return data_dict
 
 
 class CycleMeta(Model):
@@ -295,7 +299,7 @@ class CycleTimeSeries(Model):
 
     net_energy = Column(Float, nullable=True)
     energy_throughput = Column(Float, nullable=True)
-    test_net_enerygy = Column(Float, nullable=True)
+    test_net_energy = Column(Float, nullable=True)
 
     environment_temperature = Column(Float, nullable=True)
     cell_temperature = Column(Float, nullable=True)
@@ -345,7 +349,6 @@ Archive Operator
 class ArchiveOperator:
     url = AMPLABS_DB_URL
     engine = create_engine(url, pool_size=500, pool_timeout=1200)
-    Model.metadata.create_all(engine)
     executor = ThreadPoolExecutor(500)
 
     def __init__(self, config={}):
@@ -394,7 +397,6 @@ class ArchiveOperator:
             or_(CycleStats.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CycleStats.email.in_(self.session.query(UserPlan.email).subquery()))).order_by('cycle_index').statement
         return pd.read_sql(sql, self.session.bind)
 
-
     def get_df_abuse_ts_with_cell_id(self, cell_id, email):
         sql = self.session.query(
             AbuseTimeSeries.test_time, AbuseTimeSeries.axial_d, AbuseTimeSeries.axial_f, AbuseTimeSeries.v,
@@ -405,7 +407,6 @@ class ArchiveOperator:
             AbuseTimeSeries.cell_id == cell_id, AbuseTimeSeries.email == email).order_by('index').statement
         return pd.read_sql(sql, self.session.bind)
 
-
     # CELL
     def get_public_cell_meta(self, cell_ids):
         return self.session.query(CellMeta.cell_id).filter(CellMeta.cell_id.in_(cell_ids), CellMeta.email.in_([BATTERY_ARCHIVE, DATA_MATR_IO])).first()
@@ -415,9 +416,12 @@ class ArchiveOperator:
         return self.select_table(CellMeta, email, test)
 
 
-    def get_all_cell_meta_filter(self,email,filter_string):
-        # result = self.session.execute(FILTER_DASHBOARD)
-        result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = True,filters = filter_string))
+    def get_all_cell_meta_filter(self,email,filter_string, test):
+        if test == "cycle":
+            meta_table = 'cycle_metadata'
+        else:
+            meta_table = 'abuse_metadata'
+        result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = True,filters = filter_string, test = test,table=meta_table))
         return result 
 
 
@@ -434,8 +438,7 @@ class ArchiveOperator:
 
     def get_all_cell_meta_from_table_with_id(self, cell_id, email, test):
         return self.session.query(CellMeta).filter(CellMeta.cell_id.in_(cell_id),
-                                                   or_(CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]),CellMeta.email.in_(
-                                                       self.session.query(UserPlan.email).subquery())),
+                                                   or_(CellMeta.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO])),
                                                    CellMeta.test == test).all()
 
 
@@ -449,9 +452,12 @@ class ArchiveOperator:
             ).all()
     
 
-    def get_all_cell_meta_for_community_filter(self,email,filter_string):
-        result = self.session.execute(FILTER_DASHBOARD.format(email=email,filters=filter_string,is_public=True))
-        # result = self.session.execute(FILTER_DASHBOARD)
+    def get_all_cell_meta_for_community_filter(self,email,filter_string, test):
+        if test == "cycle":
+            meta_table = 'cycle_metadata'
+        else:
+            meta_table = 'abuse_metadata'
+        result = self.session.execute(FILTER_DASHBOARD.format(email=email,filters=filter_string,is_public=True, test=test, table=meta_table))
         return result
 
 
@@ -461,9 +467,12 @@ class ArchiveOperator:
             ).all()
 
 
-    def get_all_private_cell_meta_filter(self, email, filter_string):
-        # result = self.session.execute(FILTER_DASHBOARD)
-        result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = False,filters = filter_string))
+    def get_all_private_cell_meta_filter(self, email, filter_string, test):
+        if test == "cycle":
+            meta_table = 'cycle_metadata'
+        else:
+            meta_table = 'abuse_metadata'
+        result = self.session.execute(FILTER_DASHBOARD.format(email=email,is_public = False,filters = filter_string, test = test,table=meta_table))
         return result
         
 
@@ -474,18 +483,10 @@ class ArchiveOperator:
 
     def get_all_test_metadata_from_table_with_id(self, cell_id, test_model, email):
         return self.session.query(test_model).filter(test_model.cell_id.in_(cell_id),
-                                                     or_(test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]), test_model.email.in_(self.session.query(UserPlan.email).subquery()))).all()
+                                                     or_(test_model.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]))).all()
 
 
     # ECHARTS
-    def get_all_data_from_CQBS_query(self, cell_id, step, email, mod_step):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=tuple(cell_id), step=step, email=email, mod_step=mod_step))
-        else:
-            return self.session.execute(
-                CYCLE_QUANTITIES_BY_STEP_QUERY.format(cell_id=("('" + cell_id[0] + "')"), step=step, email=email, mod_step=mod_step))
-
 
     def get_all_data_from_GalvanoPlot_query(self, cell_id, email, filter_string):
         if len(cell_id) > 1:
@@ -496,24 +497,6 @@ class ArchiveOperator:
                 GALVANOSTATIC_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
 
 
-    def get_all_data_from_ECAD_query(self, cell_id, email, mod_step):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=tuple(cell_id), email=email, mod_step=mod_step))
-        else:
-            return self.session.execute(
-                ENERGY_AND_CAPACITY_DECAY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, mod_step=mod_step))
-
-
-    def get_all_data_from_Eff_query(self, cell_id, email, mod_step):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                EFFICIENCY_QUERY.format(cell_id=tuple(cell_id), email=email, mod_step=mod_step))
-        else:
-            return self.session.execute(
-                EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, mod_step=mod_step))
-
-
     def get_all_data_from_AhEff_query(self, cell_id, email, filter_string):
         if len(cell_id) > 1:
             return self.session.execute(
@@ -522,15 +505,6 @@ class ArchiveOperator:
             return self.session.execute(
                 COULOMBIC_EFFICIENCY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email,  filters=filter_string))
 
-
-    def get_all_data_from_CCVC_query(self, cell_id, email):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(cell_id=tuple(cell_id), email=email))
-        else:
-            return self.session.execute(
-                COMPARE_CYCLE_VOLTAGE_AND_CURRENT_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email))
-    
 
     def get_all_data_from_operating_potential_query(self, cell_id, email, filter_string):
         if len(cell_id) > 1:
@@ -565,42 +539,6 @@ class ArchiveOperator:
         return self.session.execute(sql_stmt)
 
 
-    def get_all_data_from_AFD_query(self, cell_id, email, sample):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=tuple(cell_id), email=email, sample=sample))
-        else:
-            return self.session.execute(
-                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
-
-
-    def get_all_data_from_ATT_query(self, cell_id, email, sample):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                ABUSE_TEST_TEMPRATURES.format(cell_id=tuple(cell_id), email=email, sample=sample))
-        else:
-            return self.session.execute(
-                ABUSE_TEST_TEMPRATURES.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
-
-
-    def get_all_data_from_AV_query(self, cell_id, email, sample):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                ABUSE_VOLTAGE.format(cell_id=tuple(cell_id), email=email, sample=sample))
-        else:
-            return self.session.execute(
-                ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, sample=sample))
-    
-
-    def get_all_data_from_CR_query(self, cell_id, email, filter_string):
-        if len(cell_id) > 1:
-            return self.session.execute(
-                CAPACITY_RETENTION.format(cell_id=tuple(cell_id), email=email, filters=filter_string))
-        else:
-            return self.session.execute(
-                CAPACITY_RETENTION.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
-
-
     def get_all_data_from_Capacity_query(self, cell_id, email, filter_string):
         if len(cell_id) > 1:
             return self.session.execute(
@@ -618,13 +556,46 @@ class ArchiveOperator:
             return self.session.execute(
                 ENERGY_DENSITY_QUERY.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters=filter_string))
 
+    #ABUSE
+    
+    def get_all_data_from_AFD_query(self, cell_id, email ,filter_string):
+        if len(cell_id) > 1:
+            return self.session.execute(
+                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=tuple(cell_id), email=email, filters = filter_string))
+        else:
+            return self.session.execute(
+                ABUSE_FORCE_AND_DISPLACEMENT.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters = filter_string))
+
+
+    def get_all_data_from_ATT_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            return self.session.execute(
+                ABUSE_TEST_TEMPRATURES.format(cell_id=tuple(cell_id), email=email, filters = filter_string))
+        else:
+            return self.session.execute(
+                ABUSE_TEST_TEMPRATURES.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters = filter_string))
+
+
+    def get_all_data_from_AV_query(self, cell_id, email, filter_string):
+        if len(cell_id) > 1:
+            return self.session.execute(
+                ABUSE_VOLTAGE.format(cell_id=tuple(cell_id), email=email, filters = filter_string))
+        else:
+            return self.session.execute(
+                ABUSE_VOLTAGE.format(cell_id=("('" + cell_id[0] + "')"), email=email, filters = filter_string))
 
     #SUMMARY 
-    def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters, get_df=False):
+    def get_all_data_from_timeseries_query(self, columns, cell_ids, email, filters, test, get_df=False):
+        if test == "cycle":
+            table_name = 'cycle_timeseries'
+            order_by = 'cell_id, test_datapoint_ordinal'
+        else:
+            table_name = 'abuse_timeseries'
+            order_by = 'cell_id,test_time'
         if get_df:
-            return pd.read_sql(TIMESERIES_DATA.format(columns=columns, cell_ids=cell_ids, email=email, filters=filters), self.session.bind)
+            return pd.read_sql(TIMESERIES_DATA.format(columns=columns,table=table_name, cell_ids=cell_ids, email=email, filters=filters, order=order_by), self.session.bind)
         result = self.session.execute(TIMESERIES_DATA.format(
-            columns=columns, cell_ids=cell_ids, email=email, filters=filters))
+            columns=columns,table=table_name, cell_ids=cell_ids, email=email, filters=filters, order=order_by))
         return result
 
 
@@ -750,20 +721,17 @@ class ArchiveOperator:
         df_cell_md = cell.cellmeta
         df_test_meta_md = cell.testmeta
         df_stats, _ = cell.stat
-        print("CELL META", df_cell_md)
         df_cell_md.to_sql(cell.cell_meta_table,
                           con=self.session.bind,
                           if_exists="append",
                           chunksize=1000,
                           index=False)
-        print("DF TS META", df_test_meta_md)
         df_test_meta_md.to_sql(cell.test_meta_table,
                                con=self.session.bind,
                                if_exists='append',
                                chunksize=1000,
                                index=False)
         if cell.test_stats_table:
-            print("DF STATS", df_stats)
             df_stats.to_sql(ARCHIVE_TABLE.CYCLE_STATS.value,
                             con=self.session.bind,
                             if_exists='append',
@@ -788,7 +756,7 @@ class ArchiveOperator:
                 CycleTimeSeries.__table__.insert(),
                 item.to_dict('records'), )
         if model == 'cycle_timeseries':
-            df_list = np.array_split(df, 8)
+            df_list = array_split(df, 8)
             futures = [ArchiveOperator.executor.submit(
                 insert_df, df) for df in df_list]
             wait(futures)
@@ -858,7 +826,10 @@ class ArchiveOperator:
         return self.session.query(table).filter(table.email == email)
 
     def get_data_as_dataframe(self, email, cell_id, type):
-        if type == "timeseries":
+        if type == "abuse":
+            sql = self.session.query(AbuseTimeSeries.strain, AbuseTimeSeries.test_time, AbuseTimeSeries.index, AbuseTimeSeries.norm_d).filter(AbuseTimeSeries.cell_id == cell_id,
+                                    or_(AbuseTimeSeries.email.in_([email, BATTERY_ARCHIVE, DATA_MATR_IO]))).order_by('test_time').statement
+        elif type == "timeseries":
             sql = self.session.query(CycleTimeSeries.current,CycleTimeSeries.voltage,CycleTimeSeries.cycle_index,
                                     CycleTimeSeries.charge_capacity,CycleTimeSeries.discharge_capacity).filter(
             CycleTimeSeries.cell_id == cell_id,
@@ -873,3 +844,7 @@ class ArchiveOperator:
     def update_for_energy_density(self, df):
         df.rename(columns = {'index':'_id','cycle_discharge_energy_density':'_ed_d','cycle_charge_energy_density':'_ed_c'}, inplace = True)
         self.session.execute(CycleStats.__table__.update().where(CycleStats.__table__.c.index == bindparam('_id')).values(cycle_charge_energy_density = bindparam('_ed_c'),cycle_discharge_energy_density = bindparam('_ed_d')),params=df.to_dict('records'))
+
+    def update_for_strain(self,df):
+        # df.rename(columns = {'index':'_id','strain':'_st'}, inplace = True)
+        self.session.query(AbuseTimeSeries).filter(AbuseTimeSeries.index == df["index"]).update({'strain':df["strain"]})

@@ -1,12 +1,12 @@
 from app.utilities.aws_connection import client_sdb
-from app.archive_constants import DOMAIN_NAME, RESPONSE_MESSAGE
+from app.archive_constants import TEMPLATE_DOMAIN_NAME_SDB, RESPONSE_MESSAGE
 
 
 def create_template_service(email,request):
     try:
         response = client_sdb.list_domains()
-        if(DOMAIN_NAME not in response['DomainNames']):
-            dom = client_sdb.create_domain(DomainName=DOMAIN_NAME)
+        if(TEMPLATE_DOMAIN_NAME_SDB not in response['DomainNames']):
+            dom = client_sdb.create_domain(DomainName=TEMPLATE_DOMAIN_NAME_SDB)
         data = []
         data_dict = {}
         request['name'] = f"{email}||{request['name']}"
@@ -19,7 +19,7 @@ def create_template_service(email,request):
             Attributes.append(temp)
         data_dict['Attributes'] = Attributes
         data.append(data_dict)
-        if(client_sdb.batch_put_attributes(DomainName = DOMAIN_NAME,Items = data)):
+        if(client_sdb.batch_put_attributes(DomainName = TEMPLATE_DOMAIN_NAME_SDB,Items = data)):
             return 200, "Success"
     except Exception as err:
         print(err)
@@ -29,7 +29,7 @@ def create_template_service(email,request):
 def get_details_from_template_service(email):
     try:
         response = client_sdb.select(
-                        SelectExpression=f"select * from `{DOMAIN_NAME}` where itemName() LIKE '{email}||%' ")
+                        SelectExpression=f"select * from `{TEMPLATE_DOMAIN_NAME_SDB}` where itemName() LIKE '{email}||%' ")
         records = {}
         if response.get('Items'):
             for element in response['Items']:
@@ -50,7 +50,7 @@ def get_details_from_template_service(email):
 def delete_template_service(email,template):
     try:
         template = f"{email}||{template}"
-        response = client_sdb.delete_attributes(DomainName=DOMAIN_NAME,ItemName=template)
+        response = client_sdb.delete_attributes(DomainName=TEMPLATE_DOMAIN_NAME_SDB,ItemName=template)
         return 200,"Template Deleted"
     except Exception as err:
         print(err)

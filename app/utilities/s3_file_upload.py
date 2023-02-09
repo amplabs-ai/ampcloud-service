@@ -3,7 +3,7 @@ from app.utilities.aws_connection import s3_client
 from app.archive_constants import AWS_IAM_ROLE, S3_DATA_BUCKET, REDSHIFT_DATABASE, REDSHIFT_SCHEMA, AWS_REGION
 from shortuuid import uuid
 from json import dumps
-import gzip, io
+import gzip,io
 
 
 def insert_through_s3(df, email, cell_id, ao, type):
@@ -23,7 +23,7 @@ def insert_through_s3(df, email, cell_id, ao, type):
 
 def add_response_to_s3(email,response):
         response_id = uuid()
-        key = f"response/{email}/{response_id}.json"
+        key = f"response/{email}/{response_id}.gzip"
         inmem = io.BytesIO()
         with gzip.GzipFile(fileobj=inmem, mode='wb') as fh:
                 with io.TextIOWrapper(fh, encoding='utf-8') as wrapper:
