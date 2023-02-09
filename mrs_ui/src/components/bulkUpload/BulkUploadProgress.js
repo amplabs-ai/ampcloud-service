@@ -1,6 +1,8 @@
-import { Avatar, List, Progress, Spin } from "antd";
+import Avatar from "antd/es/avatar";
+import List from "antd/es/list";
+import Progress from "antd/es/progress";
+import Spin from "antd/es/spin";
 import React, { useEffect, useState } from "react";
-import { FaTimes } from "react-icons/fa";
 import blankFileImage from "../../../src/assets/images/file-blank-solid-240.png";
 import "./drop-file-input.css";
 
@@ -12,12 +14,6 @@ function BulkUploadProgress(props) {
     }
   }, [props.files]);
 
-  const fileRemove = (file) => {
-    const updatedList = [...fileList];
-    updatedList.splice(fileList.indexOf(file), 1);
-    // props.onFileChange(updatedList);
-    setFileList(updatedList);
-  };
   const getProgress = (uploadProgress) => {
     if (uploadProgress) {
       let progress = parseInt(uploadProgress?.percentage || 0);
@@ -40,12 +36,6 @@ function BulkUploadProgress(props) {
     }
   };
 
-  const bytesToSize = (bytes) => {
-    let sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    if (bytes === 0) return "0 Byte";
-    let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-    return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i];
-  };
   return (
     <div>
       <div
@@ -63,17 +53,6 @@ function BulkUploadProgress(props) {
             renderItem={(item) => (
               <List.Item
                 key={item.cellId}
-                // delete mechanism and retry mechanism
-
-                // extra={
-                //   <span
-                //     title="Remove File"
-                //     style={{ cursor: "pointer", marginLeft: "3%" }}
-                //     // onClick={() => fileRemove(item)}
-                //   >
-                //     <FaTimes />
-                //   </span>
-                // }
               >
                 <List.Item.Meta
                   avatar={<Avatar src={blankFileImage} />}
@@ -97,7 +76,6 @@ function BulkUploadProgress(props) {
                           : getProgress(item).message}
                       </div>
                     ) : (
-                      // bytesToSize(item.size)
                       "uploading"
                     )
                   }

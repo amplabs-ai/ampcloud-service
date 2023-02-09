@@ -20,11 +20,13 @@ def get_amplabs_data(params):
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {1}
+    httprequest.add_header("Authorization", "Bearer {1}")
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
-            response = json.loads(httpresponse.read())
-            return response
+            res = json.loads(httpresponse.read())
+            with urllib.request.urlopen(urllib.request.Request(res["response_url"],method="GET")) as response:
+                response = gzip.decompress(response.read())
+                return json.loads(response.decode())
     except urllib.error.HTTPError as e:
         print(e)
     return None
@@ -55,15 +57,17 @@ import urllib.request
 import pandas as pd
 
 def get_amplabs_data(params):
-    url = "http://www.amplabs.ai/download/cells/cycle_timeseries_json?{}".format(params)
+    url = "https://www.amplabs.ai/download/cells/cycle_timeseries_json?{}".format(params)
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {1}
+    httprequest.add_header("Authorization", "Bearer {1}")
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
-            response = json.loads(httpresponse.read())
-            return response
+            res = json.loads(httpresponse.read())
+            with urllib.request.urlopen(urllib.request.Request(res["response_url"],method="GET")) as response:
+                response = gzip.decompress(response.read())
+                return json.loads(response.decode())
     except urllib.error.HTTPError as e:
         print(e)
     return None
@@ -99,11 +103,13 @@ def get_amplabs_data(params):
     httprequest = urllib.request.Request(
             url, method="GET"
         )
-    {1}
+    httprequest.add_header("Authorization", "Bearer {1}")
     try:
         with urllib.request.urlopen(httprequest) as httpresponse:
-            response = json.loads(httpresponse.read())
-            return response
+            res = json.loads(httpresponse.read())    
+            with urllib.request.urlopen(urllib.request.Request(res["response_url"],method="GET")) as response:
+                response = response = gzip.decompress(response.read())
+                return json.loads(response.decode())
     except urllib.error.HTTPError as e:
         print(e)
     return None

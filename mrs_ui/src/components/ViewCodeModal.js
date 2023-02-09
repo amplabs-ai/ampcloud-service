@@ -1,19 +1,17 @@
 import React from "react";
-import { Modal, Typography, message } from "antd";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import Modal from "antd/es/modal";
+import Typography from "antd/es/typography";
+import message from "antd/es/message";
+import {Light as SyntaxHighlighter} from "react-syntax-highlighter";
+import a11yLight from "react-syntax-highlighter/dist/esm/styles/hljs/a11y-light";
+import python from "react-syntax-highlighter/dist/esm/languages/hljs/python"
 import copyToClipboard from "../utility/copyToClipboard";
-import { useAuth0 } from "@auth0/auth0-react";
-import { useAuth0Token } from "../utility/useAuth0Token";
-
 const { Text } = Typography;
+SyntaxHighlighter.registerLanguage('python', python);
+
 
 const ViewCodeModal = ({ code, modalVisible, setModalVisible }) => {
 	const codeString = code;
-	const { user } = useAuth0();
-
-	const accessToken = useAuth0Token();
-
 
 	return (
 		<>
@@ -39,7 +37,6 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible }) => {
 					language="python"
 					style={a11yLight}
 				>
-					{/* {codeString.replace("{queryParams}", searchParams)} */}
 					{codeString}
 				</SyntaxHighlighter>
 				<div className="d-flex flex-row-reverse mb-2">
@@ -47,9 +44,6 @@ const ViewCodeModal = ({ code, modalVisible, setModalVisible }) => {
 						type="secondary"
 						onClick={() => {
 							copyToClipboard(codeString);
-							// navigator.clipboard.writeText(
-							//   formatCode(codeString, searchParams, Cookies.get("userId"))
-							// );
 							message.success("Copied to clipboard!");
 							message.success("Copied to clipboard!");
 						}}

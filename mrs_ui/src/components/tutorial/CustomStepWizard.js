@@ -8,9 +8,13 @@ import TutorialStep2 from "./TutorialStep2";
 import TutorialStep3 from "./TutorialStep3";
 import TutorialStep4 from "./TutorialStep4";
 import pako from "pako";
-import { message } from "antd";
+import message from "antd/es/message";
 import { useAuth0 } from "@auth0/auth0-react";
-import { response } from "./sampleTestData";
+import AWS from "aws-sdk";
+const S3_BUCKET = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_UPLOAD_S3_BUCKET : process.env.REACT_APP_PROD_UPLOAD_S3_BUCKET;
+const REGION = process.env.REACT_APP_AWS_REGION;
+const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID
+const AWS_SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY
 
 const CustomStepWizard = (props) => {
 	let custom = {
@@ -80,6 +84,16 @@ const CustomStepWizard = (props) => {
 	};
 
 	const handleFileUpload = () => {
+		AWS.config.update({
+			accessKeyId: AWS_ACCESS_KEY_ID,
+			secretAccessKey: AWS_SECRET_ACCESS_KEY,
+		});
+	
+		const myBucket = new AWS.S3({
+			params: { Bucket: S3_BUCKET },
+			region: REGION,
+		});
+
 		if (!file) {
 			message.error("No File Found!");
 			message.error("No File Found!");
@@ -103,6 +117,7 @@ const CustomStepWizard = (props) => {
 			data: JSON.stringify(uploadInitReqData),
 		})
 			.then((response) => {
+				console.log(response)
 				if (response.status === 200) {
 					const formData = new FormData();
 					const reader = new FileReader();
@@ -112,26 +127,49 @@ const CustomStepWizard = (props) => {
 						const compressedFile = compressedFileArray.buffer;
 						const dataToUpload = new Blob([compressedFile], { type: file.type });
 						const fileToUpload = new Blob([dataToUpload], { type: file.type });
-						formData.append("file", fileToUpload, file.name);
 						formData.append("cell_id", file.name);
+						console.log(formData)
+						const params = {
+							Body: fileToUpload,
+							Bucket: S3_BUCKET,
+							Key: `raw/${user.email}/${file.name}`,
+						  };
+						  myBucket
+							.putObject(params)
+							.on("httpUploadProgress", (evt) => {
+								let percentage = Math.ceil((evt.loaded / evt.total) * 100);
+								console.log(percentage)
+							  })
+							.send((err, data) => {
+								console.log(err, data)
+							  if (!err) {
 						axios
 							.post("/upload/cells/generic", formData, {
 								headers: {
 									"Content-Type": "multipart/form-data",
 									Authorization: `Bearer ${accessToken}`,
 								},
+								onUploadProgress: (progressEvent) => {
+									let percentage = Math.ceil(
+									  (progressEvent.loaded / progressEvent.total) * 100
+									);
+									if (percentage === 100) {
+										getStatus();
+									}
+								  },
 							})
 							.then((response) => {
-								getStatus();
 							})
 							.catch((error) => {
+								console.log(error)
 								message.error(error.response.data.detail);
 								message.error(error.response.data.detail);
 								setLoading(false);
 							});
 					};
-					reader.readAsArrayBuffer(file);
-				}
+				})}
+				reader.readAsArrayBuffer(file);
+			}
 			})
 			.catch((error) => {
 				message.error(error.response.data.detail);
@@ -139,7 +177,27 @@ const CustomStepWizard = (props) => {
 			});
 	};
 	const handleStaticUpload = () => {
-		setChartData(response.records[0])
+		AWS.config.update({
+			accessKeyId: AWS_ACCESS_KEY_ID,
+			secretAccessKey: AWS_SECRET_ACCESS_KEY,
+		});
+	
+		const myBucket = new AWS.S3({
+			params: { Bucket: S3_BUCKET },
+			region: REGION,
+		});
+		const params = {
+			Bucket: S3_BUCKET,
+			Key: `sample/sampleResponseData.json`,
+		};
+	
+		myBucket.getObject(params, (err, data) => {
+			if (err) {
+			  console.log(err, err.stack);
+			} else {
+				let response = JSON.parse(data.Body)
+				setChartData(response.records[0])
+			}})
 	}
 
 	return (

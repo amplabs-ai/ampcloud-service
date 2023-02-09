@@ -1,6 +1,8 @@
 import React from "react";
-import { Popconfirm, Space, Table } from "antd";
-import { Button } from "antd";
+import Popconfirm from "antd/es/popconfirm";
+import Space from "antd/es/space";
+import Table from "antd/es/table";
+import Button from "antd/es/button";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { useFileUpload } from "../../context/FileUploadContext";
 

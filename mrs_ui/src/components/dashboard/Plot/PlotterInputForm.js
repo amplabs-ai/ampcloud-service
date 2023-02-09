@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Button, Select, Form, Space, Input } from "antd";
+import Button from "antd/es/button";
+import Select from "antd/es/select";
+import Form from "antd/es/form";
+import Space from "antd/es/space";
+import Input from "antd/es/input";
 import axios from "axios";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import MinusCircleOutlined from "@ant-design/icons/MinusCircleOutlined";
+import PlusOutlined from "@ant-design/icons/PlusOutlined";
 
 const { Option } = Select;
 
@@ -18,8 +23,10 @@ const PlotterInputForm = (props) => {
     if (props.type) {
       setLoading(true);
       let endpoint =
-        props.type === "timeseries"
-          ? "/displayname/timeseries"
+        props.type === "cycle_timeseries"
+          ? "/displayname/cycle/timeseries"
+          : props.type === "abuse_timeseries"
+          ? "/displayname/abuse/timeseries"
           : "/displayname/cycle";
       const controller = new AbortController();
       axios
@@ -43,22 +50,11 @@ const PlotterInputForm = (props) => {
   }, [props.type]);
 
   const handleYAxisSelect = (value) => {
-    // setAxisOptions(Object.keys(axisOptions).filter((k, v) => k !== value));
     setSelectedYaxes([...selectedYaxes, value]);
   };
 
   const handleYAxisDeselect = (value) => {
     setSelectedYaxes(selectedYaxes.filter((c) => c !== value));
-  };
-
-  const handleXAxisSelect = (value) => {
-    // setAxisOptions(Object.keys(axisOptions).filter((k, v) => k !== value));
-    setSelectedXaxes([...selectedXaxes, value]);
-  };
-
-  const handleXAxisDeselect = (value) => {
-    setAxisOptions((prev) => [...Object.keys(prev), value]);
-    // setSelectedXaxes(selectedXaxes.filter((c) => c !== value));
   };
 
   const onFinish = (values) => {
@@ -82,22 +78,6 @@ const PlotterInputForm = (props) => {
             },
           ]}
         >
-          {/* <Select
-            mode="multiple"
-            allowClear
-            loading={loading}
-            style={{ width: "100%" }}
-            placeholder="Please select X Axes"
-            onSelect={handleXAxisSelect}
-            onDeselect={handleXAxisDeselect}
-            value={selectedXaxes}
-          >
-            {Object.keys(axisOptions).map((c, i) => (
-              <Option key={i} value={axisOptions[c]}>
-                {c}
-              </Option>
-            ))}
-          </Select> */}
           <Select
             showSearch
             style={{ width: "100%" }}
@@ -121,19 +101,6 @@ const PlotterInputForm = (props) => {
             },
           ]}
         >
-          {/* <Select
-            showSearch
-            style={{ width: "100%" }}
-            placeholder="Select Y-Axis"
-            loading={loading}
-            dropdownMatchSelectWidth={false}
-          >
-            {Object.keys(axisOptions).map((c, i) => (
-              <Option key={i} value={axisOptions[c]}>
-                {c}
-              </Option>
-            ))}
-          </Select> */}
           <Select
             mode="multiple"
             allowClear
@@ -185,7 +152,7 @@ const PlotterInputForm = (props) => {
                           {c}
                         </Option>
                       ))}
-                      {props.type === "timeseries" && <Option key="test" value="reduction_factor">
+                      {props.type === "cycle_timeseries" && <Option key="test" value="reduction_factor">
                       Reduction Factor (applicable only for dQ/dV vs Voltage)
                       </Option>}
                     </Select>

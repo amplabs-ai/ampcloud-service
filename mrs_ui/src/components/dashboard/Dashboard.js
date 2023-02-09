@@ -1,30 +1,33 @@
-import { Button, Layout, PageHeader, Result } from "antd";
+import Button from "antd/es/button";
+import Layout from "antd/es/layout";
+import Result from "antd/es/result";
+import Spin from "antd/es/spin"
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, lazy, Suspense} from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
-import ChartContainer from "./ChartContainer";
-import ChartContainerType2 from "./ChartContainerType2";
-import DashboardShareButton from "./DashboardShareButton";
 import SideBar from "./Sidebar";
-import ViewMetadata from "./ViewMetadata";
-import Plotter from "./Plot/Plotter";
 import SubsPrompt from "../SubsPrompt";
-import DefaultDashboard from "./DefaultDashboard";
-import DashboardFilterBar from "./DashboardFilterBar";
+
+const ViewMetadata = lazy(() => import("./ViewMetadata"))
+const Plotter = lazy(() => import("./Plot/Plotter"))
+const ChartContainerType2 = lazy(() => import("./ChartContainerType2"))
+const DefaultDashboard = lazy(() => import("./DefaultDashboard"))
+const DashboardFilterBar= lazy(() => import("./DashboardFilterBar"))
 
 const { Content } = Layout;
 
 const Dashboard = (props) => {
-	const { state, action, dashboardRef } = useDashboard();
+	const { state, action} = useDashboard();
 	const accessToken = useAuth0Token();
 	// if used in shared dashboard
 	useEffect(() => {
-		if (props.dashboardId && props.type === "shared") {
+    action.clearDashboard();
+		if (props.dashboardId && props.type.includes("shared")) {
 			let config = {
 				data: {},
 				method: "POST",
-				url: `/cells/meta?dashboard_id=${props.dashboardId}`,
+				url: props.type === "cycle_shared" ? `/cells/cycle/meta?dashboard_id=${props.dashboardId}` : `/cells/abuse/meta?dashboard_id=${props.dashboardId}`,
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -52,70 +55,65 @@ const Dashboard = (props) => {
 	};
 
 	return (
-		<>
-			<SubsPrompt
-				handleOk={closeSubsPrompModal}
-				handleCancel={closeSubsPrompModal}
-				isModalVisible={state.shallShowSubsModal}
-			/>
-			{state.dashboardError ? (
-				<Result
-					status="500"
-					title={state.dashboardError}
-					// subTitle={state.dashboardError}
-					extra={
-						<Button type="primary" onClick={() => window.location.reload()}>
-							Reload
-						</Button>
-					}
-				/>
-			) : (
-				<div className="p-2">
-					{/* <PageHeader
-						className="site-page-header mb-1 shadow"
-						title="Cycle Test Data"
-						// backIcon={<FaArrowLeft title="go to upload" />}
-						// onBack={() => navigate("/upload")}
-						ghost={false}
-						extra={[
-
-
-							state.dashboardType === "private" ? (
-								<DashboardShareButton
-									ref={dashboardRef}
-									cellIds={state.selectedCellIds}
-									shareDisabled={state.shareDisabled}
-									step={state.appliedStep}
-									dashboard="cycle"
-								/>
-							) : null
-						]}
-					></PageHeader> */}
-					<Layout hasSider>
-						{props.type === "shared" ? null : <SideBar page="dashboard" />}
-						<Layout className="site-layout" style={{ marginLeft: "auto", height: "90vh" }}>
-							<Content
-								style={{
-									overflow: "auto",
-								}}
-							>
-								{state.shallShowFilterBar ? <DashboardFilterBar type = "shared" /> : null}
-								{state.shallShowEdit ? (
-									<ViewMetadata />
-								) : state.shallShowMeta ? (
-									<Plotter />
-								) : state.shallShowSecondChart || props.type === "shared" ? (
-									<ChartContainerType2 />
-								) : (
-									<DefaultDashboard />
-								)}
-							</Content>
-						</Layout>
-					</Layout>
-				</div>
-			)}
-		</>
-	);
+    <>
+      <SubsPrompt
+        handleOk={closeSubsPrompModal}
+        handleCancel={closeSubsPrompModal}
+        isModalVisible={state.shallShowSubsModal}
+      />
+      {state.dashboardError ? (
+        <Result
+          status="500"
+          title={state.dashboardError}
+          extra={
+            <Button type="primary" onClick={() => window.location.reload()}>
+              Reload
+            </Button>
+          }
+        />
+      ) : (
+        <div className="p-2">
+          <Layout hasSider>
+          {props.type.includes("shared") ? null : <SideBar type={props.type} />}
+            <Layout
+              className="site-layout"
+              style={{ marginLeft: "auto", height: "90vh" }}
+            >
+              <Suspense
+                fallback={
+                  <div
+                    className="d-flex justify-content-center align-items-center"
+                    style={{ height: "100vh" }}
+                  >
+                    <Spin size="large" />
+                  </div>
+                }
+              >
+                <Content
+                  style={{
+                    overflow: "auto",
+                  }}
+                >
+                  {state.shallShowFilterBar ? (
+                    <DashboardFilterBar type={props.type} />
+                  ) : null}
+                  {state.shallShowEdit ? (
+                    <ViewMetadata type={props.type}/>
+                  ) : state.shallShowMeta ? (
+                    <Plotter type={props.type}/>
+                  ) : state.shallShowSecondChart || props.type.includes("shared") ? (
+                    <ChartContainerType2 type={props.type.includes("cycle") ? "cycle" : "abuse"}/>
+                  ) : (
+                    <DefaultDashboard />
+                  )}
+                </Content>
+              </Suspense>
+            </Layout>
+          </Layout>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default Dashboard;

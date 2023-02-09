@@ -1,31 +1,59 @@
-import { Button, Card, Divider, Spin, Table } from "antd";
+import Divider from "antd/es/divider";
+import Table from "antd/es/table";
 import React, { useEffect, useState } from "react";
 import { FaDownload } from "react-icons/fa";
 import Papa from "papaparse";
-import { csvData } from "./sampleDataCsv";
+import AWS from "aws-sdk";
+const S3_BUCKET = process.env.REACT_APP_ENV === "development" ? process.env.REACT_APP_DEV_UPLOAD_S3_BUCKET : process.env.REACT_APP_PROD_UPLOAD_S3_BUCKET;
+const REGION = process.env.REACT_APP_AWS_REGION;
+const AWS_ACCESS_KEY_ID = process.env.REACT_APP_AWS_ACCESS_KEY_ID
+const AWS_SECRET_ACCESS_KEY = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY
 
 const TutorialStep2 = () => {
-	const [columns, setColumns] = useState([]);
-	const [tableData, setTableData] = useState([]);
+		const [columns, setColumns] = useState([]);
+    const [tableData, setTableData] = useState([]);
+    const [csvData, setCsvData] = useState()
 
-	useEffect(() => {
-		Papa.parse(csvData, {
-			header: true,
-			skipEmptyLines: true,
-			dynamicTyping: true,
-			complete: function (results) {
-				let headers = Object.keys(results.data[0]);
-				setColumns(
-					headers.map((h) => ({
-						title: h,
-						dataIndex: h,
-						key: h,
-					}))
-				);
-				setTableData(results.data);
-			},
-		});
-	}, []);
+    useEffect(() => {
+      // console.log(csvData)
+    AWS.config.update({
+        accessKeyId: AWS_ACCESS_KEY_ID,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    });
+
+    const myBucket = new AWS.S3({
+        params: { Bucket: S3_BUCKET },
+        region: REGION,
+    });
+    const params = {
+        Bucket: S3_BUCKET,
+        Key: `sample/sampleDataCsv.txt`,
+    };
+
+    myBucket.getObject(params, (err, data) => {
+        if (err) {
+          console.log(err, err.stack);
+        } else {
+          setCsvData(new TextDecoder().decode(data.Body))
+          Papa.parse(new TextDecoder().decode(data.Body), {
+            header: true,
+            skipEmptyLines: true,
+            dynamicTyping: true,
+            complete: function (results) {
+              let headers = Object.keys(results.data[0]);
+              setColumns(
+                headers.map((h) => ({
+                  title: h,
+                  dataIndex: h,
+                  key: h,
+                }))
+              );
+              setTableData(results.data);
+            },
+          });
+        }
+      });
+    }, []);
 
 	return (
 		<div>
@@ -54,7 +82,6 @@ const TutorialStep2 = () => {
 					<p className="fs-5 fw-light text-center">Data Preview</p>
 					<Table
 						scroll={{
-							// x: true,
 							y: "350px",
 						}}
 						size="small"

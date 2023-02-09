@@ -1,6 +1,7 @@
-import { Button, Modal } from 'antd';
+import Button from 'antd/es/button';
+import Modal from 'antd/es/modal';
 import React, { useState } from 'react';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
 import { Link } from "react-router-dom";
 
 

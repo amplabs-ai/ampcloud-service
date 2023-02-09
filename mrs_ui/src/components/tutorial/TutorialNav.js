@@ -1,8 +1,7 @@
-import { Button, Divider, message } from "antd";
+import Button from "antd/es/button";
 import React, { useEffect } from "react";
-import { useNavigate, createSearchParams } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-import { useDashboard } from "../../context/DashboardContext";
 
 const TutorialNav = (props) => {
 	const navigate = useNavigate();
@@ -11,8 +10,6 @@ const TutorialNav = (props) => {
 			props.nextStep();
 		}
 	}, [props.triggerNextStep]);
-
-	const { action } = useDashboard();
 
 	return (
 		<div className="d-flex justify-content-between">
@@ -38,14 +35,10 @@ const TutorialNav = (props) => {
 							// upload api call with file and metadata
 							props.onUploadFile();
 						} else if (props.currentStep === 4) {
-							// window.location.reload("/dashboard", {
-							// 	state: { cellIds: props.cellId ? [props.cellId] : ["Amplabs Sample"] },
-							// });
-							navigate("/dashboard", {
+							navigate("/dashboard/cycle", {
 								state: { cellIds: props.cellId ? [props.cellId] : ["Amplabs Sample"] },
 							});
 							window.location.reload();
-							// action.refreshSidebar(null, null, null, "dashboardType2");
 							props.onCancelTutorial();
 						} else {
 							props.onStaticFile();

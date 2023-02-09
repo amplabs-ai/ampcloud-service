@@ -1,5 +1,5 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { Button } from "antd";
+import Button from "antd/es/button";
 import { FaArrowRight } from "react-icons/fa";
 
 const LoginButton = () => {

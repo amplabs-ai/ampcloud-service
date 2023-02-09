@@ -1,7 +1,6 @@
 @import '~antd/dist/antd.css';
 
 :root {
-  /* --border-color: #080808; */
   --input-bg: #f6f8f9;
   --txt-second-color: #ccc;
   --box-bg: #fff;
@@ -10,7 +9,6 @@
 
 body {
   font-family: "Montserrat", sans-serif;
-  /* padding-top: 75px; */
 }
 
 @media only screen and (max-width: 600px) {
@@ -85,9 +83,6 @@ h5.ant-typography, div.ant-typography-h5, div.ant-typography-h5 > textarea, .ant
   border: 1px solid rgb(235, 237, 240);
 }
 
-/* .ant-input-affix-wrapper {
-  border-radius: 20px;
-} */
 
 #components-layout-demo-custom-trigger .trigger {
   padding: 0 24px;

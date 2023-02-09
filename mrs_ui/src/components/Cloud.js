@@ -1,5 +1,6 @@
 import React from 'react'
-import { Col, Row } from 'antd';
+import Col from 'antd/es/col';
+import Row from 'antd/es/row';
 import { useAuth0 } from "@auth0/auth0-react";
 import mixpanel from 'mixpanel-browser';
 

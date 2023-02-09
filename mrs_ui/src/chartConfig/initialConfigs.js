@@ -1,23 +1,12 @@
 const initialChartOptions = {
 	animation: false,
-	// animation: false,
 	grid: {
 		left: "15%",
 		right: "10%",
 		bottom: "18%",
-		// containLabel: true,
 	},
-	// grid: {
-	// 	left: window.screen.width < 600 ? "8%" : "5%",
-	// 	right: window.screen.width < 600 ? "5%" : "5%",
-	// 	bottom: window.screen.width < 600 ? "16%" : "13%",
-	// 	containLabel: true,
-	// },
 	toolbox: {
 		itemSize: window.screen.width < 600 ? 16 : 20,
-		// itemGap: 15,
-		// right: "20",
-		// bottom: "84%",
 		top: window.screen.width < 600 ? "6%" : "5%",
 	},
 	dataset: [],
@@ -43,5 +32,8 @@ const initialChartFilters = {
 	energyDensity: [{ column: null, operation: null, filterValue: null }],
 	capacity: [{ column: null, operation: null, filterValue: null }],
 	operatingPotential: [{ column: null, operation: null, filterValue: null }],
+	forceDisplacement: [{ column: null, operation: null, filterValue: null }],
+	testTemperature: [{ column: null, operation: null, filterValue: null }],
+	testVoltage: [{ column: null, operation: null, filterValue: null }],
 };
 export { initialChartOptions, scatterPlotChartId, initialChartFilters };

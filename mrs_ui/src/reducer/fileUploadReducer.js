@@ -43,6 +43,11 @@ const fileUploadReducer = (state, action) => {
 				...state,
 				showPackDataCellInput: payload.showPackDataCellInput,
 			};
+		case "SET_UPLOAD_TYPE":
+			return {
+				...state,
+				uploadType: payload.uploadType,
+			};
 		default:
 			throw new Error(`No case for type ${type} found in fileUploadReducer.`);
 	}
@@ -57,6 +62,7 @@ export const initialState = {
 	tableData: [],
 	supportedColumns: {},
 	showPackDataCellInput: false,
+	uploadType: "cycle",
 };
 
 export default fileUploadReducer;

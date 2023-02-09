@@ -7,7 +7,6 @@ export default () => {
 		const _checkCellIdInSeries = (c, selectedCellIds) => {
 			let flag = false;
 			for (let i = 0; i < selectedCellIds.length; i++) {
-				// flag = c.id.includes(selectedCellIds[i].cell_id);
 				flag = c.cell_id === selectedCellIds[i].cell_id;
 				if (flag) {
 					return true;
@@ -23,7 +22,6 @@ export default () => {
 					return _checkCellIdInSeries(c, selectedCellIds);
 				});
 				filteredChartData[chartName] = filteredChart;
-				// filteredChartData = { ...filteredChartData, [chartName]: filteredChart };
 			}
 		}
 		postMessage(filteredChartData);

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import "./drop-file-input.css";
-import { Modal, Radio, Spin } from "antd";
+import Modal from "antd/es/modal";
+import Radio from "antd/es/radio";
+import Spin from "antd/es/spin";
 import { useFileUpload } from "../../context/FileUploadContext";
 import ColumnMapping from "./ColumnMapping";
-import Papa from "papaparse";
+import { parse, unparse } from "papaparse";
 import uploadImg from "../../../src/assets/images/cloud-upload-regular-240.png";
 import { v4 as uuidv4 } from "uuid";
 import { bytesToSize } from "../../utility/bytesToSize";
@@ -16,7 +18,7 @@ const BulkUploadDropFileInput = (props) => {
 	const wrapperRef = useRef(null);
 
 	const {
-		state: { showColMapModal, tableData, showParsingSpinner, fileType, supportedColumns },
+		state: { showColMapModal, tableData, showParsingSpinner, fileType, supportedColumns, uploadType },
 		action: {
 			setShowColMapModal,
 			setShowParsingSpinner,
@@ -32,7 +34,7 @@ const BulkUploadDropFileInput = (props) => {
 	const onDrop = () => wrapperRef.current.classList.remove("dragover");
 
 	useEffect(() => {
-		let endpoint = "/displayname/timeseries";
+		let endpoint = uploadType === "cycle" ? "/displayname/cycle/timeseries" : "/displayname/abuse/timeseries";
 		const controller = new AbortController();
 		axios
 			.get(endpoint, {
@@ -50,7 +52,7 @@ const BulkUploadDropFileInput = (props) => {
 		return () => {
 			controller.abort();
 		};
-	}, []);
+	}, [uploadType]);
 
 	const onFileDrop = async (e) => {
 		let fileCountAfterDrop = tableData.length + [...e.target.files].length;
@@ -71,7 +73,6 @@ const BulkUploadDropFileInput = (props) => {
 				if (p.status === "fulfilled") {
 					parsedData.push(p.value);
 				} else if (p.status === "rejected") {
-					// ...
 					console.error("error in parsing... ", p);
 				}
 			});
@@ -82,13 +83,37 @@ const BulkUploadDropFileInput = (props) => {
 
 	const doParseFile = async (file) => {
 		return new Promise((resolve, reject) => {
-			Papa.parse(file, {
-				// header: true,
+		let text = ""
+		const reader = new FileReader()
+		reader.onload = async (e) => { 
+			if(file.name.includes(".dat")){
+				text = (e.target.result)
+				let re = new RegExp('^(?!1).*.[\r\n|\n]', 'gm');
+				text = text.replace(re, '')
+				re = /^(1\t*ALIAS\t)/gm
+				text = text.replace(re, "")
+				re = /^(1.*DATA\t)/gm
+				text = text.replace(re, "")
+				re = /^(1.*PARAMS).*.[\r\n|\n]/gm
+				text = text.replace(re, "")
+				re = /^(1.*UNITS).*.[\r\n|\n]/gm
+				text = text.replace(re, "")
+				
+				re = /\t+/gm
+		  		text = text.replace(re, ",")	
+			}
+			else {
+				text = file
+			}
+			console.log(text)
+			parse(text, {
 				skipEmptyLines: true,
 				dynamicTyping: true,
-				preview: 1,
+				delimiter: ",",
 				complete: function (results) {
+					console.log(text)
 					if (results.errors && results.errors.length) {
+						console.log(results)
 						reject({
 							file: file.name,
 							errors: results.errors,
@@ -96,10 +121,9 @@ const BulkUploadDropFileInput = (props) => {
 						return;
 					}
 					let headers = results.data[0];
-					// let headers = Object.keys(results.data[0]);
 					resolve({
 						fileName: file.name,
-						file: file,
+						file:file.name.includes(".dat") ? new Blob([unparse(results.data)], { type: "text/plain" }) : text,
 						headers,
 						size: bytesToSize(file.size),
 						isPublic: true,
@@ -109,9 +133,11 @@ const BulkUploadDropFileInput = (props) => {
 						mappings: getDefaultMappings(headers),
 						template:"",
 						new_template:""
-					});
-				},
+				});
+			},
 			});
+		}
+		reader.readAsText(file)
 		});
 	};
 
@@ -167,21 +193,23 @@ const BulkUploadDropFileInput = (props) => {
 			>
 				<ColumnMapping closeModal={onCloseMappingModal} />
 			</Modal>
-			<div className="mb-2 d-flex justify-content-end">
-				<Radio.Group
-					defaultValue="normalTest"
-					onChange={(e) => {
-						let value = e.target.value;
-						if (value === "referenceTest") {
-							setShowPackDataCellInput(true);
-						}
-						setFileType(value);
-					}}
-				>
-					<Radio.Button value="normalTest">Single Cell Data</Radio.Button>
-					<Radio.Button value="referenceTest">Pack Data</Radio.Button>
-				</Radio.Group>
-			</div>
+			{uploadType === "cycle" ? (
+				<div className="mb-2 d-flex justify-content-end">
+					<Radio.Group
+						defaultValue="normalTest"
+						onChange={(e) => {
+							let value = e.target.value;
+							if (value === "referenceTest") {
+								setShowPackDataCellInput(true);
+							}
+							setFileType(value);
+						}}
+					>
+						<Radio.Button value="normalTest">Single Cell Data</Radio.Button>
+						<Radio.Button value="referenceTest">Pack Data</Radio.Button>
+					</Radio.Group>
+				</div>
+			) : null}
 			<div
 				ref={wrapperRef}
 				className="drop-file-input shadow-sm"
@@ -196,7 +224,7 @@ const BulkUploadDropFileInput = (props) => {
 				<input
 					type="file"
 					value=""
-					accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt"
+					accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, .txt, .dat"
 					onChange={onFileDrop}
 					multiple={fileType === "normalTest"}
 				/>

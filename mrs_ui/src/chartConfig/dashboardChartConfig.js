@@ -6,9 +6,9 @@ import { scatterPlotChartId } from "./initialConfigs";
 const colorTransitions = [
 	['#e98d6b', '#e3685c', '#d14a61', '#b13c6c', '#8f3371', '#6c2b6d'],
 	['#7dba91', '#59a590', '#40908e', '#287a8c', '#1c6488', '#254b7f'],
-	["#1f77b4", "#2193b0", "#6dd5ed"],
-	["#ff7f0e", "#ff9966", "#ff5e62"],
 	["#2ca02c", "#56ab2f", "#a8e063"],
+	["#ff7f0e", "#ff9966", "#ff5e62"],
+	["#1f77b4", "#2193b0", "#6dd5ed"],
 	["#f953c6", "#b91d73"],
 	["#f7b733", "#fc4a1a"],
 	["#d62728", "#1f77b4"],
@@ -110,7 +110,14 @@ export const chartConfig = (chartName, data) => {
 						tooltip_str+=`${param.marker} <b>${param.seriesName}</b>(${parseFloat(param.value[xAxis.mapToId]).toPrecision(5)}<b>, </b>${parseFloat(param.value[yAxis.mapToId]).toPrecision(5)}) <br>`
 					})
 					return tooltip_str
-				  }
+				  },
+				position: function (pos, params, dom, rect, size) {
+					// tooltip will be fixed on the right if mouse hovering on the left,
+					// and on the left if hovering on the right.
+					var obj = {top: 60};
+					obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 5;
+					return obj;
+				}
 			},
 		],
 		title: {
@@ -193,15 +200,16 @@ export const chartConfig = (chartName, data) => {
 
 export const _createChartColors = (data) => {
 	let cellIdColorMap = {};
+	let colorArray = {}
 	data.forEach((element) => {
 		if (element.cell_id in cellIdColorMap) {
 			cellIdColorMap[element.cell_id]++;
 		} else {
 			cellIdColorMap[element.cell_id] = 1;
+			colorArray[element.cell_id] = []
 		}
 	});
 	let colorLen = colorTransitions.length;
-	let colorArray = [];
 	let i = 0;
 	for (const [key, value] of Object.entries(cellIdColorMap)) {
 		let gradient = new Gradient()
@@ -209,9 +217,14 @@ export const _createChartColors = (data) => {
 			.setMidpoint(value)
 			.getColors();
 		i++;
-		colorArray = colorArray.concat(gradient);
+		colorArray[key] = gradient;
 	}
-	return colorArray;
+	let colors = []
+	data.forEach((element) => {
+		colors.push(colorArray[element.cell_id][0])
+		colorArray[element.cell_id].shift()
+	})
+	return colors;
 };
 
 export const getChartMetadata = (chartName) => {
@@ -340,7 +353,7 @@ export const getChartMetadata = (chartName) => {
 					mapToId: "value",
 					title: "Coulombic Efficiency (%)",
 				},
-				chartTitle: "Coulombic Efficiency vs Cyle Index",
+				chartTitle: "Coulombic Efficiency vs Cycle Index",
 				chartId: "coulombicEfficiency",
 				code: sourceCode.coulombicEfficiency,
 			};
@@ -404,7 +417,7 @@ export const getChartMetadata = (chartName) => {
 					mapToId: "value",
 					title: "Energy Density (Wh/Kg)",
 				},
-				chartTitle: "Energy Density vs Cyle Index",
+				chartTitle: "Energy Density vs Cycle Index",
 				chartId: "energyDensity",
 				code: sourceCode.energyDensity,
 			};
@@ -439,6 +452,54 @@ export const getChartMetadata = (chartName) => {
 				chartTitle: "Operating Potential vs Cycle Index",
 				chartId: "operatingPotential",
 				code: sourceCode.operatingPotential,
+			};
+			break;
+		case "forceDisplacement":
+			result = {
+				endpoint: `/echarts/forceDisplacement`,
+				xAxis: {
+					mapToId: "test_time",
+					title: "Time (s)",
+				},
+				yAxis: {
+					mapToId: "value",
+					title: "Force and Displacement",
+				},
+				chartTitle: "Force and Displacement",
+				chartId: "forceDisplacement",
+				code: sourceCode.forceAndDisplacementChart,
+			};
+			break;
+		case "testTemperature":
+			result = {
+				endpoint: `/echarts/testTemperature`,
+				xAxis: {
+					mapToId: "test_time",
+					title: "Time (s)",
+				},
+				yAxis: {
+					mapToId: "value",
+					title: "Temperature",
+				},
+				chartTitle: "Test Temperature",
+				chartId: "testTemperature",
+				code: sourceCode.testTempraturesChart,
+			};
+			break;
+		case "testVoltage":
+			result = {
+				endpoint: `/echarts/testVoltage`,
+				xAxis: {
+					mapToId: "test_time",
+					title: "Time (s)",
+				},
+				yAxis: {
+					mapToId: "value",
+					title: "Voltage",
+				},
+				chartTitle: "Test Voltage",
+				chartId: "testVoltage",
+				code: sourceCode.voltageChart,
 			};
 			break;
 		default:

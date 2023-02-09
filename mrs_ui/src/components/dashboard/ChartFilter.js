@@ -1,29 +1,23 @@
 import React, { useEffect, useState, forwardRef, useImperativeHandle } from "react";
-import { InfoCircleOutlined } from "@ant-design/icons";
-import { Button, Select, Form, Space, Input, Modal, Spin } from "antd";
-import {
-  MinusCircleOutlined,
-  PlusOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
-import axios from "axios";
+import Button from "antd/es/button";
+import Select from "antd/es/select";
+import Form from "antd/es/form";
+import Space from "antd/es/space";
+import Input from "antd/es/input";
+import Modal from "antd/es/modal";
+import Spin from "antd/es/spin";
+import PlusCircleOutlined from "@ant-design/icons/PlusCircleOutlined";
+import MinusCircleOutlined from "@ant-design/icons/MinusCircleOutlined";
 import { useDashboard } from "../../context/DashboardContext";
 import { initialChartFilters } from "../../chartConfig/initialConfigs";
 
 const { Option } = Select;
 const FILTER_OPERATORS = [">", "<", "=", ">=", "<=", "!=", "%"];
-const timeseries = [
-  "currentTime",
-  "voltageTime",
-  "differentialCapacity",
-  "galvanostaticPlot",
-];
 
 const ChartFilter = forwardRef((props, _ref) => {
   const [displayNames, setDisplayNames] = useState({});
-  const [loading, setLoading] = useState(false);
   const [filterValues, setFilterValues] = useState(initialChartFilters[props.chartName])
-  const { state, action } = useDashboard();
+  const { state} = useDashboard();
 
   const [form] = Form.useForm();
 
@@ -164,24 +158,6 @@ const ChartFilter = forwardRef((props, _ref) => {
               </>
             )}
           </Form.List>
-          {/* {ischartName === "differentialCapacity" ? (
-            <Form.Item>
-              <Input
-                type="number"
-                addonBefore="Reduction Factor"
-                status={reductionFactorInputStatus}
-                onChange={(e) => {
-                  setReductionFactorInputStatus("");
-                  setReductionFactorInputPlaceholder("Reduction Factor");
-                  setReductionFactor(e.target.value);
-                }}
-                value={reductionFactor}
-                placeholder={reductionFactorInputPlaceholder}
-                allowClear
-              />
-            </Form.Item>
-          ) : null} */}
-
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Apply Filter

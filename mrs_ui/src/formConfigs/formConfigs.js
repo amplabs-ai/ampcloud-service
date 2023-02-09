@@ -16,5 +16,9 @@ export const inputType = {
 	crate_c: "number",
 	crate_d: "number",
 	v_max: "number",
-	v_min: "number"
+	v_min: "number",
+	thickness: "number",
+	v_init: "number",
+	indentor: "number",
+	nail_speed: "number"
 };

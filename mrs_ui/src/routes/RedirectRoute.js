@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Spin } from "antd";
+import Spin from "antd/es/spin";
 
 const RedirectRoute = ({ children }) => {
 	const { isAuthenticated, isLoading } = useAuth0();
@@ -14,7 +14,6 @@ const RedirectRoute = ({ children }) => {
 		);
 	}
 	if (isAuthenticated) {
-		// localStorage.removeItem('pop_status')
 		return (
 			<>
 				<Navigate to="/dashboard" replace />

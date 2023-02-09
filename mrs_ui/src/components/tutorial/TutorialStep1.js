@@ -1,12 +1,10 @@
-import { Button, Card } from "antd";
-import Meta from "antd/lib/card/Meta";
+import Card from "antd/es/card";
 import React from "react";
 
 const TutorialStep1 = (props) => {
 	return (
 		<div>
 			<h3 className="my-3">Step 1: Select Battery Data</h3>
-			{/* d-flex justify-content-center  */}
 			<div
 				className="m-1 mt-5"
 				style={{ height: "50vh", display: "flex", justifyContent: "center", alignItems: "center" }}

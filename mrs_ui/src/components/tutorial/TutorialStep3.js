@@ -1,7 +1,12 @@
-import { Button, Divider, Table, Upload, Spin } from "antd";
+import Button from "antd/es/button";
+import Divider from "antd/es/divider";
+import Table from "antd/es/table";
+import Upload from "antd/es/upload";
+import Spin from "antd/es/spin";
 import React, { useState } from "react";
 import Papa from "papaparse";
-import { InboxOutlined, FileTextOutlined } from "@ant-design/icons";
+import InboxOutlined from "@ant-design/icons/InboxOutlined";
+import FileTextOutlined from "@ant-design/icons/FileTextOutlined";
 
 const { Dragger } = Upload;
 

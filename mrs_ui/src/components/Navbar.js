@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../assets/images/amplabsLogo.png";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Dropdown, Avatar, Button, Col, message } from "antd";
+import Menu from "antd/es/menu";
+import Dropdown from "antd/es/dropdown";
+import Avatar from "antd/es/avatar";
+import Col from 'antd/es/col';
+import Button from 'antd/es/button';
+import message from "antd/es/message";
 import { FaAngleDown } from "react-icons/fa";
 import { useAuth0 } from "@auth0/auth0-react";
-import { UserOutlined } from "@ant-design/icons";
+import UserOutlined from "@ant-design/icons/UserOutlined";
 import { useUserPlan } from "../context/UserPlanContext";
 import { useAuth0Token } from "../utility/useAuth0Token";
 import { audit } from "../auditAction/audit";
@@ -16,6 +21,8 @@ const Navbar = () => {
 	const userplan = useUserPlan();
 
 	const accessToken = useAuth0Token();
+	const [uploadPageType, setUploadPageType] = useState("Add Data")
+  	const [dashboardPageType, setDashboardPageType] = useState("View Data")
 	let location = useLocation();
 
 	useEffect(() => {
@@ -94,12 +101,62 @@ const Navbar = () => {
 		</Menu>
 	);
 
+	const uploadMenu = (
+    <Menu>
+      <Menu.Item key="cycle">
+        <Link
+          type="text"
+          className="nav-link"
+          to="/upload/cycle"
+          onClick={() => {
+            setUploadPageType("Cycle Upload");
+            setDashboardPageType("View Data");
+          }}
+        >
+          Cycle Upload
+        </Link>
+      </Menu.Item>
+      <Menu.Item key="abuse">
+        <Link
+          className="nav-link"
+          to="/upload/abuse"
+          onClick={() => {
+            setUploadPageType("Abuse Upload");
+            setDashboardPageType("View Data");
+          }}
+        >
+          Abuse Upload
+        </Link>
+      </Menu.Item>
+    </Menu>
+  );
+	
+  const dashboardMenu = (
+    <Menu>
+      <Menu.Item key="cycle">
+        <Link type="text" className="nav-link" to="/dashboard/cycle" onClick={() =>{
+          setUploadPageType("Add Data")
+          setDashboardPageType("Cycle Data")
+        }}>
+          Cycle Data
+        </Link>
+      </Menu.Item>
+      <Menu.Item key="abuse">
+        <Link className="nav-link" to="/dashboard/abuse" onClick={() =>{
+          setUploadPageType("Add Data")
+          setDashboardPageType("Abuse Data")
+        }}>
+          Abuse Data
+        </Link>
+      </Menu.Item>
+    </Menu>
+  );
+
 	return (
 		<nav className="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
 			<div className="container-fluid">
 				<a className="navbar-brand" style={{ position: "relative" }} href="/">
 					<img style={{ maxWidth: "125px", display: "block" }} src={logo} alt="AMPLABS" />
-					{/* <span className="rounded-pill bg-danger text-white " style={{ fontSize: 9, padding: "1.6px 3px", border: "2px solid #dcdddd", position: " absolute", bottom: 23, left: 112 }}><b>BETA</b></span> */}
 				</a>
 				<button
 					className="navbar-toggler"
@@ -116,37 +173,25 @@ const Navbar = () => {
 					<div className="collapse navbar-collapse justify-content-end" id="navbarNav">
 						<ul className="navbar-nav">
 							<>
-								{/* <li className="nav-item">
-									<Link className="nav-link" to="/view-metadata">
-										View-MetaData
-									</Link>
-								</li> */}
-								{/* <li className="nav-item ms-2">
-									<Link className="nav-link" to="/data-viewer" >
-										Load CSV
-									</Link>
-								</li> */}
 								<li className="nav-item ms-2" style={{ display: "none" }}>
 									<Link className="nav-link" to="/pricing">
 										Pricing
 									</Link>
 								</li>
 								<li className="nav-item ms-2">
-									<Link className="nav-link" to="/upload/cycle-test">
-										Add Data
-									</Link>
+									<Dropdown overlay={uploadMenu}>
+										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
+											{uploadPageType} <FaAngleDown />
+										</Link>
+									</Dropdown>
 								</li>
 								<li className="nav-item ms-2">
-									{/* <Dropdown overlay={dashboardMenu}>
+									<Dropdown overlay={dashboardMenu}>
 										<Link className="nav-link" to="" onClick={(e) => e.preventDefault()}>
-											Dashboard <FaAngleDown />
+											{dashboardPageType} <FaAngleDown />
 										</Link>
-									</Dropdown> */}
-									<Link className="nav-link" to="/dashboard">
-										View Data
-									</Link>
+									</Dropdown>
 								</li>
-
 								<li className="nav-item pe-2 ps-3">
 									<Avatar
 										src={user.picture ? user.picture : <UserOutlined />}

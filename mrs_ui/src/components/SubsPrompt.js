@@ -1,4 +1,6 @@
-import { Modal, Button, Result } from "antd";
+import Modal from 'antd/es/modal';
+import Button from 'antd/es/button';
+import Result from "antd/es/result";
 import { useNavigate } from "react-router-dom";
 
 const SubsPrompt = (props) => {

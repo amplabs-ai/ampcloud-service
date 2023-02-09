@@ -1,5 +1,10 @@
 import React from 'react'
-import { Col, Row, Table, Card, Button, Layout } from 'antd';
+import Col from 'antd/es/col';
+import Row from 'antd/es/row';
+import Table from 'antd/es/table';
+import Card from 'antd/es/card';
+import Button from 'antd/es/button';
+import Layout from 'antd/es/layout';
 import { CheckCircleTwoTone } from "@ant-design/icons";
 import background from "../assets/images/pricingCardBg.png"
 import mixpanel from 'mixpanel-browser';
@@ -33,19 +38,19 @@ const columns = [
         width: 180,
         align: "center"
     },
-    {
-        title: <Card style={{ backgroundImage: `url(${background})`, backgroundSize: 'cover', width: 220 }} className="text-white">
-            <h3 className="text-white" >Pro</h3>
-            <h4 className="text-white"><b>$25/Month</b></h4>
+    // {
+    //     title: <Card style={{ backgroundImage: `url(${background})`, backgroundSize: 'cover', width: 220 }} className="text-white">
+    //         <h3 className="text-white" >Pro</h3>
+    //         <h4 className="text-white"><b>$25/Month</b></h4>
 
-            <Button type="primary" onClick={() => stripePricing()} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
+    //         <Button type="primary" onClick={() => stripePricing()} ghost style={{ borderRadius: "4px", paddingBottom: "10px", padding: "5px 45px", backgroundColor: "white" }}><b>Try For Free</b>
 
-            </Button>
-        </Card>,
-        dataIndex: 'Pro',
-        width: 180,
-        align: "center"
-    },
+    //         </Button>
+    //     </Card>,
+    //     dataIndex: 'Pro',
+    //     width: 180,
+    //     align: "center"
+    // },
     {
         title: <Card >
             <h3 >Team</h3>
@@ -62,61 +67,61 @@ data.push({
     key: "Subscription to AmpLabs Battery Insights Newsletter",
     Features: `Subscription to AmpLabs Battery Insights Newsletter`,
     Community: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
-    Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
+    // Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
     Team: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
 }, {
     key: "Data Storage",
     Features: `Data Storage`,
     Community: `Unlimited Storage for Public Data Only`,
-    Pro: `Unlimited Public Data Storage + 250MB Storage for Private Data`,
+    // Pro: `Unlimited Public Data Storage + 250MB Storage for Private Data`,
     Team: `Custom`,
 }, {
     key: "Plotting Tool",
     Features: ` Plotting Tool`,
     Community: ` Simple Controls`,
-    Pro: ` Advanced Controls`,
+    // Pro: ` Advanced Controls`,
     Team: `Custom`,
 }, {
     key: "Dashboards",
     Features: ` Dashboards`,
     Community: ` Single Standard Dashboard`,
-    Pro: ` No-Code Dashboard Builder`,
+    // Pro: ` No-Code Dashboard Builder`,
     Team: `Custom`,
 }, {
     key: "Templates	",
     Features: ` Templates	`,
     Community: `Standard Templates`,
-    Pro: `Custom Templates`,
+    // Pro: `Custom Templates`,
     Team: `Custom`,
 }, {
     key: "Metadata",
     Features: ` Metadata`,
     Community: `Standard Schema`,
-    Pro: `Flexible Definitions`,
+    // Pro: `Flexible Definitions`,
     Team: `Custom`,
 }, {
     key: "Data Sharing",
     Features: ` Data Sharing`,
     Community: `Public Sharing Only`,
-    Pro: `Private Sharing`,
+    // Pro: `Private Sharing`,
     Team: `Custom`,
 }, {
     key: "Authentication",
     Features: ` Authentication`,
     Community: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
-    Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
+    // Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
     Team: `Custom`,
 }, {
     key: "Access to Public Research Data",
     Features: ` Access to Public Research Data`,
     Community: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
-    Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
+    // Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
     Team: `Custom`,
 }, {
     key: "Support Major Battery Cyclers",
     Features: ` Support Major Battery Cyclers`,
     Community: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
-    Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
+    // Pro: <CheckCircleTwoTone style={{ fontSize: "25px" }} />,
     Team: `Custom`,
 });
 

@@ -1,12 +1,14 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { Button, Card, Statistic, Typography } from "antd";
+import Card from "antd/es/card";
+import Statistic from "antd/es/statistic"
+import Typography from "antd/es/typography";
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
-import Table from "ant-responsive-table";
 import Tutorial from "../tutorial/Tutorial";
 import SummaryChart from "../summary-charts/SummaryChart";
 import axios from "axios";
 import { useAuth0Token } from "../../utility/useAuth0Token";
+import Cookies from "js-cookie";
 
 const { Title } = Typography;
 
@@ -17,43 +19,32 @@ const DefaultDashboard = () => {
 	const name = user.email.split("@")[0];
 	const cardTitle = <div className="text-center">Summary</div>;
 
-	const dummy = [
-		{
-			cathode_stats: [
-				{
-					cathode: "NMC",
-					count: 2,
-				},
-			],
-			cell_id_count: 53,
-			cycle_count: 10968,
-			form_factor_stats: [
-				{
-					count: 2,
-					form_factor: "NA",
-				},
-			],
-			size: 2.13594067,
-		},
-	];
 
 	useEffect(() => {
 		const getSummaryData = () => {
-			axios
-				.get("/echarts/metadataSummary",{headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},})
-				.then((res) => {
-					console.log("summaryData", res);
-					let summaryData = res.data.records[0];
-					setSummaryData(summaryData);
-				})
-				.catch((error) => {
-					console.log("error :>> ", error);
-				});
+			if (Cookies.get("metadataSummary")) {
+				setSummaryData(JSON.parse(Cookies.get("metadataSummary")))
+			}
+			else {
+				axios
+					.get("/echarts/metadataSummary", {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					})
+					.then((res) => {
+						// console.log("summaryData", res);
+						let summaryData = res.data.records[0];
+						Cookies.set('metadataSummary', JSON.stringify(res.data.records[0], { expires: 1 }))
+						setSummaryData(summaryData);
+					})
+					.catch((error) => {
+						// console.log("error :>> ", error);
+					});
+			}
 		};
-		if (accessToken){
-		getSummaryData();
+		if (accessToken) {
+			getSummaryData();
 		}
 	}, [accessToken]);
 

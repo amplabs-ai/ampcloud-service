@@ -1,118 +1,12 @@
-import { message, Modal, Spin } from "antd";
+import message from "antd/es/message";
+import Modal from "antd/es/modal";
+import Spin from "antd/es/spin";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useDashboard } from "../../context/DashboardContext";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import EditableTable from "../EditableTable";
 
-const cellMetadataCol = [
-	{
-		title: "Cell ID",
-		dataIndex: "cell_id",
-		key: "cell_id",
-		editable: true,
-	},
-	{
-		title: "Anode",
-		dataIndex: "anode",
-		key: "anode",
-		editable: true,
-	},
-	{
-		title: "Cathode",
-		dataIndex: "cathode",
-		key: "cathode",
-		editable: true,
-	},
-	{
-		title: "Source",
-		dataIndex: "source",
-		key: "source",
-		editable: true,
-	},
-	{
-		title: "Nominal Ah",
-		dataIndex: "ah",
-		key: "ah",
-		editable: true,
-	},
-	{
-		title: "Form Factor",
-		dataIndex: "form_factor",
-		key: "form_factor",
-		editable: true,
-	},
-	{
-		title: "Active Mass (mg)",
-		dataIndex: "active_mass",
-		key: "active_mass",
-		editable: true,
-	},
-];
-
-const testMetadataCol = [
-	{
-		title: "Cell ID",
-		dataIndex: "cell_id",
-		key: "cell_id",
-	},
-	// {
-	// 	title: "Experiment",
-	// 	dataIndex: "experiment",
-	// 	key: "experiment",
-	// 	editable: true,
-	// },
-	// {
-	// 	title: "Label",
-	// 	dataIndex: "label",
-	// 	key: "label",
-	// 	editable: true,
-	// },
-	{
-		title: "Temperature",
-		dataIndex: "temperature",
-		key: "temperature",
-		editable: true,
-	},
-	{
-		title: "Max Voltage",
-		dataIndex: "v_max",
-		key: "v_max",
-		editable: true,
-	},
-	{
-		title: "Min Voltage",
-		dataIndex: "v_min",
-		key: "v_min",
-		editable: true,
-	},
-	{
-		title: "Max SOC",
-		dataIndex: "soc_max",
-		key: "soc_max",
-		editable: true,
-	},
-	{
-		title: "Min SOC",
-		dataIndex: "soc_min",
-		key: "soc_min",
-		editable: true,
-	},
-	{
-		title: "Charge Rate",
-		dataIndex: "crate_c",
-		key: "crate_c",
-		editable: true,
-	},
-	{
-		title: "Discharge Rate",
-		dataIndex: "crate_d",
-		key: "crate_d",
-		editable: true,
-	},
-];
-
-// cellIds={cellDataOnEdit} type={props.type} onCellEdit={refreshSideBarOnEdit}
 
 const ViewMetadata = (props) => {
 	const [cellMetadata, setCellMetadata] = useState([]);
@@ -124,6 +18,139 @@ const ViewMetadata = (props) => {
 	const accessToken = useAuth0Token();
 	const { state, action } = useDashboard();
 
+	const cellMetadataCol = [
+		{
+			title: "Cell ID",
+			dataIndex: "cell_id",
+			key: "cell_id",
+			editable: true,
+		},
+		{
+			title: "Anode",
+			dataIndex: "anode",
+			key: "anode",
+			editable: true,
+		},
+		{
+			title: "Cathode",
+			dataIndex: "cathode",
+			key: "cathode",
+			editable: true,
+		},
+		{
+			title: "Source",
+			dataIndex: "source",
+			key: "source",
+			editable: true,
+		},
+		{
+			title: "Nominal Ah",
+			dataIndex: "ah",
+			key: "ah",
+			editable: true,
+		},
+		{
+			title: "Form Factor",
+			dataIndex: "form_factor",
+			key: "form_factor",
+			editable: true,
+		},
+		{
+			title: "Active Mass (mg)",
+			dataIndex: "active_mass",
+			key: "active_mass",
+			editable: true,
+		},
+	];
+
+	const testMetadataCol = props.type === "cycle" ?
+		[
+			{
+				title: "Cell ID",
+				dataIndex: "cell_id",
+				key: "cell_id",
+			},
+			{
+				title: "Temperature",
+				dataIndex: "temperature",
+				key: "temperature",
+				editable: true,
+			},
+			{
+				title: "Max Voltage",
+				dataIndex: "v_max",
+				key: "v_max",
+				editable: true,
+			},
+			{
+				title: "Min Voltage",
+				dataIndex: "v_min",
+				key: "v_min",
+				editable: true,
+			},
+			{
+				title: "Max SOC",
+				dataIndex: "soc_max",
+				key: "soc_max",
+				editable: true,
+			},
+			{
+				title: "Min SOC",
+				dataIndex: "soc_min",
+				key: "soc_min",
+				editable: true,
+			},
+			{
+				title: "Charge Rate",
+				dataIndex: "crate_c",
+				key: "crate_c",
+				editable: true,
+			},
+			{
+				title: "Discharge Rate",
+				dataIndex: "crate_d",
+				key: "crate_d",
+				editable: true,
+			},
+		] :
+		[
+			{
+				title: "Cell ID",
+				dataIndex: "cell_id",
+				key: "cell_id",
+			},
+			{
+				title: "Temperature",
+				dataIndex: "temperature",
+				key: "temperature",
+				editable: true,
+			},
+			{
+				title: "Thickness",
+				dataIndex: "thickness",
+				key: "thickness",
+				editable: true,
+			},
+			{
+				title: "V init",
+				dataIndex: "v_init",
+				key: "v_init",
+				editable: true,
+			},
+			{
+				title: "Indentor",
+				dataIndex: "indentor",
+				key: "indentor",
+				editable: true,
+			},
+			{
+				title: "Nail Speed",
+				dataIndex: "nail_speed",
+				key: "nail_speed",
+				editable: true,
+			},
+		];
+
 	useEffect(() => {
 		let checkedCellIds = state.checkedCellIds.map((c) => c.cell_id);
 		if (cellMetadata.length) {
@@ -132,7 +159,7 @@ const ViewMetadata = (props) => {
 		if (testMetadata.length) {
 			setFilteredTestMetadata(testMetadata.filter((obj) => checkedCellIds.includes(obj.cell_id)));
 		}
-	  
+	
 	}, [state.checkedCellIds])
 	
 	const getSearchParams = (cellIds) => {
@@ -152,7 +179,7 @@ const ViewMetadata = (props) => {
 		};
 		setTestMetadata([]);
 		axios
-			.get("/cells/tests/cycle/metaWithId", request)
+			.get(`/cells/tests/${props.type}/metaWithId`, request)
 			.then((response) => {
 				let data = response.data.records[0];
 				data = data.map((d, k) => {
@@ -175,7 +202,7 @@ const ViewMetadata = (props) => {
 		};
 		setCellMetadata([]);
 		axios
-			.get("/cells/cycle/metaWithId", request)
+			.get(`/cells/${props.type}/metaWithId`, request)
 			.then((response) => {
 				let data = response.data.records[0];
 				data = data.map((d, k) => {
@@ -201,7 +228,7 @@ const ViewMetadata = (props) => {
 
 	const handleSaveChanges = (data, type) => {
 		setShallShowLoad(true);
-		let endpoint = type === "test" ? "/cells/tests/cycle/meta" : "/cells/cycle/meta";
+		let endpoint = type === "test" ? `/cells/tests/${props.type}/meta` : `/cells/${props.type}/meta`;
 		let newData = [];
 		let cellIdUpdated = [];
 		for (let i = 0; i < data.length; i++) {

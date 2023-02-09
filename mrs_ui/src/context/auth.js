@@ -1,5 +1,5 @@
 import { useState, createContext, useContext, useEffect } from "react";
-import { Spin } from "antd";
+import Spin from "antd/es/spin";
 import { Magic } from "magic-sdk";
 import { OAuthExtension } from "@magic-ext/oauth";
 import { useLocation } from "react-router-dom";

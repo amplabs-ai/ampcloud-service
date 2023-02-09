@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Button, Card, message, Modal, Skeleton, Spin, Switch, Typography } from "antd";
+import Alert from "antd/es/alert";
+import Button from "antd/es/button";
+import Modal from "antd/es/modal";
+import Spin from "antd/es/spin";
+import Typography from "antd/es/typography";
 import { audit } from "../../auditAction/audit";
-import { FaLinkedin, FaEnvelope, FaLink, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { SHARE_TEXT } from "../../constants/shareText";
-import { ShareAltOutlined } from "@ant-design/icons";
+import ShareAltOutlined from "@ant-design/icons/ShareAltOutlined";
 import { toBlob } from "html-to-image";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import b64toBlob from "../../utility/b64ToBlob";
-import copyToClipboard from "../../utility/copyToClipboard";
 import DashSharePrivate from "./DashSharePrivate";
-import HelmetMetaData from "../../components/HelmetMetaData";
 import { useUserPlan } from "../../context/UserPlanContext";
 
 const Title = Typography;
-const CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
-const REDIRECT_URI_CYCLE = process.env.REACT_APP_LINKEDIN_REDIRECT_URI_DASH_CYCLE;
-const REDIRECT_URI_ABUSE = process.env.REACT_APP_LINKEDIN_REDIRECT_URI_DASH_ABUSE;
 
 const formatString = (str, ...args) => {
 	for (let k in args) {
@@ -28,12 +27,10 @@ const formatString = (str, ...args) => {
 };
 
 const DashboardShareButton = (props, ref) => {
-	const [metaImageDash, setMetaImageDash] = useState(null);
 	const [shallShowShareDashModal, setShallShowShareDashModal] = useState(false);
 	const [shareLoadingMsg, setShareLoadingMsg] = useState("");
 	const [shareType, setShareType] = useState("public");
 	const [loading, setLoading] = useState(false);
-	const [shareLink, setShareLink] = useState("");
 
 	const accessToken = useAuth0Token();
 
@@ -54,7 +51,7 @@ const DashboardShareButton = (props, ref) => {
 					</>
 				);
 				// send code to backend
-				let shareText = formatString(SHARE_TEXT, props.dashboard, state);
+				let shareText = formatString(SHARE_TEXT, props.type, state);
 				let img = localStorage.getItem("dashImage");
 				let parts = [b64toBlob(img?.split(",")[1], "image/png")];
 				let file = new File(parts, "dashboard.png", {
@@ -65,7 +62,7 @@ const DashboardShareButton = (props, ref) => {
 				formData.append("code", code);
 				formData.append("file", file);
 				formData.append("shareText", shareText);
-				formData.append("dashboard", props.dashboard);
+				formData.append("dashboard", props.type);
 				axios
 					.post("/dashboard/share-linkedin", formData, {
 						headers: {
@@ -115,8 +112,7 @@ const DashboardShareButton = (props, ref) => {
 	}, [accessToken, userPlan]);
 
 	const doShareDashboard = () => {
-		audit(`${props.dashboard}_dash_share`, {...user, userTier: userPlan});
-		setMetaImageDash(null);
+		audit(`${props.type}_dash_share`, {...user, userTier: userPlan});
 		localStorage.setItem("dashImage", null);
 		setShallShowShareDashModal(true);
 		if (ref.current === null) {
@@ -127,25 +123,11 @@ const DashboardShareButton = (props, ref) => {
 			reader.readAsDataURL(blob);
 			reader.onloadend = function () {
 				let base64data = reader.result;
-				setMetaImageDash(base64data);
 				localStorage.setItem("dashImage", base64data);
 			};
 		});
 	};
 
-	const shareOnLinkedIn = () => {
-		window.open(
-			`
-			https://www.linkedin.com/oauth/v2/authorization?
-			response_type=code&
-			state=${shareLink}&
-			scope=r_emailaddress%20r_liteprofile%20w_member_social&
-			client_id=${CLIENT_ID}
-			&redirect_uri=${encodeURI(REDIRECT_URI_CYCLE)}
-		`,
-			"_self"
-		);
-	};
 
 	const cleanCellIds = (cellIds) => {
 		let x = [];
@@ -155,47 +137,8 @@ const DashboardShareButton = (props, ref) => {
 		return x;
 	};
 
-	const onShareWithChange = (checked) => {
-		checked ? setShareType("public") : setShareType("private");
-		if (checked) {
-			setLoading(true);
-			let data = JSON.stringify({
-				cell_id: cleanCellIds(props.cellIds),
-				test: "cycle",
-				is_public: true,
-			});
-
-			let config = {
-				method: "post",
-				url: "/dashboard/share-id",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${accessToken}`,
-				},
-				data: data,
-			};
-
-			axios(config)
-				.then(function (response) {
-					setLoading(false);
-					setShareLink(
-						(process.env.REACT_APP_ENV === "production" ? process.env.REACT_APP_PROD_URI : "http://localhost:3000") +
-							`/dashboard/${props.dashboard}/share/` +
-							response.data.detail
-					);
-				})
-				.catch(function (error) {
-					setLoading(false);
-					console.error(error);
-					message.error("Error Generating Link! Please Try Again.");
-					message.error("Error Generating Link! Please Try Again.");
-				});
-		}
-	};
-
 	return (
 		<>
-			{/* <HelmetMetaData image={metaImageDash}></HelmetMetaData> */}
 			<Modal
 				title="Share Dashboard"
 				centered
@@ -205,7 +148,6 @@ const DashboardShareButton = (props, ref) => {
 					setShallShowShareDashModal(false);
 					setShareLoadingMsg("");
 				}}
-				// style={{ maxHeight: "70%" }}
 				style={{ marginTop: "100px" }}
 				width={700}
 			>
@@ -214,7 +156,6 @@ const DashboardShareButton = (props, ref) => {
 				) : (
 					<div>
 						<Alert className="mb-1" message="Loaded Cell Ids will be shared!" type="info" showIcon closable />
-						{/* <span className="fw-bold ms-1">Type: </span> */}
 						{shareType === "public" ? (
 							loading ? (
 								<div>
@@ -223,22 +164,9 @@ const DashboardShareButton = (props, ref) => {
 							) : (
 								
 							<DashSharePrivate
-								dashboard={props.dashboard}
+								type={props.type}
 								cellIds={cleanCellIds(props.cellIds)}
 							/>)) : null}
-						{/* <Card
-							loading={!metaImageDash}
-							// cover={metaImageDash ? <img alt="dashboard screenshot" src={metaImageDash} /> : <Skeleton.Image />}
-							style={{ width: "100%", marginTop: "10px", backgroundColor: "#f9f9f9" }}
-						>
-							{metaImageDash ? (
-								<img alt="dashboard screenshot" style={{ width: "100%" }} src={metaImageDash} />
-							) : (
-								<Skeleton.Image />
-							)}
-							<br />
-							{shareLink ? formatString(SHARE_TEXT, props.dashboard, shareLink) : null}
-						</Card> */}
 					</div>
 				)}
 			</Modal>

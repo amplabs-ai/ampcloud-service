@@ -1,20 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { audit } from "../../auditAction/audit";
-import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode } from "../../chartConfig/cellIdViewCode";
+import { cycleDataCodeContent, timeSeriesDataCodeContent, abuseCellIdViewCode} from "../../chartConfig/cellIdViewCode";
 import { FaRegTrashAlt, FaCode } from "react-icons/fa";
-import { SearchOutlined } from "@ant-design/icons";
-import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography, Switch, Radio } from "antd";
+import SearchOutlined from "@ant-design/icons/SearchOutlined";
+import Space from "antd/es/space";
+import Input from "antd/es/input";
+import Table from "antd/es/table";
+import Button from "antd/es/button";
+import Popconfirm from "antd/es/popconfirm";
+import message from "antd/es/message";
+import Modal from "antd/es/modal";
+import Spin from "antd/es/spin";
+import Typography from "antd/es/typography";
+import Switch from "antd/es/switch";
+import Radio from "antd/es/radio";
 import { useAuth0Token } from "../../utility/useAuth0Token";
 import axios from "axios";
-import Highlighter from "react-highlight-words";
 import ViewCodeModal from "../ViewCodeModal";
 import { useDashboard } from "../../context/DashboardContext";
 import { useUserPlan } from "../../context/UserPlanContext";
-import { useNavigate } from "react-router-dom";
 import DashboardShareButton from "./DashboardShareButton";
 import { useAuth0 } from "@auth0/auth0-react";
 
 const { Text } = Typography;
+
+const getHighlightedText = (text, highlight) => {
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return <span> { parts.map((part, i) => 
+        <span key={i} style={part.toLowerCase() === highlight.toLowerCase() ? { backgroundColor: "#ffc069", padding: 0 } : {} }>
+            { part }
+        </span>)
+    } </span>;
+} 
 
 const DashboardFilterBar = (props) => {
 	const userPlan = useUserPlan();
@@ -41,7 +58,8 @@ const DashboardFilterBar = (props) => {
 	};
 
 	useEffect(() => {
-		if (props.type === "shared" || (accessToken && state.selectedCellIds.length && userPlan)) {
+		console.log(props.type)
+		if (props.type.includes("shared") || (accessToken && state.selectedCellIds.length && userPlan)) {
 			let data;
 			data = _cleanCellIds(state.selectedCellIds);
 			let cellIdData = [];
@@ -81,9 +99,8 @@ const DashboardFilterBar = (props) => {
 		}
 	  };
 	const onVisibilityToggle = (record, checked) => {
-		// setLoading(true);
 		axios
-			.patch("/cells/cycle/meta", [{"index":parseInt(record.index), "is_public": checked, "cell_id": record.cell_id}], {
+			.patch(`/cells/${props.type.split("_")[0]}/meta`, [{"index":parseInt(record.index), "is_public": checked, "cell_id": record.cell_id}], {
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
@@ -118,7 +135,6 @@ const DashboardFilterBar = (props) => {
 				let records = selectedRows.filter((item) => item.key !== record.key);
 				setSelectedRows(records);
 				setSelectedRowKeys(selectedRowKeys.filter((item) => item !== record.key));
-				// props.onCellIdChange(records);
 				action.refreshSidebar(record.cell_id, null, null, "dashboardType2");
 				message.success("Cell Id Deleted!");
 				message.success("Cell Id Deleted!");
@@ -141,19 +157,18 @@ const DashboardFilterBar = (props) => {
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
-				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
 				var a = document.createElement("a");
-				var blob = new Blob([data], { type: "application/zip" });
-				a.href = window.URL.createObjectURL(blob);
+				a.href =data.response_url;
 				a.download = k + " (Cycle Data).zip";
 				a.click();
 				setLoading(false);
-			})
+				}
+			)
 			.catch((err) => {
 				setLoading(false);
 			});
@@ -177,13 +192,18 @@ const DashboardFilterBar = (props) => {
 
 	const viewCycleDataCode = (k) => {
 		audit(`cycle_dash_cellId__cycle_viewcode`, {...user, userTier: userPlan});
-		setCodeContent(formatCode(cycleDataCodeContent, getSearchParams(k.trim(), state.dashboardId)));
+		setCodeContent(formatCode(cycleDataCodeContent, getSearchParams(k.trim(), state.dashboardId),accessToken));
 		setModalVisible(true);
 	};
 
 	const viewTimeSeriesDataCode = (k) => {
-		audit(`cycle_dash_cellId__ts_viewcode`, {...user, userTier: userPlan});
-		setCodeContent(formatCode(timeSeriesDataCodeContent, getSearchParams(k.trim(), state.dashboardId)));
+		audit(`${props.type.split("_")[0]}_dash_cellId__ts_viewcode`, { ...user, userTier: userPlan });
+		if (props.type === "cycle") {
+			setCodeContent(formatCode(timeSeriesDataCodeContent, getSearchParams(k.trim(), state.dashboardId),accessToken,props.type.split("_")[0]));
+		}
+		else {
+			setCodeContent(formatCode(abuseCellIdViewCode, getSearchParams(k.trim(), state.dashboardId),accessToken,props.type.split("_")[0]));
+		}
 		setModalVisible(true);
 	};
 
@@ -196,18 +216,16 @@ const DashboardFilterBar = (props) => {
 			params.append("dashboard_id", state.dashboardId)
 		}
 		axios
-			.get(`/download/cells/cycle_timeseries`, {
+			.get(`/download/cells/${props.type.split("_")[0]}_timeseries`, {
 				params: params,
-				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
 				var a = document.createElement("a");
-				var blob = new Blob([data], { type: "application/zip" });
-				a.href = window.URL.createObjectURL(blob);
-				a.download = k + " (Time Series).zip";
+				a.href = data.response_url;
+				a.download = k + " (Timeseries Data).zip";
 				a.click();
 				setLoading(false);
 			})
@@ -235,7 +253,7 @@ const DashboardFilterBar = (props) => {
 					<Button
 						type="primary"
 						onClick={() => {
-							audit(`cycle_test_dash_cellId_search`, {...user, userTier: userPlan});
+							audit(`${props.type.split("_")[0]}_test_dash_cellId_search`, {...user, userTier: userPlan});
 							handleSearch(selectedKeys, confirm, dataIndex);
 						}}
 						icon={<SearchOutlined />}
@@ -260,12 +278,7 @@ const DashboardFilterBar = (props) => {
 		},
 		render: (text) =>
 			searchedColumn === dataIndex ? (
-				<Highlighter
-					highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-					searchWords={[searchText]}
-					autoEscape
-					textToHighlight={text ? text.toString() : ""}
-				/>
+				getHighlightedText(text,searchText)
 			) : (
 				text
 			),
@@ -289,36 +302,37 @@ const DashboardFilterBar = (props) => {
 			width: 100,
 			...getColumnSearchProps("cell_id"),
 		},
-		{
-			title: "Cycle Data",
-			key: "cycleDataDownload",
-			render: (text, record) => (
-				<Space size="middle">
-					<Button title="Download" type="link" onClick={() => downloadCycleData(record.cell_id)}>
-						Download
-					</Button>
-					<Button type="link" title="View Code" onClick={() => viewCycleDataCode(record.cell_id)}>
-						<FaCode />
-					</Button>
-				</Space>
-			),
-			width: 100,
-		},
-		{
-			title: "Time Series",
-			key: "timeSeriesDownload",
-			render: (text, record) => (
-				<Space size="middle">
-					<Button type="link" onClick={() => downloadTimeSeriesData(record.cell_id)}>
-						Download
-					</Button>
-					<Button type="link" title="View Code" onClick={(e) => viewTimeSeriesDataCode(record.cell_id)}>
-						<FaCode />
-					</Button>
-				</Space>
-			),
-			width: 100,
-		},
+		...(props.type.includes("cycle")? [
+			{
+				title: "Cycle Data",
+				key: "cycleDataDownload",
+				render: (text, record) => (
+					<Space size="middle">
+						<Button title="Download" type="link" onClick={() => downloadCycleData(record.cell_id)}>
+							Download
+						</Button>
+						<Button type="link" title="View Code" onClick={() => viewCycleDataCode(record.cell_id)}>
+							<FaCode />
+						</Button>
+					</Space>
+				),
+				width: 100,
+			}]:[]),
+			{
+				title: "Time Series",
+				key: "timeSeriesDownload",
+				render: (text, record) => (
+					<Space size="middle">
+						<Button type="link" onClick={() => downloadTimeSeriesData(record.cell_id)}>
+							Download
+						</Button>
+						<Button type="link" title="View Code" onClick={(e) => viewTimeSeriesDataCode(record.cell_id)}>
+							<FaCode />
+						</Button>
+					</Space>
+				),
+				width: 100,
+			},
 		{
 			title: "Delete",
 			key: "action",
@@ -422,34 +436,12 @@ const DashboardFilterBar = (props) => {
 						<Radio.Button value="custom_plot">Custom Plots</Radio.Button>
 						<Radio.Button value="metadata">Metadata</Radio.Button>
 					</Radio.Group>}
-					{/* <Button
-						disabled={state.disableSelection}
-						key="1"
-						size="medium"
-						type="primary"
-						className="me-2"
-						onClick={() => {action.plotCellData(state.selectedCellIds);}}
-					>
-						Custom Plot
-					</Button>
-					<Button
-						disabled={state.disableSelection}
-						key="1"
-						size="medium"
-						type="primary"
-						className="me-2"
-						onClick={() => {action.editCellData(state.selectedCellIds)}}
-					>
-						Metadata
-					</Button> */}
 					<Text type="secondary">
 					{state.dashboardType === "private" ? (
 							<DashboardShareButton
 								ref={dashboardRef}
 								cellIds={state.selectedCellIds}
-								// shareDisabled={true}
-								// step={state.appliedStep}
-								dashboard="cycle"
+								type={props.type.split("_")[0]}
 							/>
 						) : null}  
 						Total: {cellIds.length}</Text>

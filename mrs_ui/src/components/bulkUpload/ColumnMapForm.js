@@ -1,15 +1,27 @@
 import React, { useState } from "react";
-import { InfoCircleOutlined } from '@ant-design/icons';
+import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
 import { FaRegTrashAlt } from "react-icons/fa";
-import { Checkbox, Form, Input, Select, Button, Collapse, Spin, message, Popover, Table, Popconfirm, Tooltip } from "antd";
+import Checkbox from "antd/es/checkbox";
+import Form from "antd/es/form";
+import Input from "antd/es/input";
+import Select from "antd/es/select";
+import Button from "antd/es/button";
+import Collapse from "antd/es/collapse";
+import Spin from "antd/es/spin";
+import message from 'antd/es/message';
+import Popover from "antd/es/popover";
+import Table from "antd/es/table";
+import Popconfirm from "antd/es/popconfirm";
+import Tooltip from "antd/es/tooltip";
 import { useUserPlan } from "../../context/UserPlanContext";
 import axios from "axios";
 import {METRIC_PREFIXES, METRICS_TEMPERATURE, METRICS_TIME} from "../../constants/unitsAndMetricPrefixes";
 import { useAuth0Token } from "../../utility/useAuth0Token";
+import { useFileUpload } from "../../context/FileUploadContext";
 
 const { Option, OptGroup } = Select;
 const { Panel } = Collapse;
-const REQUIRED_HEADERS = ["test_time", "current", "voltage"];
+
 
 const ColumnMapForm = ({
   formInfo,
@@ -26,7 +38,10 @@ const ColumnMapForm = ({
   const [selectedTemplateData, setSelectedTemplateData] = useState([])
   const userPlan = useUserPlan();
   const accessToken = useAuth0Token()
-
+  const {
+    state: { uploadType },
+	} = useFileUpload();
+  const REQUIRED_HEADERS = uploadType === "cycle" ? ["test_time", "current", "voltage"]:[];
   const columns = [
     {
       title: "File Column",
@@ -258,14 +273,12 @@ const ColumnMapForm = ({
           >
             <Panel header="Select template">
             <Spin tip="Deleting template..." spinning={loading}>
-              {/* <h6>Select template</h6> */}
               <Form.Item
                 name="template"
                 label="Template"
                 key="template"
                 rules={[{ required: true, message: "Please  template name!" }]}
               >
-                {/* <div className="row"> */}
                 <Select
                   style={{
                     minWidth: 120,
@@ -283,7 +296,6 @@ const ColumnMapForm = ({
                     </Option>
                   ))}
                 </Select>
-                {/* </div> */}
               </Form.Item>
               {selectedTemplateData.length ? (
                 <Table

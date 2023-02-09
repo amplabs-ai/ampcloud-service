@@ -1,5 +1,9 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
-import { Table, Input, Form, Button, Typography } from "antd";
+import Table from "antd/es/table";
+import Input from "antd/es/input";
+import Form from "antd/es/form";
+import Button from "antd/es/button";
+import Typography from "antd/es/typography";
 import { inputType } from "../formConfigs/formConfigs";
 const EditableContext = React.createContext(null);
 
@@ -52,19 +56,12 @@ const EditableCell = ({ title, editable, children, dataIndex, record, handleSave
 					margin: 0,
 				}}
 				name={dataIndex}
-				// rules={[
-				// 	{
-				// 		required: true,
-				// 		message: `${title} is required.`,
-				// 	},
-				// ]}
 			>
 				<Input
 					ref={inputRef}
 					type={inputType[dataIndex]}
 					onPressEnter={save}
 					onBlur={save}
-					// disabled={record.type !== "private"}
 				/>
 			</Form.Item>
 		) : (
@@ -145,7 +142,6 @@ const EditableTable = (props) => {
 				bordered
 				dataSource={dataSource}
 				columns={columns}
-				// rowKey="index"
 			/>
 			{props.shallShowSaveBtn && (
 				<Button onClick={handleMetadataSave} type="primary" className="my-1 shadow" style={{ float: "right" }}>

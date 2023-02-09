@@ -3,28 +3,36 @@ import { audit } from "../../../auditAction/audit";
 import {
 	cycleDataCodeContent,
 	timeSeriesDataCodeContent,
-	abuseCellIdViewCode,
 } from "../../../chartConfig/cellIdViewCode";
-import { FaRegTrashAlt, FaCode } from "react-icons/fa";
-import { SearchOutlined } from "@ant-design/icons";
-import { Space, Input, Table, Button, Popconfirm, message, Select, Modal, Spin, Typography } from "antd";
+import { FaCode } from "react-icons/fa";
+import SearchOutlined from "@ant-design/icons/SearchOutlined";
+import Space from "antd/es/space";
+import Input from "antd/es/input";
+import Table from "antd/es/table";
+import Button from "antd/es/button";
+import Modal from "antd/es/modal";
+import Spin from "antd/es/spin";
 import { useAuth0Token } from "../../../utility/useAuth0Token";
 import axios from "axios";
-import Highlighter from "react-highlight-words";
 import ViewCodeModal from "../../ViewCodeModal";
 import { useDashboard } from "../../../context/DashboardContext";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useUserPlan } from "../../../context/UserPlanContext";
 
-const { Text } = Typography;
+const getHighlightedText = (text, highlight) => {
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+	console.log(text, highlight, parts)
+    return <span> { parts.map((part, i) => 
+        <span key={i} style={part.toLowerCase() === highlight.toLowerCase() ? { backgroundColor: "#ffc069", padding: 0 } : {} }>
+            { part }
+        </span>)
+    } </span>;
+} 
 
 const PlotterFilterbar = (props) => {
 	const [cellIds, setCellIds] = useState([]);
 	const [tableLoading, setTableLoading] = useState(true);
 	const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-	const [selectedRows, setSelectedRows] = useState([]);
-	const [stepInputPlaceholder, setStepInputPlaceholder] = useState("Step");
-	const [stepInputStatus, setStepInputStatus] = useState("");
 	const [modalVisible, setModalVisible] = useState(false);
 	const [searchParams, setSearchParams] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -35,7 +43,7 @@ const PlotterFilterbar = (props) => {
 	const { user } = useAuth0();
 	const userPlan = useUserPlan()
 
-	const { state, action } = useDashboard();
+	const { state} = useDashboard();
 
 	const _cleanCellIds = (cellIds) => {
 		let x = [];
@@ -59,14 +67,12 @@ const PlotterFilterbar = (props) => {
 				});
 				setCellIds([...cellIdData]);
 				setSelectedRowKeys(cellIdData.map((c) => c.key));
-				setSelectedRows([...cellIdData]);
 				props.onCellIdChange(cellIdData);
 				setTableLoading(false);
 			} else {
 				// error
 				setCellIds([]);
 				setSelectedRowKeys([]);
-				setSelectedRows([]);
 				props.onCellIdChange([]);
 				setTableLoading(false);
 			}
@@ -80,15 +86,13 @@ const PlotterFilterbar = (props) => {
 		axios
 			.get(`/download/cells/cycle_data`, {
 				params: params,
-				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
 				var a = document.createElement("a");
-				var blob = new Blob([data], { type: "application/zip" });
-				a.href = window.URL.createObjectURL(blob);
+				a.href =data.response_url;
 				a.download = k + " (Cycle Data).zip";
 				a.click();
 				setLoading(false);
@@ -128,16 +132,14 @@ const PlotterFilterbar = (props) => {
 		axios
 			.get(`/download/cells/cycle_timeseries`, {
 				params: params,
-				responseType: "arraybuffer",
 				headers: {
 					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.then(({ data }) => {
 				var a = document.createElement("a");
-				var blob = new Blob([data], { type: "application/zip" });
-				a.href = window.URL.createObjectURL(blob);
-				a.download = k + " (Time Series).zip";
+				a.href =data.response_url;
+				a.download = k + " (Timeseries Data).zip";
 				a.click();
 				setLoading(false);
 			})
@@ -190,12 +192,7 @@ const PlotterFilterbar = (props) => {
 		},
 		render: (text) =>
 			searchedColumn === dataIndex ? (
-				<Highlighter
-					highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-					searchWords={[searchText]}
-					autoEscape
-					textToHighlight={text ? text.toString() : ""}
-				/>
+				getHighlightedText(text,searchText)
 			) : (
 				text
 			),
@@ -254,7 +251,6 @@ const PlotterFilterbar = (props) => {
 		selectedRowKeys,
 		onChange: (selectedRowKeys, selectedRows) => {
 			setSelectedRowKeys(selectedRowKeys);
-			setSelectedRows(selectedRows);
 			props.onCellIdChange(selectedRows);
 		},
 		getCheckboxProps: (record) => ({

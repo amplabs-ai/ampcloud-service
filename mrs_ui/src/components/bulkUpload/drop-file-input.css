@@ -3,7 +3,6 @@
     width: auto;
     height: 200px;
     border: 1px solid black;
-    /* var(--border-color); */
     border-radius: 20px;
   
     display: flex;

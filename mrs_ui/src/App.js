@@ -1,22 +1,21 @@
-import React from "react";
+
+import React, { Suspense, lazy } from "react";
 import "./App.css";
 import { Auth0Provider, withAuthenticationRequired } from "@auth0/auth0-react";
-import { BackTop, Spin } from "antd";
+import BackTop from "antd/es/back-top";
+import Spin from "antd/es/spin";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import { UserPlanProvider } from "./context/UserPlanContext";
-import BulkUploadPage from "./pages/BulkUploadPage";
-import Cloud from "./components/Cloud";
-import Community from "./components/Community";
-import DashboardPage from "./pages/DashboardPage";
-import DataViewerPage from "./pages/DataViewerPage";
 import Landing from "./pages/Landing";
 import mixpanel from "mixpanel-browser";
 import Navbar from "./components/Navbar";
-import PageNotFound from "./pages/PageNotFound";
-import Pricing from "./components/Pricing";
 import RedirectRoute from "./routes/RedirectRoute";
 import SharedDashboard from "./components/SharedDashboard";
-import UploadPage from "./pages/UploadPage";
+
+const Cloud = lazy(() => import("./components/Cloud"))
+const Community = lazy(() => import("./components/Community"))
+const Pricing = lazy(() => import("./components/Pricing"))
+const PageNotFound = lazy(() => import("./pages/PageNotFound"))
 
 mixpanel.init(
 	process.env.REACT_APP_ENV === "development"
@@ -64,46 +63,85 @@ const Auth0ProviderWithRedirectCallback = ({ children, ...props }) => {
 
 const App = () => {
 	return (
-		<>
-			<Router>
-				<Auth0ProviderWithRedirectCallback
-					domain={AUTH0_DOMAIN}
-					clientId={AUTH0_CLIENT_ID}
-					redirectUri={AUTH0_REDIRECT_URI}
-					audience={AUTH0_AUDIENCE}
-					useRefreshTokens={true}
-				>
-					<UserPlanProvider>
-						<p>My Token = {window.token}</p>
-						<BackTop />
-						<Navbar />
-						<Routes>
-							<Route
-								path="/"
-								element={
-									<RedirectRoute>
-										<Landing />
-									</RedirectRoute>
-								}
-								exact
-							/>
-							<Route path="/upload" element={<PrivateRoute component={BulkUploadPage} />}>
-								<Route path="cycle-test" element={<UploadPage />} />
-								<Route path="abuse-test" element={<UploadPage />} />
-							</Route>
-							<Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />}></Route>
-							<Route path="/data-viewer" element={<PrivateRoute component={DataViewerPage} />}></Route>
-							<Route path="/dashboard/share/:id" element={<SharedDashboard/>} />
-							<Route path="/cloud/" element={<Cloud />} />
-							<Route path="/community/" element={<Community />} />
-							<Route path="/pricing/" element={<Pricing />} exact />
-							<Route path="*" element={<PageNotFound />} />
-						</Routes>
-					</UserPlanProvider>
-				</Auth0ProviderWithRedirectCallback>
-			</Router>
-		</>
-	);
+    <>
+      <Router>
+        <Suspense
+          fallback={
+            <div
+              className="d-flex justify-content-center align-items-center"
+              style={{ height: "100vh" }}
+            >
+              <Spin size="large" />
+            </div>
+          }
+        >
+          <Auth0ProviderWithRedirectCallback
+            domain={AUTH0_DOMAIN}
+            clientId={AUTH0_CLIENT_ID}
+            redirectUri="https://localhost:3000/"
+            audience={AUTH0_AUDIENCE}
+            useRefreshTokens={true}
+          >
+            <UserPlanProvider>
+              <p>My Token = {window.token}</p>
+              <BackTop />
+              <Navbar />
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <RedirectRoute>
+                      <Landing />
+                    </RedirectRoute>
+                  }
+                  exact
+                />
+                <Route
+                  path="/upload"
+                  element={
+                    <PrivateRoute
+                      component={lazy(() => import("./pages/BulkUploadPage"))}
+                    />
+                  }
+                >
+                  <Route
+                    path="cycle"
+                    element={lazy(() => import("./pages/BulkUploadPage"))}
+                  />
+                  <Route
+                    path="abuse"
+                    element={lazy(() => import("./pages/BulkUploadPage"))}
+                  />
+                </Route>
+                <Route
+                  path="/dashboard/share/:id/:type"
+                  element={<SharedDashboard />}
+                />
+                <Route path="/dashboard" element={<PrivateRoute component={lazy(() => import('./pages/DashboardPage'))} />}>
+                  <Route path="cycle" element={lazy(() => import('./pages/DashboardPage'))} />
+                  <Route path="abuse" element={lazy(() => import('./pages/DashboardPage'))} />
+                </Route>
+                <Route
+                  path="/data-viewer"
+                  element={
+                    <PrivateRoute
+                      component={lazy(() => import("./pages/DataViewerPage"))}
+                    />
+                  }
+                ></Route>
+                
+                <Route path="/cloud/" element={<Cloud />} />
+                <Route path="/community/" element={<Community />} />
+                <Route path="/pricing/" element={<Pricing />} exact />
+                <Route path="*" element={<PageNotFound />} />
+              </Routes>
+            </UserPlanProvider>
+          </Auth0ProviderWithRedirectCallback>
+        </Suspense>
+      </Router>
+    </>
+  );
 };
 
 export default App;
+

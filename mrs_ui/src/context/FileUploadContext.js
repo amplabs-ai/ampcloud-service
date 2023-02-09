@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useRef } from "react";
+import { createContext, useContext, useReducer} from "react";
 import fileUploadReducer, { initialState } from "../reducer/fileUploadReducer";
 
 const FileUploadContext = createContext();
@@ -69,6 +69,15 @@ export const FileUploadProvider = ({ children }) => {
 		});
 	};
 
+	const setUploadType = (type) => {
+		dispatch({
+			type: "SET_UPLOAD_TYPE",
+			payload: {
+				uploadType: type,
+			},
+		});
+	};
+
 	const editFile = (key) => {
 		let index = state.tableData.findIndex((data) => data.key === key);
 		let filesToMapHeader = [structuredClone(state.tableData[index])];
@@ -87,8 +96,10 @@ export const FileUploadProvider = ({ children }) => {
 			setSupportedColumns,
 			editFile,
 			setShowPackDataCellInput,
+			setUploadType,
 		},
 	};
+
 	return <FileUploadContext.Provider value={value}>{children}</FileUploadContext.Provider>;
 };
 

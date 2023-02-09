@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Button, Modal, Select, Spin, Tabs } from "antd";
+import Alert from "antd/es/alert";
+import Button from "antd/es/button";
+import Modal from "antd/es/modal";
+import Select from "antd/es/select";
+import Spin from "antd/es/spin";
+import Tabs from "antd/es/tabs";
 import ColumnMapForm from "./ColumnMapForm";
 import { useFileUpload } from "../../context/FileUploadContext";
 import { v4 as uuidv4 } from "uuid";

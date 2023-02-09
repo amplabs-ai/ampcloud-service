@@ -4,12 +4,11 @@ import { DashboardProvider } from "../context/DashboardContext";
 import Dashboard from "./dashboard/Dashboard";
 
 const SharedDashboard = (props) => {
-	let { id } = useParams();
-
+	let { id, type } = useParams();
 	return (
 		<DashboardProvider>
 			<div style={{ paddingTop: "1rem" }}>
-				<Dashboard dashboardId={id} type="shared" />
+				<Dashboard dashboardId={id} type={`${type}_shared`} />
 			</div>
 		</DashboardProvider>
 	);

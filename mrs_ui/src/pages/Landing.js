@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useSpring } from "react-spring";
 import styles from "./LandingPage.module.css";
-import mixpanel, { get_distinct_id } from "mixpanel-browser";
+import mixpanel from "mixpanel-browser";
 
 
 
@@ -17,16 +16,11 @@ const Landing = () => {
 		mixpanel.track("user_landing_page");
 	}, []);
     
-    const aboutAnim = useSpring({
-        delay: 500,
-        from: { x: -900, opacity: 0 },
-        to: { x: 0, opacity: 1 },
-    });
     return (
         <>
             <div className={styles.wrapper + " container"} >
                 <div className="row">
-                    <div className="col-md-12 p-2 text-center" style={aboutAnim}>
+                    <div className="col-md-12 p-2 text-center" >
                         <div
                             style={{
                                 display: "flex",

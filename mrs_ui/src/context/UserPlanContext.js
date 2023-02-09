@@ -1,5 +1,3 @@
-import { useAuth0 } from "@auth0/auth0-react";
-import { Spin } from "antd";
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth0Token } from "../utility/useAuth0Token";
@@ -9,8 +7,6 @@ const UserPlanContext = createContext();
 export const UserPlanProvider = ({ children }) => {
 	const [userPlan, setUserPlan] = useState("");
 	const accessToken = useAuth0Token();
-
-	const auth0 = useAuth0();
 
 	useEffect(() => {
 		if (!accessToken) return;
