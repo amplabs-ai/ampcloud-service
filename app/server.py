@@ -16,7 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 app = FlaskApp(__name__)
-app.add_api('../api/api.yaml', options={'swagger_url': '/api'})
+app.add_api('./api.yaml', options={'swagger_url': '/api'})
 app.app.config['DATABASE_URI'] = AMPLABS_DB_URL
 app.app.config['DATABASE_CONNECT_OPTIONS'] = {}
 
