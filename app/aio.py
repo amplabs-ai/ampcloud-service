@@ -1,4 +1,3 @@
-
 from app.archive_constants import (GA_API_HOST, LABEL,
                                    TEST_TYPE, TESTER)
 import datetime
@@ -11,6 +10,7 @@ class GAReader:
     def __init__(self, token):
         self.host = GA_API_HOST
         self.token = token
+
 
     def read_metadata(self, dataset_id):
         configuration = batteryclient.Configuration(
@@ -39,15 +39,13 @@ class GAReader:
                 metadata[LABEL.CRATE_D.value] = None
                 metadata[LABEL.SOC_MAX.value] = None
                 metadata[LABEL.SOC_MIN.value] = None
-
                 metadata[LABEL.TEMP.value] = None
-
                 return metadata, columns
-
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
             except Exception as e:
                 print(e)
+
 
     def read_data(self, dataset_id, columns):
         configuration = batteryclient.Configuration(
@@ -62,7 +60,6 @@ class GAReader:
                 column_ids['Ewe/V'] = col['id']
             if col['name'] == 'I/mA':
                 column_ids['I/mA'] = col['id']
-
         print("READING DATA:", dataset_id)
         # Enter a context with an instance of the API client
         with batteryclient.ApiClient(configuration) as api_client:
@@ -85,9 +82,7 @@ class GAReader:
                 data.pop('time/s')
                 data.pop('Ewe/V')
                 data.pop('I/mA')
-
                 return data
-
             except batteryclient.ApiException as e:
                 print("Exception when calling UsersApi->get_dataset: %s\n" % e)
             except Exception as e:

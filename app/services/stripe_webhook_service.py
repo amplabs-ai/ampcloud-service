@@ -1,4 +1,3 @@
-from matplotlib.pyplot import table
 from app.archive_constants import RESPONSE_MESSAGE, STRIPE_API_KEY
 from app.model import ArchiveOperator, UserPlan
 import stripe
