@@ -439,6 +439,8 @@ paths:
                   description: similar to the cell_id sent in upload initialize request.
                   type: string
                   example: SNL_18650_NMC_35C_0-100_0.5-1C_a
+                file:
+                  type: string
               required:
                 - cell_id
       tags:

@@ -3,11 +3,9 @@ import logging
 import numpy as np
 from pandas import DataFrame, to_numeric, unique
 from app.archive_constants import LABEL
-from app.utilities.file_status import _get_from_simple_db, _set_status
+from app.utilities.file_status import _get_key_from_status_object, _set_status
 import warnings
 warnings.filterwarnings('ignore')
-
-status = {}
 
 
 def default(obj):

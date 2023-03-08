@@ -1,6 +1,6 @@
 import logging
 from pandas import DataFrame
-from app.archive_constants import LABEL, RESPONSE_MESSAGE, TESTER, S3_DATA_BUCKET
+from app.archive_constants import ENV, LABEL, RESPONSE_MESSAGE, TESTER, S3_DATA_BUCKET
 from app.model import ArchiveOperator
 from app.utilities.file_reader import read_generic, read_snlabuse, read_ornlabuse
 from app.utilities.utils import calc_cycle_stats, calc_abuse_stats
@@ -8,7 +8,7 @@ from app.utilities.s3_file_upload import insert_through_s3
 from collections import OrderedDict
 from sqlalchemy.exc import DataError
 from app.utilities.aws_connection import s3_client
-from app.utilities.file_status import initialise_file_status, _get_from_simple_db, _set_status
+from app.utilities.file_status import initialise_file_status, _get_key_from_status_object, _set_status
 
 def init_file_upload_service(email, request):
     cell_ids = [cell['cell_id'] for cell in request]
@@ -35,15 +35,15 @@ def init_file_upload_service(email, request):
             "test_type": data.get('test_type')}
         initialise_file_status(email,data.get('cell_id'),status)
     _uri = s3_client.generate_presigned_url('put_object', 
-                                        Params = {'Bucket': S3_DATA_BUCKET, 'Key': f"raw/{email}/{data.get('cell_id')}"},ExpiresIn = 300)
+                                        Params = {'Bucket': S3_DATA_BUCKET, 'Key': f"raw/{email}/{data.get('cell_id')}"},ExpiresIn = 300) if ENV == "production" else None
     return 200, "Success", _uri
 
 
-def file_data_read_service(tester ,template,email,cell_id):
+def file_data_read_service(tester ,template,email,cell_id, file=None):
     if tester == TESTER.GENERIC.value:
-        data = read_generic(template,email,cell_id)
+        data = read_generic(template,email,cell_id, file)
     else:
-        data = read_snlabuse(template,email,cell_id)
+        data = read_snlabuse(template,email,cell_id, file)
     return data
 
 
@@ -59,7 +59,7 @@ def file_data_process_service(cell_id, email, df_tmerge, tester):
         cell_metadata = DataFrame([{
             "cell_id": cell_id,
             "email": email,
-            "is_public": _get_from_simple_db(email,cell_id,key="is_public")["is_public"],
+            "is_public": _get_key_from_status_object(email,cell_id,key="is_public")["is_public"],
             "test": test
         }])
         test_metadata = DataFrame([{
@@ -80,13 +80,11 @@ def file_data_process_service(cell_id, email, df_tmerge, tester):
             if stat_df is not None:
                 stat_df['cell_id'] = cell_id
                 stat_df['email'] = email
-                insert_through_s3(stat_df, email, cell_id, ao, type="cycle_stats")
-                # ao.add_all(stat_df, 'cycle_stats')
+                insert_through_s3(stat_df, email, cell_id, ao, type="cycle_stats") if ENV == "production" else ao.add_all(stat_df, 'cycle_stats')
             else:
                 final_df.drop(['cycle_index'], axis=1, inplace=True)
             _set_status(email,cell_id,percentage = 80)
-            insert_through_s3(final_df, email, cell_id, ao, type="cycle_timeseries")
-            # ao.add_all(final_df, 'cycle_timeseries')
+            insert_through_s3(final_df, email, cell_id, ao, type="cycle_timeseries") if ENV == "production" else ao.add_all(final_df, 'cycle_timeseries')
         else:
             test_metadata["thickness"] = 1
             final_df = calc_abuse_stats(df_tmerge, test_metadata, cell_id, email)
@@ -95,14 +93,13 @@ def file_data_process_service(cell_id, email, df_tmerge, tester):
             final_df['email'] = email
             _set_status(email,cell_id,percentage = 70)
             ao.add_all(test_metadata, 'abuse_metadata')
-            # ao.add_all(final_df, 'abuse_timeseries')
-            insert_through_s3(final_df, email, cell_id, ao, type="abuse_timeseries")
+            insert_through_s3(final_df, email, cell_id, ao, type="abuse_timeseries") if ENV == "production" else ao.add_all(final_df, 'abuse_timeseries')
         _set_status(email,cell_id,percentage = 78)
         _set_status(email,cell_id,percentage = 100,message="COMPLETED",step_key="WRITING TO DATABASE")
     except Exception as err:
         logging.error(err)
         _set_status(email,cell_id,percentage = -1)
-        steps = _get_from_simple_db(email,cell_id,key = "steps")["progress"]["steps"]
+        steps = _get_key_from_status_object(email,cell_id,key = "steps")["progress"]["steps"]
         for key,value in steps.items():
             if not value:
                 _set_status(email,cell_id,message = f"{key} Failed")

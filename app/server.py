@@ -12,6 +12,8 @@ from app.controllers.dashboard_share_controller import dashboard_audit, dashboar
 from app.controllers.echarts_controller import get_timeseries_columns_data, get_stats_columns_data
 from app.controllers.file_transfer_controller import download_timeseries_plot_data, download_stats_plot_data
 import logging
+import json
+
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -57,4 +59,15 @@ def index(path):
 if __name__ == "__main__":
     engine_ = create_engine(app.app.config['DATABASE_URI'], echo=True)
     Model.metadata.create_all(engine_)
-    app.run(debug=True, host='0.0.0.0',port='4000')
+
+    with open('local_template.json', 'a+') as file:
+        file.seek(0)
+        if file.readlines():
+            file.seek(0)
+            app.app.config['local_template'] = json.load(file)
+        else:
+            app.app.config['local_template'] = []
+    app.run(debug=False, host='0.0.0.0',port='4000')
+    with open('local_template.json', 'w+') as file:
+        json.dump(app.app.config['local_template'], file)
+
