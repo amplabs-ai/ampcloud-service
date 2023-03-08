@@ -26,7 +26,8 @@ def get_user_plan_service(email):
         return 500, RESPONSE_MESSAGE['INTERNAL_SERVER_ERROR']
     finally:
         ao.release_session()
-    
+
+
 def update_user_plan_service(email):
     try:
         ao = ArchiveOperator()
