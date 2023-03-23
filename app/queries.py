@@ -1,3 +1,5 @@
+from app.archive_constants import ENV
+
 FILTER_DASHBOARD = """
 SELECT 
   active_mass,
@@ -592,33 +594,17 @@ TOTAL_CYCLE_INDEX = """
 
 SIZE_CELL_METADATA = """
   select size from SVV_TABLE_INFO where "table" = 'cell_metadata'
-"""
+""" if ENV == "production" else """select pg_relation_size('cell_metadata') as size"""
 
 
 SIZE_CYCLE_STATS = """
   select size from SVV_TABLE_INFO where "table" = 'cycle_stats'
-"""
+""" if ENV == "production" else """select pg_relation_size('cycle_stats') as size"""
 
 
 SIZE_CYCLE_TIMESERIES = """
   select size from SVV_TABLE_INFO where "table" = 'cycle_timeseries'
-"""
-
-# SIZE_CELL_METADATA = """
-#       select pg_relation_size('cell_metadata') as size
-# """
-
-
-# SIZE_CYCLE_STATS = """
-#       SELECT 
-#         pg_relation_size('cycle_stats') as size
-# """
-
-
-# SIZE_CYCLE_TIMESERIES = """
-#       select 
-#         pg_relation_size('cycle_timeseries') as size
-# """
+""" if ENV == "production" else """select pg_relation_size('cycle_timeseries') as size"""
 
 
 ANODE_FILTER_QUERY = """

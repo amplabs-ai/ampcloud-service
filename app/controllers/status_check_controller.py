@@ -1,7 +1,7 @@
 from flask import request
 from app.response import Response
 import logging
-from app.utilities.file_status import _delete_status, _get_from_simple_db
+from app.utilities.file_status import _delete_status, _get_key_from_status_object
 
 
 def get_status(cell_id):
@@ -10,7 +10,7 @@ def get_status(cell_id):
         result = {}
         do_clear = True
         for id in cell_id:
-            status_map = _get_from_simple_db(email,id,key="progress")
+            status_map = _get_key_from_status_object(email,id,key="progress")
             if status_map:
                 for key, value in status_map['progress']['steps'].items():
                     if not status_map['progress']['steps'][key]:

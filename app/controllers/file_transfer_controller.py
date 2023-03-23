@@ -2,7 +2,7 @@ from builtins import float, print
 from time import time
 import traceback
 from app.amplabs_exception.amplabs_exception import AmplabsException
-from app.archive_constants import S3_DATA_BUCKET
+from app.archive_constants import ENV, S3_DATA_BUCKET
 from app.services.file_transfer_service import *
 from app.utilities.s3_file_upload import add_df_to_s3, add_response_to_s3
 from app.utilities.user_plan import set_user_plan
@@ -14,7 +14,7 @@ from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 from flask import send_file
 from app.utilities.aws_connection import s3_client
-from app.utilities.file_status import _get_from_simple_db, _set_status
+from app.utilities.file_status import _get_key_from_status_object, _set_status
 
 
 @with_authentication()
@@ -39,8 +39,8 @@ def upload_file(tester):
     data = request.form.to_dict()
     try:
         start_time = time()
-        template = _get_from_simple_db(email,data['cell_id'],key="template")['template']
-        df = file_data_read_service(tester, template, email,data['cell_id'])
+        template = _get_key_from_status_object(email,data['cell_id'],key="template")['template']
+        df = file_data_read_service(tester, template, email, data['cell_id'], request.files.get('file'))
         end_time = time()
         read_time = end_time-start_time
         _set_status(email,data['cell_id'],percentage = 5)

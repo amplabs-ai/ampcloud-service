@@ -1,6 +1,6 @@
 from app.utilities.aws_connection import client_sdb
-from app.archive_constants import TEMPLATE_DOMAIN_NAME_SDB, RESPONSE_MESSAGE
-
+from app.archive_constants import ENV, TEMPLATE_DOMAIN_NAME_SDB, RESPONSE_MESSAGE
+from flask import current_app
 
 def create_template_service(email,request):
     try:
@@ -19,7 +19,11 @@ def create_template_service(email,request):
             Attributes.append(temp)
         data_dict['Attributes'] = Attributes
         data.append(data_dict)
-        if(client_sdb.batch_put_attributes(DomainName = TEMPLATE_DOMAIN_NAME_SDB,Items = data)):
+        if ENV == "production":
+            if(client_sdb.batch_put_attributes(DomainName = TEMPLATE_DOMAIN_NAME_SDB,Items = data)):
+                return 200, "Success"
+        else: 
+            current_app.config['local_template'].append(data[0])
             return 200, "Success"
     except Exception as err:
         print(err)
@@ -27,9 +31,13 @@ def create_template_service(email,request):
 
 
 def get_details_from_template_service(email):
+    response = {}
     try:
-        response = client_sdb.select(
-                        SelectExpression=f"select * from `{TEMPLATE_DOMAIN_NAME_SDB}` where itemName() LIKE '{email}||%' ")
+        if ENV == "production":
+            response = client_sdb.select(
+                            SelectExpression=f"select * from `{TEMPLATE_DOMAIN_NAME_SDB}` where itemName() LIKE '{email}||%' ")
+        else:
+            response['Items'] = current_app.config['local_template']
         records = {}
         if response.get('Items'):
             for element in response['Items']:

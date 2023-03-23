@@ -15,6 +15,9 @@ LIVE_DB_URL = "<your-db-string>"
 DB_URL = LIVE_DB_URL
 GA_API_HOST = ""
 
+#Admin user
+ADMIN = os.getenv('ADMIN')
+
 # Stripe
 STRIPE_ENDPOINT_SECRET = os.getenv('STRIPE_PROD_ENDPOINT_SECRET') if ENV == "production" else os.getenv('STRIPE_DEV_ENDPOINT_SECRET') 
 STRIPE_API_KEY = os.getenv('STRIPE_PROD_API_KEY') if ENV == "production" else os.getenv('STRIPE_DEV_API_KEY') 

@@ -4,6 +4,7 @@ from app.services.template_service import *
 from app.response import Response
 import logging
 
+local_template = {}
 
 @with_authentication()
 def create_template():
